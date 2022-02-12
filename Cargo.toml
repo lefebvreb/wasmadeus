@@ -1,0 +1,11 @@
+[package]
+name = "wasmide"
+version = "0.1.0"
+edition = "2021"
+authors = ["Benjamin Lefebvre"]
+categories = ["wasm", "web-programming"]
+description = "An exprimental frontend framework in pure rust"
+keywords = ["framework", "wasm", "web"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/L-Benjamin/wasmide"
