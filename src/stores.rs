@@ -12,7 +12,7 @@ use alloc::collections::vec_deque::VecDeque;
 use alloc::rc::{Rc, Weak};
 use alloc::vec::Vec;
 
-use super::errors::FrontendError;
+use crate::errors::{FrontendError, Result};
 
 /// A trait for the ability of a type to be subscribed/unsubscribed to.
 /// 
@@ -171,7 +171,7 @@ impl<T: 'static> Store<T> {
     /// a.update(|x| x.to_uppercase()).ok(); // Prints "HELLO"
     /// ```
     #[inline]
-    pub fn update(&self, updater: impl FnOnce(&T) -> T) -> Result<(), FrontendError> {
+    pub fn update(&self, updater: impl FnOnce(&T) -> T) -> Result<()> {
         let internal = unsafe { self.internal() };
         
         if internal.updating {
@@ -209,7 +209,7 @@ impl<T: 'static> Store<T> {
     /// a.subscribe(|x| if *x { println!("Here") }); // Prints nothing
     /// a.set(true); // Prints "Here"
     #[inline]
-    pub fn set(&self, data: T) -> Result<(), FrontendError> {
+    pub fn set(&self, data: T) -> Result<()> {
         self.update(move |_| data)
     }
 
