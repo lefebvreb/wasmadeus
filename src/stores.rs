@@ -153,7 +153,7 @@ impl<T: 'static> Store<T> {
     /// ```
     #[inline]
     pub fn new(data: T) -> Self {
-        Self(Rc::new(UnsafeCell::new(InternalStore::new(data))))
+        Self(Rc::new(InternalStore::new(data).into()))
     }
 
     /// Updates the value contained in the store by applying the given closure. Subscribers to
