@@ -6,6 +6,7 @@
 //! through composition of store.
 
 use core::cell::UnsafeCell;
+use core::mem::{MaybeUninit, self};
 
 use alloc::boxed::Box;
 use alloc::collections::vec_deque::VecDeque;
@@ -33,7 +34,7 @@ pub trait Subscribable<T> {
     /// a.subscribe(|x| println!("{}", x)); // Prints 1
     /// a.update(|x| x + 1).ok(); // Prints 2
     /// ```
-    fn subscribe(&self, notify: impl Fn(&T) + 'static) -> Self::Unsubscriber;
+    fn subscribe(&self, notify: impl FnMut(&T) + 'static) -> Self::Unsubscriber;
 
     /// Unsubscribe from the previous subscribtion. The closure provided to [`Self::subscribe`] will
     /// no longer be notified of changes.
@@ -55,7 +56,7 @@ struct InternalStore<T> {
     // The current data.
     data: T,
     // A map of the subscribers' notify functions indexed by their IDs.
-    subscribers: Vec<(usize, Box<dyn Fn(&T)>)>,
+    subscribers: Vec<(usize, Box<dyn FnMut(&T)>)>,
     // A counter that is incremented with each new subscribtion.
     unique_count: usize,
     // A flag that signal whether the store is currently being updated.
@@ -67,7 +68,7 @@ struct InternalStore<T> {
 // An operation on a Store.
 enum StoreOperation<T> {
     Subscribe {
-        notify: Box<dyn Fn(&T)>,
+        notify: Box<dyn FnMut(&T)>,
         idx: usize,
     },
     Unsubscribe(usize),
@@ -102,7 +103,7 @@ impl<T> InternalStore<T> {
         match op {
             StoreOperation::Subscribe {idx, notify} => {
                 self.subscribers.push((idx, notify));
-                self.subscribers.last().unwrap().1(&self.data);
+                self.subscribers.last_mut().unwrap().1(&self.data);
             }
             StoreOperation::Unsubscribe(idx) => {
                 let _ = self.subscribers.remove(self.subscribers.partition_point(|&(i, _)| i < idx));
@@ -172,6 +173,11 @@ impl<T: 'static> Store<T> {
     /// ```
     #[inline]
     pub fn update(&self, updater: impl FnOnce(&T) -> T) -> Result<()> {
+        // SAFETY: Will toggle the updating flag that gates away other call to update(),
+        // so that only one update can be carried out at a time: mutates the data,
+        // and then call all the subscribers. Has an exclusive access to subscribers
+        // and data by the updating flag.
+        // The queue and updating and never borrowed.
         let internal = unsafe { self.internal() };
         
         if internal.updating {
@@ -182,7 +188,7 @@ impl<T: 'static> Store<T> {
 
         internal.data = updater(&internal.data);
 
-        for (_, subscriber) in &internal.subscribers {
+        for (_, subscriber) in &mut internal.subscribers {
             subscriber(&internal.data);
         }
 
@@ -219,6 +225,9 @@ impl<T: 'static> Store<T> {
     /// 
     /// The store returned by this function is of type [`Derived`].
     /// 
+    /// If `self` is already being updated, an error of type [`FrontendError::StoreUpdating`] is
+    /// returned.
+    /// 
     /// # Examples
     /// 
     /// ```
@@ -229,30 +238,21 @@ impl<T: 'static> Store<T> {
     /// a.update(|x| x + 1).ok(); // Prints 20
     /// ```
     #[inline]
-    pub fn compose<U: 'static>(&self, composer: impl Fn(&T) -> U + 'static) -> Derived<U> {
+    pub fn compose<U: 'static>(&self, composer: impl Fn(&T) -> U + 'static) -> Result<Derived<U>> {
         let internal = unsafe { self.internal() };
-        let weak = Rc::downgrade(&self.0);
 
-        let derived = Store::new(composer(&internal.data));
-        let weak_derived = Rc::downgrade(&derived.0);
+        if internal.updating {
+            return Err(FrontendError::StoreUpdating);
+        }
 
-        let idx = internal.unique_count;
-        internal.unique_count += 1;
+        let derived = Store::new(unsafe { mem::zeroed::<U>() });
+        let derived_clone = derived.clone();
 
-        let op = StoreOperation::Subscribe {
-            notify: Box::new(move |data| unsafe {
-                if let Some(rc) = weak_derived.upgrade() {
-                    Store(rc).set(composer(data)).unwrap();
-                } else if let Some(rc) = weak.upgrade() {
-                    Store(rc).internal().unsubscribe(idx);
-                }
-            }),
-            idx,
-        };
+        self.subscribe(move |data| {
+            derived_clone.set(composer(data)).unwrap();
+        });
 
-        internal.push_op(op);
-
-        Derived(derived)
+        Ok(Derived(derived))
     }
 }
 
@@ -276,6 +276,8 @@ impl<T: 'static> InternalUnsubscriber<T> {
     #[inline]
     fn unsubscribe(self) {
         if let Some(rc) = self.weak.upgrade() {
+            // SAFETY: simply pushes an operation to the store's queue.
+            // The queue is never borrowed.
             unsafe { Store(rc).internal().unsubscribe(self.idx); }
         }
     }
@@ -309,7 +311,9 @@ impl<T: 'static> Subscribable<T> for Store<T> {
     type Unsubscriber = StoreUnsubscriber<T>;
 
     #[inline]
-    fn subscribe(&self, notify: impl Fn(&T) + 'static) -> Self::Unsubscriber {
+    fn subscribe(&self, notify: impl FnMut(&T) + 'static) -> Self::Unsubscriber {
+        // SAFETY: increments the unique_count, and then pushes the operation to the queue.
+        // The unique_count and queue are never borrowed.  
         let internal = unsafe { &mut self.internal() };
 
         let idx = internal.unique_count;
@@ -354,18 +358,21 @@ impl<T> Derived<T> {
     /// 
     /// The store returned by this function is of type [`Derived`].
     /// 
+    /// If `self` is already being updated, an error of type [`FrontendError::StoreUpdating`] is
+    /// returned.
+    /// 
     /// # Examples
     /// 
     /// ```
     /// # use wasmide::prelude::*;
     /// let a = Store::new(1);
-    /// let b = a.compose(|x| *x * 10); // b will always be 10 times a
-    /// let c = b.compose(|x| *x + 1); // c will always be 10 times a plus 1
+    /// let b = a.compose(|x| *x * 10).ok(); // b will always be 10 times a
+    /// let c = b.compose(|x| *x + 1).ok(); // c will always be 10 times a plus 1
     /// c.subscribe(|x| println!("{}", x)); // Prints 11
     /// a.update(|x| x + 1).ok(); // Prints 21
     /// ```
     #[inline]
-    pub fn compose<U: 'static>(&self, composer: impl Fn(&T) -> U + 'static) -> Derived<U> {
+    pub fn compose<U: 'static>(&self, composer: impl Fn(&T) -> U + 'static) -> Result<Derived<U>> {
         self.0.compose(composer)
     }
 }
@@ -399,7 +406,7 @@ impl<T: 'static> Subscribable<T> for Derived<T> {
     type Unsubscriber = DerivedUnsubscriber<T>;
 
     #[inline]
-    fn subscribe(&self, notify: impl Fn(&T) + 'static) -> Self::Unsubscriber {
+    fn subscribe(&self, notify: impl FnMut(&T) + 'static) -> Self::Unsubscriber {
         DerivedUnsubscriber(self.0.subscribe(notify))
     }
 
@@ -461,7 +468,7 @@ impl<T> Subscribable<T> for Value<T> {
     type Unsubscriber = ValueUnsubscriber;
 
     #[inline]
-    fn subscribe(&self, notify: impl Fn(&T) + 'static) -> Self::Unsubscriber {
+    fn subscribe(&self, mut notify: impl FnMut(&T) + 'static) -> Self::Unsubscriber {
         notify(&self.0);
         ValueUnsubscriber
     }
