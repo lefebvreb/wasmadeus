@@ -166,6 +166,50 @@ impl<T: 'static> Store<T> {
         Self(Rc::new(InternalStore::new(data).into()))
     }
 
+    /// Mutates the value contained in the store by applying the given closure. Subscribers to
+    /// the store will be notified of the change.
+    /// 
+    /// If the store is already being updated, an error of type [`FrontendError::StoreUpdating`]
+    /// is returned.
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// # use wasmide::prelude::*;
+    /// let a = Store::new("hello".to_string());
+    /// a.subscribe(|x| println!("{}", x)); // Prints "Hello"
+    /// a.mutate(|x| x.to_uppercase()).ok(); // Prints "HELLO"
+    /// ```
+    #[inline]
+    pub fn mutate(&self, mutater: impl FnOnce(&mut T)) -> Result<()> {
+        // SAFETY: Will toggle the updating flag that gates away other call to update(),
+        // so that only one update can be carried out at a time: mutates the data,
+        // and then call all the subscribers. Has an exclusive access to subscribers
+        // and data by the updating flag.
+        // The queue and updating and never borrowed.
+        let internal = unsafe { self.internal() };
+        
+        if internal.updating {
+            return Err(FrontendError::StoreUpdating);
+        }
+
+        internal.updating = true;
+
+        mutater(&mut internal.data);
+
+        for (_, subscriber) in &mut internal.subscribers {
+            subscriber(&internal.data);
+        }
+
+        while let Some(op) = internal.delayed.pop_front() {
+            internal.do_operation(op);
+        }
+
+        internal.updating = false;
+
+        Ok(())
+    }
+
     /// Updates the value contained in the store by applying the given closure. Subscribers to
     /// the store will be notified of the change.
     /// 
@@ -182,35 +226,10 @@ impl<T: 'static> Store<T> {
     /// ```
     #[inline]
     pub fn update(&self, updater: impl FnOnce(&T) -> T) -> Result<()> {
-        // SAFETY: Will toggle the updating flag that gates away other call to update(),
-        // so that only one update can be carried out at a time: mutates the data,
-        // and then call all the subscribers. Has an exclusive access to subscribers
-        // and data by the updating flag.
-        // The queue and updating and never borrowed.
-        let internal = unsafe { self.internal() };
-        
-        if internal.updating {
-            return Err(FrontendError::StoreUpdating);
-        }
-
-        internal.updating = true;
-
-        internal.data = updater(&internal.data);
-
-        for (_, subscriber) in &mut internal.subscribers {
-            subscriber(&internal.data);
-        }
-
-        while let Some(op) = internal.delayed.pop_front() {
-            internal.do_operation(op);
-        }
-
-        internal.updating = false;
-
-        Ok(())
+        self.mutate(|data| *data = updater(data))
     }
 
-    /// Updates the value contained in the store by simply replacing it with the new one
+    /// Replaces the value contained in the store by simply replacing it with the new one
     /// provided. This counts as an update, and all subscribers will be notified.
     /// 
     /// If the store is already being updated, an error of kind [`FrontendError::StoreUpdating`]
@@ -224,8 +243,8 @@ impl<T: 'static> Store<T> {
     /// a.subscribe(|x| if *x { println!("Here") }); // Prints nothing
     /// a.set(true); // Prints "Here"
     #[inline]
-    pub fn set(&self, data: T) -> Result<()> {
-        self.update(move |_| data)
+    pub fn set(&self, value: T) -> Result<()> {
+        self.mutate(move |data| *data = value)
     }
 
     /// Constructs a new store by composing `self` updates with the given closure. Upon creation and
