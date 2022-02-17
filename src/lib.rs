@@ -13,5 +13,5 @@ pub mod styles;
 pub mod prelude {
     //! use wasmide::prelude::*; to import common stores, components, and styles.
 
-    pub use super::stores::{Store, Subscribable, Value};
+    pub use super::stores::{Store, Subscribable, Unsubscriber, Value};
 }
