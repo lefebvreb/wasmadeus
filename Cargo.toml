@@ -15,10 +15,6 @@ members = [
     "examples/hello-world",
 ]
 
-[profile.release]
-lto = true
-opt-level = "s"
-
 [dependencies.wasm-bindgen]
 version = "0.2.79"
 default-features = false

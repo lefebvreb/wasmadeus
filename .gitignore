@@ -1,3 +1,3 @@
-target
-Cargo.lock
-pkg
+/Cargo.lock
+/examples/**/dist
+/target

@@ -1,10 +1,6 @@
-use wasm_bindgen::prelude::*;
 use wasmide::prelude::*;
 
-// Use `wasm-pack build --release --target web` to build
-
-#[wasm_bindgen(start)]
-pub fn main() {
+fn main() {
     let counter = Store::new(0);
 
     app(Style::NONE)
