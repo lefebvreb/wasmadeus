@@ -7,22 +7,20 @@
 
 use core::cell::UnsafeCell;
 use core::mem;
+use core::ops::{Deref, DerefMut};
 
 use alloc::boxed::Box;
 use alloc::collections::vec_deque::VecDeque;
-use alloc::rc::{Rc, Weak};
+use alloc::rc::Rc;
 use alloc::vec::Vec;
 
 use crate::errors::{FrontendError, Result};
 
 /// A trait for the ability of a type to be subscribed/unsubscribed to.
 /// 
-/// Upon subscription with [`Self::subscribe`], a value of type `Self::Unsubscriber` is returned
-/// which allows unsubscription through the [`Unsubscriber::unsubscribe`] method.
+/// Upon subscription with [`Self::subscribe`], a value of type [`StoreUnsubscriber`] is returned
+/// which allows unsubscription through the [`StoreUnsubscriber::unsubscribe`] method.
 pub trait Subscribable<T> {
-    /// The type that is provided upon subscription and that can be used to unsubscribe later.
-    type Unsubscriber: Unsubscriber;
-
     /// Subscribe to the value of type `T`. The given closure will be called immediately 
     /// with the current value as well as every time it changes.
     /// 
@@ -34,37 +32,17 @@ pub trait Subscribable<T> {
     /// a.subscribe(|x| println!("{}", x)); // Prints 1
     /// a.update(|x| x + 1).ok(); // Prints 2
     /// ```
-    fn subscribe(&self, notify: impl FnMut(&T) + 'static) -> Self::Unsubscriber;
+    fn subscribe(&self, notify: impl FnMut(&T) + 'static) -> StoreUnsubscriber;
 }
-
-/// A trait implemented by unsubscription handles.
-/// 
-/// After calling [`Unsubscriber::unsubscribe`], the store will no
-/// longer notify the closure given through [`Subscribable::subscribe`].
-pub trait Unsubscriber {
-    /// Unsubscribe from the previous subscription. The closure provided to [`Self::subscribe`] will
-    /// no longer be notified of changes.
-    /// 
-    /// # Examples
-    /// 
-    /// ```
-    /// # use wasmide::prelude::*;
-    /// let a = Store::new(1);
-    /// let unsub = a.subscribe(|x| println!("{}", x)); // Prints 1
-    /// unsub.unsubscribe();
-    /// a.update(|x| x + 1).ok(); // Prints nothing
-    /// ```
-    fn unsubscribe(&self);
-} 
 
 // The internal representation of a store, designed to be held by a Rc.
 struct InternalStore<T> {
     // The current data.
     data: T,
     // A map of the subscribers' notify functions indexed by their IDs.
-    subscribers: Vec<(usize, Box<dyn FnMut(&T)>)>,
+    subscribers: Vec<(u32, Box<dyn FnMut(&T)>)>,
     // A counter that is incremented with each new subscription.
-    unique_count: usize,
+    unique_count: u32,
     // A flag that signal whether the store is currently being updated.
     updating: bool,
     // A vector holding all subscriptions/unscubscribtions operations delayed because of an update.
@@ -75,9 +53,13 @@ struct InternalStore<T> {
 enum StoreOperation<T> {
     Subscribe {
         notify: Box<dyn FnMut(&T)>,
-        idx: usize,
+        idx: u32,
     },
-    Unsubscribe(usize),
+    SubscribeNoNotify {
+        notify: Box<dyn FnMut(&T)>,
+        idx: u32,
+    },
+    Unsubscribe(u32),
 }
 
 impl<T> InternalStore<T> {
@@ -93,7 +75,31 @@ impl<T> InternalStore<T> {
         }
     }
 
-    // Pushes a new operation.
+    // Mutates the state of the store by applying the specified closure.
+    #[inline]
+    fn mutate(&mut self, mutater: impl FnOnce(&mut T)) -> Result<()> {        
+        if self.updating {
+            return Err(FrontendError::StoreUpdating);
+        }
+
+        self.updating = true;
+
+        mutater(&mut self.data);
+
+        for (_, subscriber) in &mut self.subscribers {
+            subscriber(&self.data);
+        }
+
+        while let Some(op) = self.delayed.pop_front() {
+            self.do_operation(op);
+        }
+
+        self.updating = false;
+
+        Ok(())
+    }
+
+    // Pushes a new operation to the queue.
     #[inline]
     fn push_op(&mut self, op: StoreOperation<T>) {
         if self.updating {
@@ -111,6 +117,9 @@ impl<T> InternalStore<T> {
                 self.subscribers.push((idx, notify));
                 self.subscribers.last_mut().unwrap().1(&self.data);
             }
+            StoreOperation::SubscribeNoNotify {idx, notify} => {
+                self.subscribers.push((idx, notify));
+            }
             StoreOperation::Unsubscribe(idx) => {
                 let i = self.subscribers.partition_point(|&(i, _)| i < idx);
                 if self.subscribers[i].0 == idx {
@@ -120,11 +129,55 @@ impl<T> InternalStore<T> {
         }
     }
 
+    // Subscribes to the store, returns the unique id of the subscriber.
+    #[inline]
+    fn subscribe(&mut self, notify: impl FnMut(&T) + 'static) -> u32 {
+        let idx = self.unique_count;
+        self.unique_count += 1;
+
+        let op = StoreOperation::Subscribe {
+            notify: Box::new(notify),
+            idx,
+        };
+        self.push_op(op);
+
+        idx
+    }
+
     // Unsubscribes the subscribee with the given ID from the store.
     #[inline]
-    fn unsubscribe(&mut self, idx: usize) {
+    fn unsubscribe(&mut self, idx: u32) {
         let op = StoreOperation::Unsubscribe(idx);
         self.push_op(op);
+    }
+
+    // Composes the store with the given closure.
+    // Returns a derived store along with the unique id of the subscription to the original store.
+    #[inline]
+    fn compose<U: 'static>(&mut self, composer: impl Fn(&T) -> U + 'static) -> Result<(Derived<U>, u32)> {
+        if self.updating {
+            return Err(FrontendError::StoreUpdating);
+        }
+
+        // SAFETY: data is initialized upon subscription.
+        let derived = Derived::new(composer(&self.data));
+        let cloned = derived.clone();
+
+        let idx = self.unique_count;
+        self.unique_count += 1;
+
+        let op = StoreOperation::SubscribeNoNotify {
+            // SAFETY: a mutate operation is always safe. Because updates are tied
+            // to the self store, we are guaranteed that updates are legals,
+            // so we can unwrap the result.
+            notify: Box::new(move |new| unsafe {
+                cloned.internal().mutate(|data| *data = composer(new)).unwrap();
+            }),
+            idx,
+        };
+        self.push_op(op);
+
+        Ok((derived, idx))
     }
 }
 
@@ -153,6 +206,18 @@ impl<T: 'static> Store<T> {
         &mut *self.0.get()
     }
 
+    // Constructs an unsubscriber to self from the given index.
+    #[inline]
+    fn unsubscriber(&self, idx: u32) -> StoreUnsubscriber {
+        let weak = Rc::downgrade(&self.0);
+        StoreUnsubscriber::new(move || {
+            if let Some(rc) = weak.upgrade() {
+                // SAFETY: unsubscription is always safe.
+                unsafe { Self(rc).internal().unsubscribe(idx); }
+            }
+        })
+    }
+
     /// Constructs a new Store from a given value.
     /// 
     /// # Examples
@@ -178,7 +243,7 @@ impl<T: 'static> Store<T> {
     /// # use wasmide::prelude::*;
     /// let a = Store::new("hello".to_string());
     /// a.subscribe(|x| println!("{}", x)); // Prints "Hello"
-    /// a.mutate(|x| x.to_uppercase()).ok(); // Prints "HELLO"
+    /// a.mutate(|x| *x = x.to_uppercase()).ok(); // Prints "HELLO"
     /// ```
     #[inline]
     pub fn mutate(&self, mutater: impl FnOnce(&mut T)) -> Result<()> {
@@ -187,27 +252,7 @@ impl<T: 'static> Store<T> {
         // and then call all the subscribers. Has an exclusive access to subscribers
         // and data by the updating flag.
         // The queue and updating and never borrowed.
-        let internal = unsafe { self.internal() };
-        
-        if internal.updating {
-            return Err(FrontendError::StoreUpdating);
-        }
-
-        internal.updating = true;
-
-        mutater(&mut internal.data);
-
-        for (_, subscriber) in &mut internal.subscribers {
-            subscriber(&internal.data);
-        }
-
-        while let Some(op) = internal.delayed.pop_front() {
-            internal.do_operation(op);
-        }
-
-        internal.updating = false;
-
-        Ok(())
+        unsafe { self.internal().mutate(mutater) }
     }
 
     /// Updates the value contained in the store by applying the given closure. Subscribers to
@@ -267,22 +312,12 @@ impl<T: 'static> Store<T> {
     /// ```
     #[inline]
     pub fn compose<U: 'static>(&self, composer: impl Fn(&T) -> U + 'static) -> Result<Derived<U>> {
-        // SAFETY: only reads updating.
-        let internal = unsafe { self.internal() };
-
-        if internal.updating {
-            return Err(FrontendError::StoreUpdating);
+        unsafe {
+            let internal = self.internal();
+            let (derived, idx) = internal.compose(composer)?;
+            derived.set_unsubscriber(self.unsubscriber(idx));
+            Ok(derived)
         }
-
-        // SAFETY: data will be initialized on subscription.
-        let derived = Store::new(unsafe { mem::zeroed::<U>() });
-        let derived_clone = derived.clone();
-
-        let unsub = self.subscribe(move |data| {
-            derived_clone.set(composer(data)).unwrap();
-        });
-
-        Ok(Derived::new(derived, unsub))
     }
 }
 
@@ -293,23 +328,10 @@ impl<T> Clone for Store<T> {
     }
 }
 
-// The internal value of a store or derived store unscubscriber, with
-// a weak reference to the store and the ID of the subscription to
-// eventually undo.
-struct InternalUnsubscriber<T> {
-    weak: Weak<UnsafeCell<InternalStore<T>>>,
-    idx: usize,
-}
-
-impl<T: 'static> InternalUnsubscriber<T> {
-    // Performs the unsubscription and consumes self.
+impl<T> From<T> for Store<T> {
     #[inline]
-    fn unsubscribe(&self) {
-        if let Some(rc) = self.weak.upgrade() {
-            // SAFETY: simply pushes an operation to the store's queue.
-            // The queue is never borrowed.
-            unsafe { Store(rc).internal().unsubscribe(self.idx); }
-        }
+    fn from(data: T) -> Self {
+        Self::new(data)
     }
 }
 
@@ -322,50 +344,86 @@ impl<T: 'static> InternalUnsubscriber<T> {
 /// 
 /// ```
 /// # use wasmide::prelude::*;
-/// let a = Store::new(1);
-/// let unsub = a.subscribe(|x| println!("{}", x)); // Prints 1
+/// let a = Store::new("hello");
+/// let unsub = a.subscribe(|x| println!("{}", x)); // Prints "hello"
 /// unsub.unsubscribe();
-/// a.set(2); // Prints nothing
+/// a.set("goodbye"); // Prints nothing
 /// ```
-pub struct StoreUnsubscriber<T>(InternalUnsubscriber<T>);
+#[must_use]
+pub struct StoreUnsubscriber(Box<dyn FnOnce()>);
 
-impl<T> StoreUnsubscriber<T> {
-    // Constructs a new store unsubscriber.
+impl StoreUnsubscriber {
+    /// Constructs a new store unsubscriber.
+    /// 
+    /// The provided closure will be called when the unsubscription is consumed.
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// # use wasmide::prelude::*;
+    /// let a = Store::new(42);
+    /// let unsub = a.subscribe(|x| println!("{}", x)); // Prints 42
+    /// unsub.unsubscribe();
+    /// a.set(5); // Prints nothing
+    /// ```
     #[inline]
-    fn new(store: &Store<T>, idx: usize) -> Self {
-        StoreUnsubscriber(InternalUnsubscriber { weak: Rc::downgrade(&store.0), idx })
+    pub fn new(unsubscribe: impl FnOnce() + 'static) -> Self {
+        StoreUnsubscriber(Box::new(unsubscribe))
     }
-}
 
-impl<T: 'static> Unsubscriber for StoreUnsubscriber<T> {
+    /// Consumes the `self` and performs the unsubscription.
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// # use wasmide::prelude::*;
+    /// let a = Store::new(1);
+    /// let unsub = a.subscribe(|x| println!("{}", x)); // Prints 1
+    /// unsub.unsubscribe();
+    /// a.update(|x| *x + 1); // Prints nothing
+    /// ```
     #[inline]
-    fn unsubscribe(&self) {
-        self.0.unsubscribe();
+    pub fn unsubscribe(self) {
+        self.0();
     }
 }
 
 impl<T: 'static> Subscribable<T> for Store<T> {
-    type Unsubscriber = StoreUnsubscriber<T>;
-
     #[inline]
-    fn subscribe(&self, notify: impl FnMut(&T) + 'static) -> Self::Unsubscriber {
+    fn subscribe(&self, notify: impl FnMut(&T) + 'static) -> StoreUnsubscriber {
         // SAFETY: increments the unique_count, and then pushes the operation to the queue.
         // The unique_count and queue are never borrowed.  
-        let internal = unsafe { &mut self.internal() };
-
-        let idx = internal.unique_count;
-        internal.unique_count += 1;
-
-        let op = StoreOperation::Subscribe {
-            notify: Box::new(notify),
-            idx,
-        };
-        
-        internal.push_op(op);
-
-        StoreUnsubscriber::new(self, idx)
+        let idx = unsafe { self.internal().subscribe(notify) };
+        self.unsubscriber(idx)
     }
 }
+
+struct InternalDerived<T> {
+    store: InternalStore<T>,
+    unsub: Option<StoreUnsubscriber>,
+}
+
+impl<T> InternalDerived<T> {
+    // Constructs a new derived store.
+    #[inline]
+    fn new(data: T) -> Self {
+        Self {
+            store: InternalStore::new(data),
+            unsub: None,
+        }
+    }
+}
+
+impl<T> Drop for InternalDerived<T> {
+    // When a derived store is dropped, it unsubscribes from the store it is tied to.
+    #[inline]
+    fn drop(&mut self) {
+        if let Some(unsub) = self.unsub.take() {
+            unsub.unsubscribe();
+        }
+    }
+}
+
 
 /// A type used to maintain invariants in the application.
 /// 
@@ -381,19 +439,37 @@ impl<T: 'static> Subscribable<T> for Store<T> {
 /// b.subscribe(|x| println!("{}", x)); // Prints 10
 /// a.update(|x| x + 1).ok(); // Prints 20
 /// ```
-pub struct Derived<T: 'static> {
-    store: Store<T>,
-    unsub: Rc<dyn Unsubscriber>,
-}
+pub struct Derived<T: 'static>(Rc<UnsafeCell<InternalDerived<T>>>);
 
 impl<T> Derived<T> {
-    // Constructs a new derived store from an internal store and an unsubscriber.
+    // Constructs a new derived store.
     #[inline]
-    fn new(store: Store<T>, unsub: impl Unsubscriber + 'static) -> Self {
-        Derived {
-            store,
-            unsub: Rc::new(unsub),
-        }
+    fn new(data: T) -> Self {
+        Derived(Rc::new(InternalDerived::new(data).into()))
+    }
+
+    // Returns the internal store.
+    #[inline]
+    unsafe fn internal(&self) -> &mut InternalStore<T> {
+        &mut (*self.0.get()).store
+    }
+
+    // Sets the unsubscriber field. Unsafe because it bypasses borrow
+    // checking.
+    #[inline]
+    unsafe fn set_unsubscriber(&self, unsub: StoreUnsubscriber) {
+        (*self.0.get()).unsub = Some(unsub);
+    }
+
+    // Constructs an unsubscriber to self from the given index.
+    #[inline]
+    fn unsubscriber(&self, idx: u32) -> StoreUnsubscriber {
+        let weak = Rc::downgrade(&self.0);
+        StoreUnsubscriber::new(move || {
+            if let Some(rc) = weak.upgrade() {
+                unsafe { Self(rc).internal().unsubscribe(idx); }
+            }
+        })
     }
 
     /// Constructs a new store by composing `self` updates with the given closure. Upon creation and
@@ -417,65 +493,31 @@ impl<T> Derived<T> {
     /// ```
     #[inline]
     pub fn compose<U: 'static>(&self, composer: impl Fn(&T) -> U + 'static) -> Result<Derived<U>> {
-        self.store.compose(composer)
+        unsafe {
+            let internal = self.internal();
+            let (derived, idx) = internal.compose(composer)?;
+            derived.set_unsubscriber(self.unsubscriber(idx));
+            Ok(derived)
+        }
     }
 }
 
 impl<T> Clone for Derived<T> {
     #[inline]
     fn clone(&self) -> Self {
-        Self {
-            store: self.store.clone(),
-            unsub: self.unsub.clone(),
-        }
-    }
-}
-
-impl<T> Drop for Derived<T> {
-    // When a derived store is dropped, it unsubscribes from the store it is tied to.
-    #[inline]
-    fn drop(&mut self) {
-        if Rc::strong_count(&self.unsub) == 1 {
-            self.unsub.unsubscribe();
-        }
-    }
-}
-
-/// A type that can then be used to unsubscribe from a derived store.
-/// 
-/// It is returned by [`Derived::subscribe`], and must be passed 
-/// to [`Derived::unsubscribe`] to unsubscribe from the derived store.
-/// 
-/// # Examples
-/// 
-/// ```
-/// # use wasmide::prelude::*;
-/// # use wasmide::stores::Derived;
-/// let a = Store::new(1);
-/// let b = a.compose(|x| *x * 10).unwrap();
-/// let unsub = b.subscribe(|x| println!("{}", x)); // Prints 10
-/// unsub.unsubscribe();
-/// a.set(2); // Prints nothing
-/// ```
-pub struct DerivedUnsubscriber<T>(StoreUnsubscriber<T>);
-
-impl<T: 'static> Unsubscriber for DerivedUnsubscriber<T> {
-    #[inline]
-    fn unsubscribe(&self) {
-        self.0.unsubscribe();
+        Self(self.0.clone())
     }
 }
 
 impl<T: 'static> Subscribable<T> for Derived<T> {
-    type Unsubscriber = DerivedUnsubscriber<T>;
-
     #[inline]
-    fn subscribe(&self, notify: impl FnMut(&T) + 'static) -> Self::Unsubscriber {
-        DerivedUnsubscriber(self.store.subscribe(notify))
+    fn subscribe(&self, notify: impl FnMut(&T) + 'static) -> StoreUnsubscriber {
+        let idx = unsafe { self.internal().subscribe(notify) };
+        self.unsubscriber(idx)
     }
 }
 
-/// An immutable store that can still be subscribed to.
+/// An immutable value that can still be subscribed to.
 /// 
 /// `Value` implements [`Subscribable`], it represents a value that can't be
 /// mutated. Subscriptions and unsubscription to a `Value` are much faster than
@@ -492,7 +534,7 @@ impl<T: 'static> Subscribable<T> for Derived<T> {
 pub struct Value<T>(pub T);
 
 impl<T> Value<T> {
-    /// Retreives the value contained in this store.
+    /// Retreives the value contained in `self`.
     /// 
     /// # Examples
     /// 
@@ -508,32 +550,33 @@ impl<T> Value<T> {
     }
 }
 
-/// A type returned by [`Value::subscribe`]. 
-/// 
-/// It serves as a placeholder for the trait [`Subscribable`]
-/// and does litteraly nothing when consumed by [`Value::unsubscribe`].
-/// 
-/// # Examples
-/// 
-/// ```
-/// # use wasmide::prelude::*;
-/// let a = Value(1);
-/// let unsub = a.subscribe(|x| println!("{}", x)); // Prints 1
-/// unsub.unsubscribe();
-/// ```
-pub struct ValueUnsubscriber;
+impl<T> Deref for Value<T> {
+    type Target = T;
 
-impl Unsubscriber for ValueUnsubscriber {
     #[inline]
-    fn unsubscribe(&self) {}
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl<T> DerefMut for Value<T> {
+    #[inline]
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+impl<T> From<T> for Value<T> {
+    #[inline]
+    fn from(value: T) -> Self {
+        Self(value)
+    }
 }
 
 impl<T> Subscribable<T> for Value<T> {
-    type Unsubscriber = ValueUnsubscriber;
-
     #[inline]
-    fn subscribe(&self, mut notify: impl FnMut(&T) + 'static) -> Self::Unsubscriber {
+    fn subscribe(&self, mut notify: impl FnMut(&T) + 'static) -> StoreUnsubscriber {
         notify(&self.0);
-        ValueUnsubscriber
+        StoreUnsubscriber::new(|| ())
     }
 }

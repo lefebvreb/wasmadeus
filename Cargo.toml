@@ -10,6 +10,15 @@ license = "MIT OR Apache-2.0"
 readme = "README.md"
 repository = "https://github.com/L-Benjamin/wasmide"
 
+[workspace]
+members = [
+    "examples/hello-world",
+]
+
+[profile.release]
+lto = true
+opt-level = "s"
+
 [dependencies.wasm-bindgen]
 version = "0.2.79"
 default-features = false
@@ -19,6 +28,7 @@ version = "0.3.56"
 default-features = false
 features = [
     "Document",
+    "EventListener",
     "HtmlElement",
     "Node",
     "Window",
