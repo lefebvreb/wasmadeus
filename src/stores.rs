@@ -6,7 +6,6 @@
 //! through composition of store.
 
 use core::cell::UnsafeCell;
-use core::mem;
 use core::ops::{Deref, DerefMut};
 
 use alloc::boxed::Box;
@@ -154,11 +153,7 @@ impl<T> InternalStore<T> {
     // Composes the store with the given closure.
     // Returns a derived store along with the unique id of the subscription to the original store.
     #[inline]
-    fn compose<U: 'static>(&mut self, composer: impl Fn(&T) -> U + 'static) -> Result<(Derived<U>, u32)> {
-        if self.updating {
-            return Err(FrontendError::StoreUpdating);
-        }
-
+    fn compose<U: 'static>(&mut self, composer: impl Fn(&T) -> U + 'static) -> (Derived<U>, u32) {
         // SAFETY: data is initialized upon subscription.
         let derived = Derived::new(composer(&self.data));
         let cloned = derived.clone();
@@ -177,7 +172,7 @@ impl<T> InternalStore<T> {
         };
         self.push_op(op);
 
-        Ok((derived, idx))
+        (derived, idx)
     }
 }
 
@@ -306,17 +301,17 @@ impl<T: 'static> Store<T> {
     /// ```
     /// # use wasmide::prelude::*;
     /// let a = Store::new(1);
-    /// let b = a.compose(|x| *x * 10).unwrap(); // b will always be 10 times a
+    /// let b = a.compose(|x| *x * 10); // b will always be 10 times a
     /// b.subscribe(|x| println!("{}", x)); // Prints 10
     /// a.update(|x| x + 1).ok(); // Prints 20
     /// ```
     #[inline]
-    pub fn compose<U: 'static>(&self, composer: impl Fn(&T) -> U + 'static) -> Result<Derived<U>> {
+    pub fn compose<U: 'static>(&self, composer: impl Fn(&T) -> U + 'static) -> Derived<U> {
         unsafe {
             let internal = self.internal();
-            let (derived, idx) = internal.compose(composer)?;
+            let (derived, idx) = internal.compose(composer);
             derived.set_unsubscriber(self.unsubscriber(idx));
-            Ok(derived)
+            derived
         }
     }
 }
@@ -435,7 +430,7 @@ impl<T> Drop for InternalDerived<T> {
 /// ```
 /// # use wasmide::prelude::*;
 /// let a = Store::new(1);
-/// let b = a.compose(|x| *x * 10).unwrap(); // b will always be 10 times a
+/// let b = a.compose(|x| *x * 10); // b will always be 10 times a
 /// b.subscribe(|x| println!("{}", x)); // Prints 10
 /// a.update(|x| x + 1).ok(); // Prints 20
 /// ```
@@ -486,18 +481,18 @@ impl<T> Derived<T> {
     /// ```
     /// # use wasmide::prelude::*;
     /// let a = Store::new(1);
-    /// let b = a.compose(|x| *x * 10).unwrap(); // b will always be 10 times a
-    /// let c = b.compose(|x| *x + 1).unwrap(); // c will always be 10 times a plus 1
+    /// let b = a.compose(|x| *x * 10); // b will always be 10 times a
+    /// let c = b.compose(|x| *x + 1); // c will always be 10 times a plus 1
     /// c.subscribe(|x| println!("{}", x)); // Prints 11
     /// a.update(|x| x + 1).ok(); // Prints 21
     /// ```
     #[inline]
-    pub fn compose<U: 'static>(&self, composer: impl Fn(&T) -> U + 'static) -> Result<Derived<U>> {
+    pub fn compose<U: 'static>(&self, composer: impl Fn(&T) -> U + 'static) -> Derived<U> {
         unsafe {
             let internal = self.internal();
-            let (derived, idx) = internal.compose(composer)?;
+            let (derived, idx) = internal.compose(composer);
             derived.set_unsubscriber(self.unsubscriber(idx));
-            Ok(derived)
+            derived
         }
     }
 }

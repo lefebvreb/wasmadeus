@@ -12,6 +12,7 @@ repository = "https://github.com/L-Benjamin/wasmide"
 
 [workspace]
 members = [
+    "examples/counter",
     "examples/hello-world",
 ]
 

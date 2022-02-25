@@ -5,7 +5,7 @@ use alloc::rc::{Rc, Weak};
 use alloc::vec::Vec;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::closure::Closure;
-use web_sys::{HtmlElement, EventListener};
+use web_sys::HtmlElement;
 
 use crate::prelude::*;
 use crate::stores::StoreUnsubscriber;
@@ -56,19 +56,14 @@ impl Component {
 
     // Appends a child to the component.
     #[inline]
-    fn append(&self, child: &Component) {
-        self.0.element.append_child(&child.0.element).unwrap();
-        unsafe { (*self.0.children.get()).push(child.clone()); }
+    fn append(&self, child: Component) {
+        self.html().append_child(child.html()).unwrap();
+        unsafe { (*self.0.children.get()).push(child); }
     }
 
     #[inline]
     fn push_unsub(&self, unsub: StoreUnsubscriber) {
         unsafe { (*self.0.unsubs.get()).push(unsub); }
-    }
-
-    #[inline]
-    fn set_hidden(&self, hidden: bool) {
-        self.0.element.set_hidden(hidden);
     }
 
     #[inline]
@@ -83,23 +78,23 @@ impl Component {
     }
 
     #[inline]
-    pub fn weak_clone(&self) -> WeakComponent {
-        WeakComponent(Rc::downgrade(&self.0))
-    }
-
-    #[inline]
-    pub fn as_html_element(&self) -> &HtmlElement {
+    pub fn html(&self) -> &HtmlElement {
         &self.0.element
     }
 
     #[inline]
+    pub fn downgrade(&self) -> WeakComponent {
+        WeakComponent(Rc::downgrade(&self.0))
+    }
+
+    #[inline]
     pub fn set_style(&self, style: Style) {
-        self.0.element.set_class_name(style.class_name());
+        self.html().set_class_name(style.0);
     }
 
     #[inline]
     pub fn with(self, component: Component) -> Self {
-        self.append(&component);
+        self.append(component);
         self
     }
 
@@ -109,7 +104,7 @@ impl Component {
         condition: impl Subscribable<bool>, 
         if_true: impl Fn() -> Component + 'static,
     ) -> Self {
-        let this = self.weak_clone();
+        let this = self.downgrade();
         let mut comp = Children::new(if_true);
 
         let unsub = condition.subscribe(move |&condition| {
@@ -131,7 +126,7 @@ impl Component {
         if_true: impl Fn() -> Component + 'static, 
         if_false: impl Fn() -> Component + 'static,
     ) -> Self {
-        let this = self.weak_clone();
+        let this = self.downgrade();
         let mut comp1 = Children::new(if_true);
         let mut comp2 = Children::new(if_false);
 
@@ -158,11 +153,11 @@ impl Component {
     #[inline]
     pub fn text<S: AsRef<str>>(text: impl Subscribable<S>, style: Style) -> Component {
         let this = Component::new("p", style);
-        let cloned = this.weak_clone();
+        let cloned = this.downgrade();
 
         let unsub = text.subscribe(move |text| {
             if let Some(comp) = cloned.upgrade() {
-                comp.0.element.set_inner_html(text.as_ref());
+                comp.html().set_inner_html(text.as_ref());
             }
         });
 
@@ -173,16 +168,16 @@ impl Component {
     #[inline]
     pub fn button<S: AsRef<str>>(text: impl Subscribable<S>, on_click: impl FnMut() + 'static, style: Style) -> Component {
         let this = Component::new("button", style);
-        let cloned = this.weak_clone();
+        let cloned = this.downgrade();
 
         let unsub = text.subscribe(move |text| {
             if let Some(comp) = cloned.upgrade() {
-                comp.0.element.set_inner_html(text.as_ref());
+                comp.html().set_inner_html(text.as_ref());
             }
         });
 
         let on_click = Closure::wrap(Box::new(on_click) as Box<dyn FnMut()>);
-        this.0.element.set_onclick(Some(on_click.as_ref().unchecked_ref()));
+        this.html().set_onclick(Some(on_click.as_ref().unchecked_ref()));
         on_click.forget();
 
         this.push_unsub(unsub);
@@ -216,11 +211,11 @@ impl<F: FnOnce() -> Component> Children<F> {
         match self {
             Self::Uninit(init) => {
                 let comp = init.take().unwrap()();
-                parent.upgrade().unwrap().append(&comp);
+                parent.upgrade().unwrap().append(comp.clone());
                 *self = Self::Init(comp);
             },
             Self::Init(ref comp) => {
-                comp.set_hidden(false);
+                comp.html().set_hidden(false);
             }
         }
     }
@@ -228,7 +223,7 @@ impl<F: FnOnce() -> Component> Children<F> {
     #[inline]
     fn deactivate(&self) {
         if let Self::Init(comp) = self {
-            comp.set_hidden(true);
+            comp.html().set_hidden(true);
         }
     }
 }
