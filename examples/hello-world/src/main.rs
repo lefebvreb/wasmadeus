@@ -1,9 +1,9 @@
 use wasmide::prelude::*;
 
 fn main() {
-    app(Style("container mx-auto bg-blue-200 grid justify-items-center items-center"))
-        .with(Component::text(
+    Component::body(Style("container mx-auto bg-blue-200 grid place-items-center"))
+        .with(Component::p(
             Value("Hello, World!"),
-            Style("text-9xl text-center"),
+            Style("text-9xl"),
         ));
 }

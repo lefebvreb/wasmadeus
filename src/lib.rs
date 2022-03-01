@@ -1,20 +1,18 @@
-#![no_std]
+//! An experimental frontend web framework in pure rust.
 
-#![allow(unused)]
+#![no_std]
 
 extern crate alloc;
 
-pub mod app;
-pub mod components;
-pub mod errors;
-pub mod stores;
-pub mod styles;
+pub mod component;
+pub mod error;
+pub mod store;
+pub mod style;
 
 pub mod prelude {
-    //! use wasmide::prelude::*; to import common stores, components, and styles.
+    //! use `wasmide::prelude::*;` to import common stores, components, and styles.
 
-    pub use crate::app::app;
-    pub use crate::components::Component;
-    pub use crate::stores::{Store, Subscribable, Value};
-    pub use crate::styles::Style;
+    pub use crate::component::Component;
+    pub use crate::store::{Store, Subscribable, Value};
+    pub use crate::style::Style;
 }

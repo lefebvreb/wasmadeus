@@ -13,7 +13,7 @@ use alloc::collections::vec_deque::VecDeque;
 use alloc::rc::Rc;
 use alloc::vec::Vec;
 
-use crate::errors::{FrontendError, Result};
+use crate::error::{FrontendError, Result};
 
 /// A trait for the ability of a type to be subscribed/unsubscribed to.
 /// 
@@ -31,6 +31,7 @@ pub trait Subscribable<T> {
     /// a.subscribe(|x| println!("{}", x)); // Prints 1
     /// a.update(|x| x + 1).ok(); // Prints 2
     /// ```
+    #[must_use]
     fn subscribe(&self, notify: impl FnMut(&T) + 'static) -> StoreUnsubscriber;
 }
 
@@ -333,7 +334,7 @@ impl<T> From<T> for Store<T> {
 /// A type that can then be used to unsubscribe from the store.
 /// 
 /// It is returned by [`Store::subscribe`], and must be passed 
-/// to [`Store::unsubscribe`] to unsubscribe from the store.
+/// to [`StoreUnsubscriber::unsubscribe`] to unsubscribe from the store.
 /// 
 /// # Examples
 /// 
@@ -345,7 +346,7 @@ impl<T> From<T> for Store<T> {
 /// a.set("goodbye"); // Prints nothing
 /// ```
 #[must_use]
-pub struct StoreUnsubscriber(Box<dyn FnOnce()>);
+pub struct StoreUnsubscriber(Option<Box<dyn FnOnce()>>);
 
 impl StoreUnsubscriber {
     /// Constructs a new store unsubscriber.
@@ -363,10 +364,10 @@ impl StoreUnsubscriber {
     /// ```
     #[inline]
     pub fn new(unsubscribe: impl FnOnce() + 'static) -> Self {
-        StoreUnsubscriber(Box::new(unsubscribe))
+        StoreUnsubscriber(Some(Box::new(unsubscribe)))
     }
 
-    /// Consumes the `self` and performs the unsubscription.
+    /// Consumes `self` and performs the unsubscription.
     /// 
     /// # Examples
     /// 
@@ -378,13 +379,14 @@ impl StoreUnsubscriber {
     /// a.update(|x| *x + 1); // Prints nothing
     /// ```
     #[inline]
-    pub fn unsubscribe(self) {
-        self.0();
+    pub fn unsubscribe(mut self) {
+        self.0.take().unwrap()();
     }
 }
 
 impl<T: 'static> Subscribable<T> for Store<T> {
     #[inline]
+    #[must_use]
     fn subscribe(&self, notify: impl FnMut(&T) + 'static) -> StoreUnsubscriber {
         // SAFETY: increments the unique_count, and then pushes the operation to the queue.
         // The unique_count and queue are never borrowed.  
@@ -413,12 +415,9 @@ impl<T> Drop for InternalDerived<T> {
     // When a derived store is dropped, it unsubscribes from the store it is tied to.
     #[inline]
     fn drop(&mut self) {
-        if let Some(unsub) = self.unsub.take() {
-            unsub.unsubscribe();
-        }
+        self.unsub.take().unwrap().unsubscribe();
     }
 }
-
 
 /// A type used to maintain invariants in the application.
 /// 
@@ -506,6 +505,7 @@ impl<T> Clone for Derived<T> {
 
 impl<T: 'static> Subscribable<T> for Derived<T> {
     #[inline]
+    #[must_use]
     fn subscribe(&self, notify: impl FnMut(&T) + 'static) -> StoreUnsubscriber {
         let idx = unsafe { self.internal().subscribe(notify) };
         self.unsubscriber(idx)

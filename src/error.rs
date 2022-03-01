@@ -22,7 +22,7 @@ impl FrontendError {
     /// # Examples
     /// 
     /// ```
-    /// # use wasmide::errors::FrontendError;
+    /// # use wasmide::error::FrontendError;
     /// let error = FrontendError::custom("Custom error");
     /// ```
     #[inline]

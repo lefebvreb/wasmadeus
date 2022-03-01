@@ -3,9 +3,9 @@ use wasmide::prelude::*;
 fn main() {
     let counter = Store::new(0);
 
-    app(Style("container mx-auto bg-blue-200 grid grid-rows-2 grid-cols-1 justify-items-center items-center"))
-        .with(Component::text(
-            counter.compose(|x| x.to_string()), 
+    Component::body(Style("container mx-auto bg-blue-200 grid grid-rows-2 grid-cols-1 justify-items-center items-center"))
+        .with(Component::p(
+            counter.clone(),
             Style("text-9xl text-center")
         ))
         .with(Component::button(
