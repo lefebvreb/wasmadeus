@@ -1,4 +1,4 @@
-//! Building bricks for reactivity. 
+//! Building blocks for reactivity. 
 //! 
 //! This module provides a trait, [`Subscribable`], which is used to
 //! work with stores, and three implementations of it: [`Store`], [`Value`] and [`Derived`].

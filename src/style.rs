@@ -14,7 +14,7 @@
 /// # use wasmide::prelude::*;
 /// const MY_BUTTON: Style = Style("bg-white rounded border-black border-2 py-3 px-5 hover:bg-gray-200");
 /// ```
-#[derive(Clone, Copy)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub struct Style(pub &'static str);
 
 impl Style {
