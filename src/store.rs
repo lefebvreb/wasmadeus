@@ -77,7 +77,7 @@ impl<T> InternalStore<T> {
 
     // Mutates the state of the store by applying the specified closure.
     #[inline]
-    fn mutate(&mut self, mutater: impl FnOnce(&mut T)) -> Result<()> {        
+    fn mutate(&mut self, mutater: impl FnOnce(&mut T)) -> Result<()> {
         if self.updating {
             return Err(FrontendError::StoreUpdating);
         }
@@ -341,7 +341,7 @@ impl<T> From<T> for Store<T> {
 /// ```
 /// # use wasmide::prelude::*;
 /// let a = Store::new("hello");
-/// let unsub = a.subscribe(|x| println!("{}", x)); // Prints "hello"
+/// let mut unsub = a.subscribe(|x| println!("{}", x)); // Prints "hello"
 /// unsub.unsubscribe();
 /// a.set("goodbye"); // Prints nothing
 /// ```
@@ -358,7 +358,7 @@ impl StoreUnsubscriber {
     /// ```
     /// # use wasmide::prelude::*;
     /// let a = Store::new(42);
-    /// let unsub = a.subscribe(|x| println!("{}", x)); // Prints 42
+    /// let mut unsub = a.subscribe(|x| println!("{}", x)); // Prints 42
     /// unsub.unsubscribe();
     /// a.set(5); // Prints nothing
     /// ```
@@ -367,20 +367,22 @@ impl StoreUnsubscriber {
         StoreUnsubscriber(Some(Box::new(unsubscribe)))
     }
 
-    /// Consumes `self` and performs the unsubscription.
+    /// Performs the unsubscription.
     /// 
     /// # Examples
     /// 
     /// ```
     /// # use wasmide::prelude::*;
     /// let a = Store::new(1);
-    /// let unsub = a.subscribe(|x| println!("{}", x)); // Prints 1
+    /// let mut unsub = a.subscribe(|x| println!("{}", x)); // Prints 1
     /// unsub.unsubscribe();
     /// a.update(|x| *x + 1); // Prints nothing
     /// ```
     #[inline]
-    pub fn unsubscribe(mut self) {
-        self.0.take().unwrap()();
+    pub fn unsubscribe(&mut self) {
+        if let Some(unsub) = self.0.take() {
+            unsub();
+        }
     }
 }
 

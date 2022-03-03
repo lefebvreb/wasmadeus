@@ -1,8 +1,7 @@
 //! Reusable components for the application.
 //! 
-//! This module contains the components that are used by the application. It
-//! allow both use of the html components already existing in the html5 specification
-//! and custom components.
+//! This module exposes the type [`Component`] which is a wrapper around an
+//! HTML element. It can be used to create reusable components.
 
 use core::cell::UnsafeCell;
 use core::sync::atomic::{AtomicBool, Ordering::SeqCst};
@@ -18,11 +17,29 @@ use web_sys::HtmlElement;
 use crate::prelude::*;
 use crate::store::StoreUnsubscriber;
 
+// A depencency of the component, that needs to be dropped at the same
+// time as the component.
+enum Dependency {
+    Children(Component),
+    Closure(Closure<dyn FnMut()>),
+    Subscription(StoreUnsubscriber),
+}
+
+impl Drop for Dependency {
+    // On drop, unsubscription needs to be applied.
+    #[inline]
+    fn drop(&mut self) {
+        match self {
+            Self::Subscription(subscription) => subscription.unsubscribe(),
+            _ => (),
+        }
+    }
+}
+
 // The internal state of a component.
 struct InternalComponent {
     element: HtmlElement,
-    unsubs: UnsafeCell<Vec<StoreUnsubscriber>>,
-    children: UnsafeCell<Vec<Component>>,
+    deps: UnsafeCell<Vec<Dependency>>,
 }
 
 impl InternalComponent {
@@ -31,18 +48,7 @@ impl InternalComponent {
     fn new(element: HtmlElement) -> Self {
         Self {
             element,
-            unsubs: Vec::new().into(),
-            children: Vec::new().into(),
-        }
-    }
-}
-
-// On drop of a component, unsubscribe from the stores it depends on.
-impl Drop for InternalComponent {
-    #[inline]
-    fn drop(&mut self) {
-        for unsub in self.unsubs.get_mut().drain(..) {
-            unsub.unsubscribe();
+            deps: Vec::new().into(),
         }
     }
 }
@@ -53,12 +59,59 @@ impl Drop for InternalComponent {
 /// 
 /// ```no_run
 /// # use wasmide::prelude::*;
-/// let body = Component::body(Style::NONE);
+/// let root = Component::root(Style::NONE);
 /// ```
 #[derive(Clone)]
 pub struct Component(Rc<InternalComponent>);
 
 impl Component {
+    // Push a dependency to the component's storage.
+    #[inline]
+    fn push_dep(&self, dep: Dependency) {
+        // SAFETY: The deps vec is never borrowed.
+        unsafe { (*self.0.deps.get()).push(dep) };
+    }
+
+    // Appends a child to the component.
+    #[inline]
+    fn append_child(&self, child: Component) {
+        self.html().append_child(child.html()).unwrap();
+        self.push_dep(Dependency::Children(child));
+    }
+
+    // Push a closure to the component's storage.
+    #[inline]
+    fn push_closure(&self, closure: Closure<dyn FnMut()>) {
+        self.push_dep(Dependency::Closure(closure));
+    }
+
+    // Adds an unubsription to the component, to be performed when it is dropped.
+    #[inline]
+    fn push_unsub(&self, unsub: StoreUnsubscriber) {
+        self.push_dep(Dependency::Subscription(unsub));
+    }
+
+    // Sets the inner html attribute of the element on store update.
+    #[inline]
+    pub(crate) fn set_inner_html<S: ToString>(&self, text: impl Subscribable<S>) {
+        let weak = self.downgrade();
+
+        let unsub = text.subscribe(move |text| {
+            if let Some(comp) = weak.upgrade() {
+                comp.html().set_inner_html(&text.to_string());
+            }
+        });
+
+        self.push_unsub(unsub);
+    }
+
+    #[inline]
+    pub(crate) fn set_on_click(&self, on_click: impl FnMut() + 'static) {
+        let on_click = Closure::wrap(Box::new(on_click) as Box<dyn FnMut()>);
+        self.html().set_onclick(Some(on_click.as_ref().unchecked_ref()));
+        self.push_closure(on_click);
+    }
+
     // Creates a new component with the given html tag_name and style.
     #[inline]
     pub(crate) fn new(tag_name: &'static str, style: Style) -> Self {
@@ -71,7 +124,7 @@ impl Component {
         if style != Style::NONE {
             this.set_style(style);
         }
-        this        
+        this
     }
 
     /// Returns the root component of the application. The returned component will
@@ -85,45 +138,29 @@ impl Component {
     /// 
     /// ```no_run
     /// # use wasmide::prelude::*;
-    /// Component::body(Style::NONE)
-    ///     .with(Component::p(Value("Hello, world!"), Style::NONE)); 
+    /// Component::root(Style::NONE)
+    ///     .with(html::p(Value("Hello, world!"), Style::NONE)); 
     /// ```
     #[inline]
-    pub fn body(style: Style) -> Component {
+    pub fn root(style: Style) -> Component {
         // For data races.
         static INITIALIZED: AtomicBool = AtomicBool::new(false);
         // To prevent the body from being dropped.
-        static mut BODY: Option<Component> = None;
+        static mut ROOT: Option<Component> = None;
 
-        INITIALIZED.compare_exchange(false, true, SeqCst, SeqCst).expect("body already initialized");
+        INITIALIZED.compare_exchange(false, true, SeqCst, SeqCst).expect("root already initialized");
         
-        // SAFETY: Thread-safe thanks to the INITIALIZED atomic flag.
-        unsafe {
-            let body = web_sys::window().unwrap()
+        let body = web_sys::window().unwrap()
             .document().unwrap()
             .body().unwrap();
 
-            let comp = Component(Rc::new(InternalComponent::new(body)));
-            comp.set_style(style);
+        let comp = Component(Rc::new(InternalComponent::new(body)));
+        comp.set_style(style);
 
-            BODY.replace(comp);
-            BODY.clone().unwrap()
-        }
-    }
+        // SAFETY: Thread-safe thanks to the INITIALIZED atomic flag.
+        unsafe { ROOT = Some(comp.clone()); }
 
-    // Appends a child to the component.
-    #[inline]
-    fn append(&self, child: Component) {
-        self.html().append_child(child.html()).unwrap();
-        // SAFETY: children is never borrowed.
-        unsafe { (*self.0.children.get()).push(child); }
-    }
-
-    // Adds an unubsription to the component, to be performed when it is dropped.
-    #[inline]
-    pub(crate) fn push_unsub(&self, unsub: StoreUnsubscriber) {
-        // SAFETY: unsubs is never borrowed until drop.
-        unsafe { (*self.0.unsubs.get()).push(unsub); }
+        comp
     }
 
     /// Returns a reference to the html element wrapped by the component.
@@ -138,8 +175,8 @@ impl Component {
     /// 
     /// ```no_run
     /// # use wasmide::prelude::*;
-    /// let body = Component::body(Style::NONE);
-    /// let html = body.html();
+    /// let root = Component::root(Style::NONE);
+    /// let html = root.html();
     /// ```
     #[inline]
     pub fn html(&self) -> &HtmlElement {
@@ -152,8 +189,8 @@ impl Component {
     /// 
     /// ```no_run
     /// # use wasmide::prelude::*;
-    /// let body = Component::body(Style::NONE);
-    /// let weak = body.downgrade();
+    /// let root = Component::root(Style::NONE);
+    /// let weak = root.downgrade();
     /// ```
     #[inline]
     pub fn downgrade(&self) -> WeakComponent {
@@ -169,8 +206,8 @@ impl Component {
     /// 
     /// ```no_run
     /// # use wasmide::prelude::*;
-    /// let body = Component::body(Style::NONE);
-    /// body.set_style(Style("bg-blue-200"));
+    /// let root = Component::root(Style::NONE);
+    /// root.set_style(Style("bg-blue-200"));
     /// ```
     #[inline]
     pub fn set_style(&self, style: Style) {
@@ -183,12 +220,12 @@ impl Component {
     /// 
     /// ```no_run
     /// # use wasmide::prelude::*;
-    /// Component::body(Style::NONE)
-    ///     .with(Component::p(Value("Hello, world!"), Style::NONE));
+    /// Component::root(Style::NONE)
+    ///     .with(html::p(Value("Hello, world!"), Style::NONE));
     /// ```
     #[inline]
     pub fn with(self, component: Component) -> Self {
-        self.append(component);
+        self.append_child(component);
         self
     }
 
@@ -206,20 +243,20 @@ impl Component {
     /// # use wasmide::prelude::*;
     /// let store = Store::new(42);
     /// 
-    /// Component::body(Style::NONE)
+    /// Component::root(Style::NONE)
     ///    .with_if(
     ///         store.compose(|n| *n > 42),
-    ///         || Component::p(Value("Greater than 42"), Style::NONE),
+    ///         || html::p(Value("Greater than 42"), Style::NONE),
     ///   );
     /// ``` 
     #[inline]
     pub fn with_if(
         self, 
         condition: impl Subscribable<bool>, 
-        if_true: impl Fn() -> Component + 'static,
+        child: impl Fn() -> Component + 'static,
     ) -> Self {
         let this = self.downgrade();
-        let mut comp = Children::new(if_true);
+        let mut comp = Children::new(child);
 
         let unsub = condition.subscribe(move |&condition| {
             if condition {
@@ -250,23 +287,23 @@ impl Component {
     /// # use wasmide::prelude::*;
     /// let hour = Store::new(6);
     /// 
-    /// Component::body(Style::NONE)
+    /// Component::root(Style::NONE)
     ///    .with_if_else(
     ///         hour.compose(|h| *h > 9 && *h < 18),
-    ///         || Component::p(Value("Hello, world!"), Style::NONE),
-    ///         || Component::p(Value("Goodbye, world!"), Style::NONE),
+    ///         || html::p(Value("Hello, world!"), Style::NONE),
+    ///         || html::p(Value("Goodbye, world!"), Style::NONE),
     ///   );
     /// ``` 
     #[inline]
     pub fn with_if_else(
         self, 
         condition: impl Subscribable<bool>, 
-        if_true: impl Fn() -> Component + 'static, 
-        if_false: impl Fn() -> Component + 'static,
+        child1: impl Fn() -> Component + 'static, 
+        child2: impl Fn() -> Component + 'static,
     ) -> Self {
         let this = self.downgrade();
-        let mut comp1 = Children::new(if_true);
-        let mut comp2 = Children::new(if_false);
+        let mut comp1 = Children::new(child1);
+        let mut comp2 = Children::new(child2);
 
         let unsub = condition.subscribe(move |&condition| {
             if condition {
@@ -304,7 +341,7 @@ impl<F: FnOnce() -> Component> Children<F> {
         match self {
             Self::Uninit(init) => {
                 let comp = init.take().unwrap()();
-                parent.upgrade().unwrap().append(comp.clone());
+                parent.upgrade().unwrap().append_child(comp.clone());
                 *self = Self::Init(comp);
             },
             Self::Init(ref comp) => {
@@ -330,7 +367,7 @@ impl<F: FnOnce() -> Component> Children<F> {
 /// 
 /// ```no_run
 /// # use wasmide::prelude::*;
-/// let body = Component::body(Style::NONE);
+/// let body = Component::root(Style::NONE);
 /// let weak = body.downgrade();
 /// ```
 #[derive(Clone)]
@@ -344,7 +381,7 @@ impl WeakComponent {
     /// 
     /// ```no_run
     /// # use wasmide::prelude::*;
-    /// let body = Component::body(Style::NONE);
+    /// let body = Component::root(Style::NONE);
     /// let weak = body.downgrade();
     /// if let Some(body) = weak.upgrade() {
     ///     // do stuff...
@@ -353,46 +390,5 @@ impl WeakComponent {
     #[inline]
     pub fn upgrade(&self) -> Option<Component> {
         self.0.upgrade().map(Component)
-    }
-}
-
-impl Component {
-    #[inline]
-    pub fn button<S: ToString>(text: impl Subscribable<S>, on_click: impl FnMut() + 'static, style: Style) -> Component {
-        let this = Component::new("button", style);
-        let cloned = this.downgrade();
-
-        let unsub = text.subscribe(move |text| {
-            if let Some(comp) = cloned.upgrade() {
-                comp.html().set_inner_html(&text.to_string());
-            }
-        });
-
-        let on_click = Closure::wrap(Box::new(on_click) as Box<dyn FnMut()>);
-        this.html().set_onclick(Some(on_click.as_ref().unchecked_ref()));
-        on_click.forget();
-
-        this.push_unsub(unsub);
-        this
-    }
-
-    #[inline]
-    pub fn div(style: Style) -> Component {
-        Component::new("div", style)
-    }
-
-    #[inline]
-    pub fn p<S: ToString>(text: impl Subscribable<S>, style: Style) -> Component {
-        let this = Component::new("p", style);
-        let cloned = this.downgrade();
-
-        let unsub = text.subscribe(move |text| {
-            if let Some(comp) = cloned.upgrade() {
-                comp.html().set_inner_html(&text.to_string());
-            }
-        });
-
-        this.push_unsub(unsub);
-        this
     }
 }
