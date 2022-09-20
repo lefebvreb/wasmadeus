@@ -79,12 +79,6 @@ impl Component {
         self.push_dep(Dependency::Children(child));
     }
 
-    // Push a closure to the component's storage.
-    #[inline]
-    fn push_closure(&self, closure: Closure<dyn FnMut()>) {
-        self.push_dep(Dependency::Closure(closure));
-    }
-
     // Adds an unubsription to the component, to be performed when it is dropped.
     #[inline]
     fn push_unsub(&self, unsub: StoreUnsubscriber) {
@@ -105,11 +99,13 @@ impl Component {
         self.push_unsub(unsub);
     }
 
+    // Converts the rust closure to a js one and sets it as the onclick property
+    // of the element contained in this component.
     #[inline]
     pub(crate) fn set_on_click(&self, on_click: impl FnMut() + 'static) {
         let on_click = Closure::wrap(Box::new(on_click) as Box<dyn FnMut()>);
         self.html().set_onclick(Some(on_click.as_ref().unchecked_ref()));
-        self.push_closure(on_click);
+        self.push_dep(Dependency::Closure(on_click));
     }
 
     // Creates a new component with the given html tag_name and style.
@@ -143,7 +139,7 @@ impl Component {
     /// ```
     #[inline]
     pub fn root(style: Style) -> Component {
-        // For data races.
+        // For preventing data races.
         static INITIALIZED: AtomicBool = AtomicBool::new(false);
         // To prevent the body from being dropped.
         static mut ROOT: Option<Component> = None;
@@ -255,14 +251,17 @@ impl Component {
         condition: impl Subscribable<bool>, 
         child: impl Fn() -> Component + 'static,
     ) -> Self {
-        let this = self.downgrade();
-        let mut comp = Children::new(child);
+        let div = html::div(Style::NONE);
+        let weak = div.downgrade();
+        self.append_child(div);
+
+        let mut lazy = LazyChildren::new(child);
 
         let unsub = condition.subscribe(move |&condition| {
             if condition {
-                comp.activate(&this);
+                lazy.activate(&weak);
             } else {
-                comp.deactivate();
+                lazy.deactivate();
             }
         });
 
@@ -301,17 +300,20 @@ impl Component {
         child1: impl Fn() -> Component + 'static, 
         child2: impl Fn() -> Component + 'static,
     ) -> Self {
-        let this = self.downgrade();
-        let mut comp1 = Children::new(child1);
-        let mut comp2 = Children::new(child2);
+        let div = html::div(Style::NONE);
+        let weak = div.downgrade();
+        self.append_child(div);
+
+        let mut lazy1 = LazyChildren::new(child1);
+        let mut lazy2 = LazyChildren::new(child2);
 
         let unsub = condition.subscribe(move |&condition| {
             if condition {
-                comp1.activate(&this);
-                comp2.deactivate();
+                lazy1.activate(&weak);
+                lazy2.deactivate();
             } else {
-                comp1.deactivate();
-                comp2.activate(&this);
+                lazy1.deactivate();
+                lazy2.activate(&weak);
             }
         });
 
@@ -322,12 +324,12 @@ impl Component {
 
 // An enum representing a lazy-initialized component, that is to be 
 // attached to a parent when crated, and hidden when deactivated.
-enum Children<F: FnOnce() -> Component> {
+enum LazyChildren<F: FnOnce() -> Component> {
     Uninit(Option<F>),
     Init(Component),
 }
 
-impl<F: FnOnce() -> Component> Children<F> {
+impl<F: FnOnce() -> Component> LazyChildren<F> {
     // Creates a new childen from the given function.
     #[inline]
     fn new(init: F) -> Self {
