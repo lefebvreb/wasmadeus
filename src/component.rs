@@ -3,7 +3,9 @@
 //! This module exposes the type [`Component`] which is a wrapper around an
 //! HTML element. It can be used to create reusable components.
 
+use core::any::Any;
 use core::cell::UnsafeCell;
+use core::mem;
 use core::sync::atomic::{AtomicBool, Ordering::SeqCst};
 
 use alloc::boxed::Box;
@@ -17,34 +19,14 @@ use web_sys::HtmlElement;
 use crate::prelude::*;
 use crate::store::StoreUnsubscriber;
 
-// A depencency of the component, that needs to be dropped at the same
-// time as the component.
-enum Dependency {
-    Children(Component),
-    Closure(Closure<dyn FnMut()>),
-    Subscription(StoreUnsubscriber),
-}
-
-impl Drop for Dependency {
-    // On drop, unsubscription needs to be applied.
-    #[inline]
-    fn drop(&mut self) {
-        match self {
-            Self::Subscription(subscription) => subscription.unsubscribe(),
-            _ => (),
-        }
-    }
-}
-
 // The internal state of a component.
 struct InternalComponent {
     element: HtmlElement,
-    deps: UnsafeCell<Vec<Dependency>>,
+    deps: UnsafeCell<Vec<Box<dyn Any>>>,
 }
 
 impl InternalComponent {
     // Creates a new component with the given html element.
-    #[inline]
     fn new(element: HtmlElement) -> Self {
         Self {
             element,
@@ -65,28 +47,26 @@ impl InternalComponent {
 pub struct Component(Rc<InternalComponent>);
 
 impl Component {
-    // Push a dependency to the component's storage.
-    #[inline]
-    fn push_dep(&self, dep: Dependency) {
-        // SAFETY: The deps vec is never borrowed.
-        unsafe { (*self.0.deps.get()).push(dep) };
+    // Pushes a dependency to the component's storage.
+    fn push_dep<T: Any>(&self, dep: T) {
+        if mem::needs_drop::<T>() {       
+            // SAFETY: The deps vec is never borrowed.
+            unsafe { (*self.0.deps.get()).push(Box::new(dep)) };
+        }
     }
 
     // Appends a child to the component.
-    #[inline]
     fn append_child(&self, child: Component) {
         self.html().append_child(child.html()).unwrap();
-        self.push_dep(Dependency::Children(child));
+        self.push_dep(child);
     }
 
     // Adds an unubsription to the component, to be performed when it is dropped.
-    #[inline]
     fn push_unsub(&self, unsub: StoreUnsubscriber) {
-        self.push_dep(Dependency::Subscription(unsub));
+        self.push_dep(unsub.droppable());
     }
 
     // Sets the inner html attribute of the element on store update.
-    #[inline]
     pub(crate) fn set_inner_html<S: ToString>(&self, text: impl Subscribable<S>) {
         let weak = self.downgrade();
 
@@ -101,15 +81,13 @@ impl Component {
 
     // Converts the rust closure to a js one and sets it as the onclick property
     // of the element contained in this component.
-    #[inline]
     pub(crate) fn set_on_click(&self, on_click: impl FnMut() + 'static) {
         let on_click = Closure::wrap(Box::new(on_click) as Box<dyn FnMut()>);
         self.html().set_onclick(Some(on_click.as_ref().unchecked_ref()));
-        self.push_dep(Dependency::Closure(on_click));
+        self.push_dep(on_click);
     }
 
     // Creates a new component with the given html tag_name and style.
-    #[inline]
     pub(crate) fn new(tag_name: &'static str, style: Style) -> Self {
         let element = web_sys::window().unwrap()
             .document().unwrap()
@@ -137,7 +115,6 @@ impl Component {
     /// Component::root(Style::NONE)
     ///     .with(html::p(Value("Hello, world!"), Style::NONE)); 
     /// ```
-    #[inline]
     pub fn root(style: Style) -> Component {
         // For preventing data races.
         static INITIALIZED: AtomicBool = AtomicBool::new(false);
@@ -174,7 +151,6 @@ impl Component {
     /// let root = Component::root(Style::NONE);
     /// let html = root.html();
     /// ```
-    #[inline]
     pub fn html(&self) -> &HtmlElement {
         &self.0.element
     }
@@ -188,7 +164,6 @@ impl Component {
     /// let root = Component::root(Style::NONE);
     /// let weak = root.downgrade();
     /// ```
-    #[inline]
     pub fn downgrade(&self) -> WeakComponent {
         WeakComponent(Rc::downgrade(&self.0))
     }
@@ -205,7 +180,6 @@ impl Component {
     /// let root = Component::root(Style::NONE);
     /// root.set_style(Style("bg-blue-200"));
     /// ```
-    #[inline]
     pub fn set_style(&self, style: Style) {
         self.html().set_class_name(style.0);
     }
@@ -219,7 +193,6 @@ impl Component {
     /// Component::root(Style::NONE)
     ///     .with(html::p(Value("Hello, world!"), Style::NONE));
     /// ```
-    #[inline]
     pub fn with(self, component: Component) -> Self {
         self.append_child(component);
         self
@@ -245,7 +218,6 @@ impl Component {
     ///         || html::p(Value("Greater than 42"), Style::NONE),
     ///   );
     /// ``` 
-    #[inline]
     pub fn with_if(
         self, 
         condition: impl Subscribable<bool>, 
@@ -293,7 +265,6 @@ impl Component {
     ///         || html::p(Value("Goodbye, world!"), Style::NONE),
     ///   );
     /// ``` 
-    #[inline]
     pub fn with_if_else(
         self, 
         condition: impl Subscribable<bool>, 
@@ -331,14 +302,12 @@ enum LazyChildren<F: FnOnce() -> Component> {
 
 impl<F: FnOnce() -> Component> LazyChildren<F> {
     // Creates a new childen from the given function.
-    #[inline]
     fn new(init: F) -> Self {
         Self::Uninit(Some(init))
     }
 
     // Creates a new component and attaches it to the given parent
     // if it is not already initialized, else set it to not hidden.
-    #[inline]
     fn activate(&mut self, parent: &WeakComponent) {
         match self {
             Self::Uninit(init) => {
@@ -353,7 +322,6 @@ impl<F: FnOnce() -> Component> LazyChildren<F> {
     }
 
     // If the component is initialized, set it to hidden.
-    #[inline]
     fn deactivate(&self) {
         if let Self::Init(comp) = self {
             comp.html().set_hidden(true);
@@ -389,7 +357,6 @@ impl WeakComponent {
     ///     // do stuff...
     /// }
     /// ```
-    #[inline]
     pub fn upgrade(&self) -> Option<Component> {
         self.0.upgrade().map(Component)
     }

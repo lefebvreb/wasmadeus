@@ -25,7 +25,6 @@ impl FrontendError {
     /// # use wasmide::error::FrontendError;
     /// let error = FrontendError::custom("Custom error");
     /// ```
-    #[inline]
     pub fn custom(msg: impl Into<String>) -> Self {
         Self::Custom(msg.into())
     }

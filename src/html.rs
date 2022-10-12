@@ -7,7 +7,6 @@ use alloc::string::ToString;
 
 use crate::prelude::*;
 
-#[inline]
 pub fn button<S: ToString>(text: impl Subscribable<S>, on_click: impl FnMut() + 'static, style: Style) -> Component {
     let this = Component::new("button", style);
     this.set_inner_html(text);
@@ -15,12 +14,10 @@ pub fn button<S: ToString>(text: impl Subscribable<S>, on_click: impl FnMut() + 
     this
 }
 
-#[inline]
 pub fn div(style: Style) -> Component {
     Component::new("div", style)
 }
 
-#[inline]
 pub fn p<S: ToString>(text: impl Subscribable<S>, style: Style) -> Component {
     let this = Component::new("p", style);
     this.set_inner_html(text);
