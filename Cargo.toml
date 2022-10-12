@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 authors = ["Benjamin Lefebvre"]
 categories = ["wasm", "web-programming"]
-description = "An exprimental frontend framework in pure rust"
+description = "An experimental frontend framework in pure rust"
 keywords = ["framework", "wasm", "web"]
 license = "MIT OR Apache-2.0"
 readme = "README.md"
@@ -16,12 +16,16 @@ members = [
     "examples/hello-world",
 ]
 
+[profile.release]
+lto = "thin"
+opt-level = "s"
+
 [dependencies.wasm-bindgen]
-version = "0.2.79"
+version = "0.2.83"
 default-features = false
 
 [dependencies.web-sys]
-version = "0.3.56"
+version = "0.3.60"
 default-features = false
 features = [
     "Document",

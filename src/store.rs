@@ -367,16 +367,51 @@ impl StoreUnsubscriber {
         }
     }
 
+    /// A wrapper around a [`StoreUnsubscriber`] that automatically unsubscribes on drop, 
+    /// by implementing the [`Drop`] trait.
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// # use wasmide::prelude::*;
+    /// # use wasmide::store::DroppableUnsubscriber;
+    /// let a = Store::new(1);
+    /// let mut unsub = a.subscribe(|x| println!("{}", x)); // Prints 1
+    /// std::mem::drop(unsub.droppable());
+    /// a.update(|x| *x + 1); // Prints nothing
+    /// ```
     pub fn droppable(self) -> DroppableUnsubscriber {
-        DroppableUnsubscriber(self)
+        self.into()
     }
 }
 
+/// A wrapper around a [`StoreUnsubscriber`] that automatically unsubscribes on drop, 
+/// by implementing the [`Drop`] trait.
+/// 
+/// You can use [`StoreUnsubscriber::droppable`] to wrap a [`StoreUnsubscriber`] into a
+/// [`DroppableUnsubscriber`].
+/// 
+/// # Examples
+/// 
+/// ```
+/// # use wasmide::prelude::*;
+/// # use wasmide::store::DroppableUnsubscriber;
+/// let a = Store::new(1);
+/// let mut unsub = a.subscribe(|x| println!("{}", x)); // Prints 1
+/// std::mem::drop(unsub.droppable());
+/// a.update(|x| *x + 1); // Prints nothing
+/// ```
 pub struct DroppableUnsubscriber(pub StoreUnsubscriber);
 
 impl Drop for DroppableUnsubscriber {
     fn drop(&mut self) {
         self.0.unsubscribe();
+    }
+}
+
+impl From<StoreUnsubscriber> for DroppableUnsubscriber {
+    fn from(unsub: StoreUnsubscriber) -> Self {
+        Self(unsub)
     }
 }
 

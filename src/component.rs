@@ -49,7 +49,7 @@ pub struct Component(Rc<InternalComponent>);
 impl Component {
     // Pushes a dependency to the component's storage.
     fn push_dep<T: Any>(&self, dep: T) {
-        if mem::needs_drop::<T>() {       
+        if mem::needs_drop::<T>() {
             // SAFETY: The deps vec is never borrowed.
             unsafe { (*self.0.deps.get()).push(Box::new(dep)) };
         }
