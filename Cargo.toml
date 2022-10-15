@@ -20,6 +20,10 @@ members = [
 lto = "thin"
 opt-level = "s"
 
+[dependencies.once_cell]
+version = "1"
+default-features = false
+
 [dependencies.wasm-bindgen]
 version = "0.2.83"
 default-features = false

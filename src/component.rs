@@ -12,6 +12,7 @@ use alloc::boxed::Box;
 use alloc::rc::{Rc, Weak};
 use alloc::string::ToString;
 use alloc::vec::Vec;
+use once_cell::unsync::Lazy;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::prelude::Closure;
 use web_sys::HtmlElement;
@@ -32,6 +33,17 @@ impl InternalComponent {
             element,
             deps: Vec::new().into(),
         }
+    }
+}
+
+// Intializes the lazy child if not done already and attaches it to the parent,
+// else simply unhides the child.
+fn init_and_attach<F: FnOnce() -> Component>(child: &Lazy<Component, F>, parent: &WeakComponent) {
+    if let Some(child) = Lazy::get(&child) {
+        child.html().set_hidden(false);
+    } else {
+        let child = Lazy::force(&child);
+        parent.upgrade().unwrap().append_child(child.clone());
     }
 }
 
@@ -219,21 +231,21 @@ impl Component {
     ///   );
     /// ``` 
     pub fn with_if(
-        self, 
-        condition: impl Subscribable<bool>, 
-        child: impl Fn() -> Component + 'static,
+        self,
+        condition: impl Subscribable<bool>,
+        make_child: impl FnOnce() -> Component + 'static,
     ) -> Self {
         let div = html::div(Style::NONE);
         let weak = div.downgrade();
         self.append_child(div);
 
-        let mut lazy = LazyChildren::new(child);
+        let lazy = Lazy::new(make_child);
 
         let unsub = condition.subscribe(move |&condition| {
             if condition {
-                lazy.activate(&weak);
+                init_and_attach(&lazy, &weak);
             } else {
-                lazy.deactivate();
+                Lazy::get(&lazy).map(|child| child.html().set_hidden(true));
             }
         });
 
@@ -268,64 +280,28 @@ impl Component {
     pub fn with_if_else(
         self, 
         condition: impl Subscribable<bool>, 
-        child1: impl Fn() -> Component + 'static, 
-        child2: impl Fn() -> Component + 'static,
+        make_child1: impl FnOnce() -> Component + 'static, 
+        make_child2: impl FnOnce() -> Component + 'static,
     ) -> Self {
         let div = html::div(Style::NONE);
         let weak = div.downgrade();
         self.append_child(div);
 
-        let mut lazy1 = LazyChildren::new(child1);
-        let mut lazy2 = LazyChildren::new(child2);
+        let lazy1 = Lazy::new(make_child1);
+        let lazy2 = Lazy::new(make_child2);
 
         let unsub = condition.subscribe(move |&condition| {
             if condition {
-                lazy1.activate(&weak);
-                lazy2.deactivate();
+                init_and_attach(&lazy1, &weak);
+                Lazy::get(&lazy2).map(|child| child.html().set_hidden(true));
             } else {
-                lazy1.deactivate();
-                lazy2.activate(&weak);
+                init_and_attach(&lazy2, &weak);
+                Lazy::get(&lazy1).map(|child| child.html().set_hidden(true));
             }
         });
 
         self.push_unsub(unsub);
         self
-    }
-}
-
-// An enum representing a lazy-initialized component, that is to be 
-// attached to a parent when crated, and hidden when deactivated.
-enum LazyChildren<F: FnOnce() -> Component> {
-    Uninit(Option<F>),
-    Init(Component),
-}
-
-impl<F: FnOnce() -> Component> LazyChildren<F> {
-    // Creates a new childen from the given function.
-    fn new(init: F) -> Self {
-        Self::Uninit(Some(init))
-    }
-
-    // Creates a new component and attaches it to the given parent
-    // if it is not already initialized, else set it to not hidden.
-    fn activate(&mut self, parent: &WeakComponent) {
-        match self {
-            Self::Uninit(init) => {
-                let comp = init.take().unwrap()();
-                parent.upgrade().unwrap().append_child(comp.clone());
-                *self = Self::Init(comp);
-            },
-            Self::Init(ref comp) => {
-                comp.html().set_hidden(false);
-            }
-        }
-    }
-
-    // If the component is initialized, set it to hidden.
-    fn deactivate(&self) {
-        if let Self::Init(comp) = self {
-            comp.html().set_hidden(true);
-        }
     }
 }
 
