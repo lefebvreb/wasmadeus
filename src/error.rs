@@ -22,7 +22,8 @@ impl FrontendError {
     /// # Examples
     /// 
     /// ```
-    /// # use wasmide::error::FrontendError;
+    /// use wasmide::error::FrontendError;
+    /// 
     /// let error = FrontendError::custom("Custom error");
     /// ```
     pub fn custom(msg: impl Into<String>) -> Self {

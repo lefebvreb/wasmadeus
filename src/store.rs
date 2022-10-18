@@ -26,7 +26,8 @@ pub trait Subscribable<T> {
     /// # Examples
     /// 
     /// ```
-    /// # use wasmide::prelude::*;
+    /// use wasmide::prelude::*;
+    /// 
     /// let a = Store::new(1);
     /// a.subscribe(|x| println!("{}", x)); // Prints 1
     /// a.update(|x| x + 1).ok(); // Prints 2
@@ -109,11 +110,11 @@ impl<T> InternalStore<T> {
     // Carries the operation on the store.
     fn do_operation(&mut self, op: StoreOperation<T>) {
         match op {
-            StoreOperation::Subscribe {idx, notify} => {
+            StoreOperation::Subscribe { idx, notify } => {
                 self.subscribers.push((idx, notify));
                 self.subscribers.last_mut().unwrap().1(&self.data);
             }
-            StoreOperation::SubscribeNoNotify {idx, notify} => {
+            StoreOperation::SubscribeNoNotify { idx, notify } => {
                 self.subscribers.push((idx, notify));
             }
             StoreOperation::Unsubscribe(idx) => {
@@ -179,7 +180,8 @@ impl<T> InternalStore<T> {
 /// # Examples
 /// 
 /// ```
-/// # use wasmide::prelude::*;
+/// use wasmide::prelude::*;
+/// 
 /// let a = Store::new(1);
 /// a.subscribe(|x| println!("{}", x)); // Prints 1
 /// a.update(|x| x + 1).ok(); // Prints 2
@@ -210,7 +212,8 @@ impl<T: 'static> Store<T> {
     /// # Examples
     /// 
     /// ```
-    /// # use wasmide::prelude::*;
+    /// use wasmide::prelude::*;
+    /// 
     /// let a = Store::new(42);
     /// ```
     pub fn new(data: T) -> Self {
@@ -226,7 +229,8 @@ impl<T: 'static> Store<T> {
     /// # Examples
     /// 
     /// ```
-    /// # use wasmide::prelude::*;
+    /// use wasmide::prelude::*;
+    /// 
     /// let a = Store::new("hello".to_string());
     /// a.subscribe(|x| println!("{}", x)); // Prints "Hello"
     /// a.mutate(|x| *x = x.to_uppercase()).ok(); // Prints "HELLO"
@@ -249,7 +253,8 @@ impl<T: 'static> Store<T> {
     /// # Examples
     /// 
     /// ```
-    /// # use wasmide::prelude::*;
+    /// use wasmide::prelude::*;
+    /// 
     /// let a = Store::new("hello".to_string());
     /// a.subscribe(|x| println!("{}", x)); // Prints "Hello"
     /// a.update(|x| x.to_uppercase()).ok(); // Prints "HELLO"
@@ -267,7 +272,8 @@ impl<T: 'static> Store<T> {
     /// # Examples
     /// 
     /// ```
-    /// # use wasmide::prelude::*;
+    /// use wasmide::prelude::*;
+    /// 
     /// let a = Store::new(false);
     /// a.subscribe(|x| if *x { println!("Here") }); // Prints nothing
     /// a.set(true); // Prints "Here"
@@ -287,7 +293,8 @@ impl<T: 'static> Store<T> {
     /// # Examples
     /// 
     /// ```
-    /// # use wasmide::prelude::*;
+    /// use wasmide::prelude::*;
+    /// 
     /// let a = Store::new(1);
     /// let b = a.compose(|x| *x * 10); // b will always be 10 times a
     /// b.subscribe(|x| println!("{}", x)); // Prints 10
@@ -323,7 +330,8 @@ impl<T> From<T> for Store<T> {
 /// # Examples
 /// 
 /// ```
-/// # use wasmide::prelude::*;
+/// use wasmide::prelude::*;
+/// 
 /// let a = Store::new("hello");
 /// let mut unsub = a.subscribe(|x| println!("{}", x)); // Prints "hello"
 /// unsub.unsubscribe();
@@ -340,7 +348,8 @@ impl StoreUnsubscriber {
     /// # Examples
     /// 
     /// ```
-    /// # use wasmide::prelude::*;
+    /// use wasmide::prelude::*;
+    /// 
     /// let a = Store::new(42);
     /// let mut unsub = a.subscribe(|x| println!("{}", x)); // Prints 42
     /// unsub.unsubscribe();
@@ -355,7 +364,8 @@ impl StoreUnsubscriber {
     /// # Examples
     /// 
     /// ```
-    /// # use wasmide::prelude::*;
+    /// use wasmide::prelude::*;
+    /// 
     /// let a = Store::new(1);
     /// let mut unsub = a.subscribe(|x| println!("{}", x)); // Prints 1
     /// unsub.unsubscribe();
@@ -373,8 +383,8 @@ impl StoreUnsubscriber {
     /// # Examples
     /// 
     /// ```
-    /// # use wasmide::prelude::*;
-    /// # use wasmide::store::DroppableUnsubscriber;
+    /// use wasmide::prelude::*;
+    /// 
     /// let a = Store::new(1);
     /// let mut unsub = a.subscribe(|x| println!("{}", x)); // Prints 1
     /// std::mem::drop(unsub.droppable());
@@ -394,8 +404,8 @@ impl StoreUnsubscriber {
 /// # Examples
 /// 
 /// ```
-/// # use wasmide::prelude::*;
-/// # use wasmide::store::DroppableUnsubscriber;
+/// use wasmide::prelude::*;
+/// 
 /// let a = Store::new(1);
 /// let mut unsub = a.subscribe(|x| println!("{}", x)); // Prints 1
 /// std::mem::drop(unsub.droppable());
@@ -455,7 +465,8 @@ impl<T> Drop for InternalDerived<T> {
 /// # Examples
 /// 
 /// ```
-/// # use wasmide::prelude::*;
+/// use wasmide::prelude::*;
+/// 
 /// let a = Store::new(1);
 /// let b = a.compose(|x| *x * 10); // b will always be 10 times a
 /// b.subscribe(|x| println!("{}", x)); // Prints 10
@@ -502,7 +513,8 @@ impl<T> Derived<T> {
     /// # Examples
     /// 
     /// ```
-    /// # use wasmide::prelude::*;
+    /// use wasmide::prelude::*;
+    /// 
     /// let a = Store::new(1);
     /// let b = a.compose(|x| *x * 10); // b will always be 10 times a
     /// let c = b.compose(|x| *x + 1); // c will always be 10 times a plus 1
@@ -542,7 +554,8 @@ impl<T: 'static> Subscribable<T> for Derived<T> {
 /// # Examples
 /// 
 /// ```
-/// # use wasmide::prelude::*;
+/// use wasmide::prelude::*;
+/// 
 /// let a = Value(1);
 /// a.subscribe(|x| println!("{}", x)); // Prints 1
 /// ```
@@ -555,7 +568,8 @@ impl<T> Value<T> {
     /// # Examples
     /// 
     /// ```
-    /// # use wasmide::prelude::*;
+    /// use wasmide::prelude::*;
+    /// 
     /// let a = Value(42);
     /// let n = a.take();
     /// assert_eq!(n, 42);

@@ -18,7 +18,6 @@ use wasm_bindgen::prelude::Closure;
 use web_sys::HtmlElement;
 
 use crate::prelude::*;
-use crate::store::StoreUnsubscriber;
 
 // The internal state of a component.
 struct InternalComponent {
@@ -52,7 +51,8 @@ fn init_and_attach<F: FnOnce() -> Component>(child: &Lazy<Component, F>, parent:
 /// # Examples
 /// 
 /// ```no_run
-/// # use wasmide::prelude::*;
+/// use wasmide::prelude::*;
+/// 
 /// let root = Component::root(Style::NONE);
 /// ```
 #[derive(Clone)]
@@ -60,7 +60,7 @@ pub struct Component(Rc<InternalComponent>);
 
 impl Component {
     // Pushes a dependency to the component's storage.
-    fn push_dep<T: Any>(&self, dep: T) {
+    fn push_dependency<T: Any>(&self, dep: T) {
         if mem::needs_drop::<T>() {
             // SAFETY: The deps vec is never borrowed.
             unsafe { (*self.0.deps.get()).push(Box::new(dep)) };
@@ -70,12 +70,7 @@ impl Component {
     // Appends a child to the component.
     fn append_child(&self, child: Component) {
         self.html().append_child(child.html()).unwrap();
-        self.push_dep(child);
-    }
-
-    // Adds an unubsription to the component, to be performed when it is dropped.
-    fn push_unsub(&self, unsub: StoreUnsubscriber) {
-        self.push_dep(unsub.droppable());
+        self.push_dependency(child);
     }
 
     // Sets the inner html attribute of the element on store update.
@@ -88,7 +83,7 @@ impl Component {
             }
         });
 
-        self.push_unsub(unsub);
+        self.push_dependency(unsub.droppable());
     }
 
     // Converts the rust closure to a js one and sets it as the onclick property
@@ -96,7 +91,7 @@ impl Component {
     pub(crate) fn set_on_click(&self, on_click: impl FnMut() + 'static) {
         let on_click = Closure::wrap(Box::new(on_click) as Box<dyn FnMut()>);
         self.html().set_onclick(Some(on_click.as_ref().unchecked_ref()));
-        self.push_dep(on_click);
+        self.push_dependency(on_click);
     }
 
     // Creates a new component with the given html tag_name and style.
@@ -123,7 +118,8 @@ impl Component {
     /// # Examples
     /// 
     /// ```no_run
-    /// # use wasmide::prelude::*;
+    /// use wasmide::prelude::*;
+    /// 
     /// Component::root(Style::NONE)
     ///     .with(html::p(Value("Hello, world!"), Style::NONE)); 
     /// ```
@@ -159,7 +155,8 @@ impl Component {
     /// # Examples
     /// 
     /// ```no_run
-    /// # use wasmide::prelude::*;
+    /// use wasmide::prelude::*;
+    /// 
     /// let root = Component::root(Style::NONE);
     /// let html = root.html();
     /// ```
@@ -172,7 +169,8 @@ impl Component {
     /// # Examples
     /// 
     /// ```no_run
-    /// # use wasmide::prelude::*;
+    /// use wasmide::prelude::*;
+    /// 
     /// let root = Component::root(Style::NONE);
     /// let weak = root.downgrade();
     /// ```
@@ -188,7 +186,8 @@ impl Component {
     /// # Examples
     /// 
     /// ```no_run
-    /// # use wasmide::prelude::*;
+    /// use wasmide::prelude::*;
+    /// 
     /// let root = Component::root(Style::NONE);
     /// root.set_style(Style("bg-blue-200"));
     /// ```
@@ -201,7 +200,8 @@ impl Component {
     /// # Examples
     /// 
     /// ```no_run
-    /// # use wasmide::prelude::*;
+    /// use wasmide::prelude::*;
+    /// 
     /// Component::root(Style::NONE)
     ///     .with(html::p(Value("Hello, world!"), Style::NONE));
     /// ```
@@ -221,8 +221,9 @@ impl Component {
     /// # Examples
     /// 
     /// ```no_run
-    /// # use wasmide::prelude::*;
-    /// let store = Store::new(42);
+    /// use wasmide::prelude::*;
+    /// 
+    /// let store = Store::new(100);
     /// 
     /// Component::root(Style::NONE)
     ///    .with_if(
@@ -249,7 +250,7 @@ impl Component {
             }
         });
 
-        self.push_unsub(unsub);
+        self.push_dependency(unsub.droppable());
         self
     }
 
@@ -267,7 +268,8 @@ impl Component {
     /// # Examples
     /// 
     /// ```no_run
-    /// # use wasmide::prelude::*;
+    /// use wasmide::prelude::*;
+    /// 
     /// let hour = Store::new(6);
     /// 
     /// Component::root(Style::NONE)
@@ -300,7 +302,7 @@ impl Component {
             }
         });
 
-        self.push_unsub(unsub);
+        self.push_dependency(unsub.droppable());
         self
     }
 }
@@ -312,7 +314,8 @@ impl Component {
 /// # Examples
 /// 
 /// ```no_run
-/// # use wasmide::prelude::*;
+/// use wasmide::prelude::*;
+/// 
 /// let body = Component::root(Style::NONE);
 /// let weak = body.downgrade();
 /// ```
@@ -326,7 +329,8 @@ impl WeakComponent {
     /// # Examples
     /// 
     /// ```no_run
-    /// # use wasmide::prelude::*;
+    /// use wasmide::prelude::*;
+    /// 
     /// let body = Component::root(Style::NONE);
     /// let weak = body.downgrade();
     /// if let Some(body) = weak.upgrade() {

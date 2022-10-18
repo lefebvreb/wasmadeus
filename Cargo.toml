@@ -20,6 +20,9 @@ members = [
 lto = "thin"
 opt-level = "s"
 
+[package.metadata.docs.rs]
+cargo-args = ["-Zunstable-options", "-Zrustdoc-scrape-examples=examples"]
+
 [dependencies.once_cell]
 version = "1"
 default-features = false
