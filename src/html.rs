@@ -14,7 +14,7 @@ use crate::prelude::*;
 /// # Examples
 /// 
 /// See the [counter example](https://github.com/L-Benjamin/wasmide/blob/main/examples/counter/src/main.rs) for a concrete use of this component.
-pub fn button<S: ToString, F: FnMut() + 'static, C: Into<Option<F>>>(text: impl Subscribable<S>, on_click: C, style: Style) -> Component {
+pub fn button<S: ToString, F: FnMut() + 'static>(text: impl Subscribable<S>, on_click: impl Into<Option<F>>, style: Style) -> Component {
     let this = Component::new("button", style);
     this.set_inner_html(text);
     if let Some(callback) = on_click.into() {

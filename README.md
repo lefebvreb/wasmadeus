@@ -38,5 +38,5 @@ native access to the dom before that, which might take a (very) long time.
 
 For now, Wasmide is only a proof of concept. Here are the points I'd like to expand on in the near future:
 + Remove, or at least limit, the current extensive use of `unsafe` code. This will need quite some work in the store module. Eventually the goal would be to `#![forbid(unsafe_code)` without sacrificing performance.
-+ Make more components constructors. The goal is to cover every html components, at least the ones that are not deprecated.
++ Make more components constructors. The goal is to cover most html components, at least the ones that are not deprecated.
 + Profiling and benchmarks for both binary size and performance.
