@@ -9,14 +9,14 @@ use alloc::string::String;
 /// An error that may occur during execution of the frontend.
 #[non_exhaustive]
 #[derive(Clone, PartialEq, Eq, Hash, Debug)]
-pub enum FrontendError {
+pub enum Error {
     /// A store was updated while already updating.
     StoreUpdating,
     /// Custom error.
     Custom(String),
 }
 
-impl FrontendError {
+impl Error {
     /// Creates a new [`FrontendError::Custom`] with the given message.
     /// 
     /// # Examples
@@ -33,4 +33,4 @@ impl FrontendError {
 
 /// A type alias for a rust standard [`Result`](core::result::Result) 
 /// that has a [`FrontendError`] as the error type.
-pub type Result<T> = core::result::Result<T, FrontendError>;
+pub type Result<T> = core::result::Result<T, Error>;

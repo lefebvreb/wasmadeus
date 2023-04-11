@@ -1,9 +1,0 @@
-[[hooks]]
-stage = "pre_build"
-command = "tailwindcss"
-command_arguments = ["--minify", "--content", "src/**/*.rs", "-o", "tailwind.css"]
-
-[[hooks]]
-stage = "post_build"
-command = "rm"
-command_arguments = ["tailwind.css"]

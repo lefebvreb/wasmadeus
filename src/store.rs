@@ -13,7 +13,7 @@ use alloc::collections::vec_deque::VecDeque;
 use alloc::rc::Rc;
 use alloc::vec::Vec;
 
-use crate::error::{FrontendError, Result};
+use crate::error::{Error, Result};
 
 /// A trait for the ability of a type to be subscribed/unsubscribed to.
 /// 
@@ -78,7 +78,7 @@ impl<T> InternalStore<T> {
     // Mutates the state of the store by applying the specified closure.
     fn mutate(&mut self, mutater: impl FnOnce(&mut T)) -> Result<()> {
         if self.updating {
-            return Err(FrontendError::StoreUpdating);
+            return Err(Error::StoreUpdating);
         }
 
         self.updating = true;
