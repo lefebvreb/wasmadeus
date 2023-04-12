@@ -2,5 +2,4 @@
 
 extern crate alloc;
 
-mod error;
-mod store;
+pub mod signal;
