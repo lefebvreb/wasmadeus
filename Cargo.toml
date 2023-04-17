@@ -13,3 +13,6 @@ repository = "https://github.com/L-Benjamin/wasmide"
 [profile.release]
 lto = "thin"
 opt-level = "s"
+
+[dependencies]
+smallvec = { version = "1", default-features = false }
