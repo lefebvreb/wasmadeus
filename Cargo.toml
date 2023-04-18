@@ -15,4 +15,4 @@ lto = "thin"
 opt-level = "s"
 
 [dependencies]
-smallvec = { version = "1", default-features = false }
+#smallvec = { version = "1", default-features = false }
