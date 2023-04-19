@@ -51,11 +51,6 @@ impl RawSignal {
             i += 1;
         }
 
-        self.cleanup_garbage();
-    }
-
-    unsafe fn cleanup_garbage(&self) {
-        let subscribers = &mut *self.subscribers.get();
         let garbage = &mut *self.garbage.get();
 
         while let Some(id) = garbage.pop() {
@@ -77,11 +72,9 @@ impl RawSignal {
     }
 
     fn subscribe(&self, data: *const (), mut notify: Notifier) -> usize {
-        let old_state = self.state.get();
-
         // If the signal is not Mutating,
-        if old_state != SignalState::Mutating {
-            self.state.set(SignalState::Subscribing);
+        if self.state.get() != SignalState::Mutating {
+            let old_state = self.state.replace(SignalState::Subscribing);
             notify(data);
             self.state.set(old_state);
         }
@@ -90,22 +83,32 @@ impl RawSignal {
         let id = subscribers.len();
         subscribers.push(notify);
 
-        if old_state == SignalState::Idling {
-            unsafe { self.cleanup_garbage(); }
-        }
-
         id
     }
 
     fn unsubscribe(&self, id: usize) {
-        if self.state.get() == SignalState::Idling {
-            let subscribers = unsafe { &mut *self.subscribers.get() };
-            let _ = subscribers.swap_remove(id);
-        } else {
+        if self.state.get() == SignalState::Mutating {
             let garbage = unsafe { &mut *self.garbage.get() };
             garbage.push(id);
+        } else {
+            let subscribers = unsafe { &mut *self.subscribers.get() };
+            let _ = subscribers.swap_remove(id);
         }
     }
+
+    // fn unsubscribe(&self, id: usize) {
+    //     if self.mutating.get() == SignalState::Mutating {
+    //         // If the state is Mutating, the remove operation is delayed until
+    //         // after the mutation.
+
+    //         // SAFETY: a borrow to self.garbage is never kept between calls.
+    //         let garbage = unsafe { &mut *self.garbage.get() };
+    //         garbage.push(id);
+    //     } else {
+
+    //     }
+    //     todo!()
+    // }
 }
 
 pub struct Signal<T>(Rc<(RawSignal, UnsafeCell<T>)>);
