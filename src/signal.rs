@@ -1,10 +1,13 @@
 use core::cell::{Cell, UnsafeCell};
 
 use alloc::boxed::Box;
-use alloc::rc::Rc;
+use alloc::rc::{Rc, Weak};
 use alloc::vec::Vec;
 
 type Notifier = Box<dyn FnMut()>;
+
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
+pub struct SignalMutatingError;
 
 #[derive(Copy, Clone, PartialEq, Default, Debug)]
 enum SignalState {
@@ -51,8 +54,10 @@ impl RawSignal {
         }
     }
 
-    fn mutate(&self, mutater: impl FnOnce()) {
-        assert_eq!(self.state.get(), SignalState::Idling);
+    fn try_mutate(&self, mutater: impl FnOnce()) -> Result<(), SignalMutatingError> {
+        if self.state.get() != SignalState::Idling {
+            return Err(SignalMutatingError);
+        }
         self.state.set(SignalState::Mutating);
 
         mutater();
@@ -62,10 +67,10 @@ impl RawSignal {
         unsafe { self.notify_all() };
 
         self.state.set(SignalState::Idling);
+        Ok(())
     }
 
     fn subscribe(&self, mut notify: Notifier) -> usize {
-        // If the signal is not Mutating,
         if self.state.get() != SignalState::Mutating {
             let old_state = self.state.replace(SignalState::Subscribing);
             notify();
@@ -94,38 +99,83 @@ impl RawSignal {
     }
 }
 
-pub struct Signal<T>(Rc<(RawSignal, UnsafeCell<T>)>);
+pub struct InnerSignal<T>(RawSignal, UnsafeCell<T>);
+
+impl<T> InnerSignal<T> {
+    #[inline(always)]
+    fn get(&self) -> (&RawSignal, *mut T) {
+        (&self.0, self.1.get())
+    }
+}
+
+pub struct Signal<T>(Rc<InnerSignal<T>>);
 
 impl<T: 'static> Signal<T> {
     pub fn new(data: T) -> Self {
         let raw = RawSignal::default();
         let data = UnsafeCell::new(data);
-        Self(Rc::new((raw, data)))
+        Self(Rc::new(InnerSignal(raw, data)))
     }
 
-    fn inner(&self) -> (&RawSignal, *mut T) {
-        (&self.0.0, self.0.1.get())
+    fn try_mutate(&self, mutater: impl FnOnce(&mut T)) -> Result<(), SignalMutatingError> {
+        let (raw, data) = self.0.get();
+        raw.try_mutate(|| mutater(unsafe { &mut *data }))
     }
 
+    #[inline(always)]
     pub fn mutate(&self, mutater: impl FnOnce(&mut T)) {
-        let (raw, data) = self.inner();
-        raw.mutate(|| mutater(unsafe { &mut *data }));
+        self.try_mutate(mutater).unwrap();
+    }
+
+    pub fn try_replace(&self, replacer: impl FnOnce(T) -> T) -> Result<(), SignalMutatingError> {
+        let (raw, data) = self.0.get();
+        raw.try_mutate(|| unsafe { data.write(replacer(data.read())) })
+    }
+
+    #[inline(always)]
+    pub fn replace(&self, replacer: impl FnOnce(T) -> T) {
+        self.try_replace(replacer).unwrap();
     }
 
     fn subscribe(&self, mut notify: impl FnMut(&T) + 'static) -> usize {
-        let (raw, data) = self.inner();
+        let (raw, data) = self.0.get();
         let notify = move || notify(unsafe { &*data });
         raw.subscribe(Box::new(notify))
     }
 
+    #[inline(always)]
     fn unsubscribe(&self, id: usize) {
-        let (raw, _) = self.inner();
+        let (raw, _) = self.0.get();
         raw.unsubscribe(id);
     }
 }
 
-pub struct Unsubscriber;
+impl<T> Clone for Signal<T> {
+    #[inline(always)]
+    fn clone(&self) -> Self {
+        Self(self.0.clone())
+    }
+}
 
-pub trait Subscribable {
+pub struct SignalUnsubscriber<T>(Option<Weak<InnerSignal<T>>>);
+
+impl<T> SignalUnsubscriber<T> {
     
+}
+
+pub trait Subscribable<T> {
+    fn subscribe(&self, notify: impl FnMut(&T)) -> SignalUnsubscriber<T>;
+}
+
+impl<T> Subscribable<T> for T {
+    fn subscribe(&self, mut notify: impl FnMut(&T)) -> SignalUnsubscriber<T> {
+        notify(self);
+        SignalUnsubscriber(None)
+    }
+}
+
+impl<T> Subscribable<T> for Signal<T> {
+    fn subscribe(&self, notify: impl FnMut(&T)) -> SignalUnsubscriber<T> {
+        todo!()
+    }
 }
