@@ -4,7 +4,7 @@ use alloc::boxed::Box;
 use alloc::rc::Rc;
 use alloc::vec::Vec;
 
-type Notifier = Box<dyn FnMut(*const ())>;
+type Notifier = Box<dyn FnMut()>;
 
 #[derive(Copy, Clone, PartialEq, Default, Debug)]
 enum SignalState {
@@ -17,7 +17,7 @@ enum SignalState {
 #[derive(Default)]
 struct RawSignal {
     state: Cell<SignalState>,
-    subscribers: UnsafeCell<Vec<Notifier>>,
+    subscribers: UnsafeCell<Vec<Option<Notifier>>>,
     garbage: UnsafeCell<Vec<usize>>,
 }
 
@@ -27,7 +27,7 @@ impl RawSignal {
     /// # Safety
     /// 
     /// The data should not be mutated during execution of this function.
-    unsafe fn notify_all(&self, data: *const ()) {
+    unsafe fn notify_all(&self) {
         let subscribers = self.subscribers.get();
         let mut i = 0;
 
@@ -39,104 +39,93 @@ impl RawSignal {
             // the only allowed modification of a vector during mutation of
             // a signal is appending to it.
 
-            let notifier = (*subscribers)
+            (*subscribers)
                 .as_mut_ptr()
                 .offset(i as isize)
                 .as_mut()
                 .unwrap()
-                .as_mut();
-
-            notifier(data);
+                .as_mut()
+                .map(|notifier| notifier());
 
             i += 1;
         }
-
-        let garbage = &mut *self.garbage.get();
-
-        while let Some(id) = garbage.pop() {
-            let _ = (*subscribers).swap_remove(id);
-        }
     }
 
-    fn mutate(&self, data: *mut (), mutater: impl FnOnce(*mut ())) {
+    fn mutate(&self, mutater: impl FnOnce()) {
         assert_eq!(self.state.get(), SignalState::Idling);
         self.state.set(SignalState::Mutating);
 
-        mutater(data);
+        mutater();
 
         // SAFETY: we set the state to Mutating, therefore preventing 
         // a second call to this function until this one terminates.
-        unsafe { self.notify_all(data) };
+        unsafe { self.notify_all() };
 
         self.state.set(SignalState::Idling);
     }
 
-    fn subscribe(&self, data: *const (), mut notify: Notifier) -> usize {
+    fn subscribe(&self, mut notify: Notifier) -> usize {
         // If the signal is not Mutating,
         if self.state.get() != SignalState::Mutating {
             let old_state = self.state.replace(SignalState::Subscribing);
-            notify(data);
+            notify();
             self.state.set(old_state);
         }
 
         let subscribers = unsafe { &mut *self.subscribers.get() };
-        let id = subscribers.len();
-        subscribers.push(notify);
-
-        id
-    }
-
-    fn unsubscribe(&self, id: usize) {
-        if self.state.get() == SignalState::Mutating {
-            let garbage = unsafe { &mut *self.garbage.get() };
-            garbage.push(id);
+        let garbage = unsafe { &mut *self.garbage.get() };
+        
+        if let Some(id) = garbage.pop() {
+            subscribers[id] = Some(notify);
+            id
         } else {
-            let subscribers = unsafe { &mut *self.subscribers.get() };
-            let _ = subscribers.swap_remove(id);
+            let id = subscribers.len();
+            subscribers.push(Some(notify));
+            id
         }
     }
 
-    // fn unsubscribe(&self, id: usize) {
-    //     if self.mutating.get() == SignalState::Mutating {
-    //         // If the state is Mutating, the remove operation is delayed until
-    //         // after the mutation.
+    fn unsubscribe(&self, id: usize) {
+        let subscribers = unsafe { &mut *self.subscribers.get() };
+        let garbage = unsafe { &mut *self.garbage.get() };
 
-    //         // SAFETY: a borrow to self.garbage is never kept between calls.
-    //         let garbage = unsafe { &mut *self.garbage.get() };
-    //         garbage.push(id);
-    //     } else {
-
-    //     }
-    //     todo!()
-    // }
+        subscribers[id] = None;
+        garbage.push(id);
+    }
 }
 
 pub struct Signal<T>(Rc<(RawSignal, UnsafeCell<T>)>);
 
-impl<T> Signal<T> {
+impl<T: 'static> Signal<T> {
     pub fn new(data: T) -> Self {
         let raw = RawSignal::default();
         let data = UnsafeCell::new(data);
         Self(Rc::new((raw, data)))
     }
 
-    fn inner(&self) -> (&RawSignal, *mut ()) {
-        (&self.0.0, self.0.1.get() as *mut ())
+    fn inner(&self) -> (&RawSignal, *mut T) {
+        (&self.0.0, self.0.1.get())
     }
 
     pub fn mutate(&self, mutater: impl FnOnce(&mut T)) {
         let (raw, data) = self.inner();
-        let mutater = |data| mutater(unsafe { &mut *(data as *mut T) });
-        raw.mutate(data, mutater);
+        raw.mutate(|| mutater(unsafe { &mut *data }));
     }
 
     fn subscribe(&self, mut notify: impl FnMut(&T) + 'static) -> usize {
         let (raw, data) = self.inner();
-        let notify = move |data| notify(unsafe { &*(data as *const T) });
-        raw.subscribe(data, Box::new(notify))
+        let notify = move || notify(unsafe { &*data });
+        raw.subscribe(Box::new(notify))
     }
 
-    fn unsubscribe(&self, index: usize) {
-
+    fn unsubscribe(&self, id: usize) {
+        let (raw, _) = self.inner();
+        raw.unsubscribe(id);
     }
+}
+
+pub struct Unsubscriber;
+
+pub trait Subscribable {
+    
 }
