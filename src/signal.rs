@@ -4,16 +4,21 @@ use alloc::boxed::Box;
 use alloc::rc::{Rc, Weak};
 use alloc::vec::Vec;
 
-type Notifier = Box<dyn FnMut()>;
-
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
-pub struct SignalMutatingError;
+pub struct SignalUpdatingError;
+
+type Notifier = Box<dyn FnMut()>;
 
 #[derive(Copy, Clone, PartialEq, Default, Debug)]
 enum SignalState {
     #[default]
+    /// The signal is not currently in use.
     Idling,
+    /// The signal's data is currently being updated and/or
+    /// its subscribers are being notified.
     Mutating,
+    /// The signal is currently notifying new susbcribers with
+    /// a reference to the current data.
     Subscribing,
 }
 
@@ -25,11 +30,6 @@ struct RawSignal {
 }
 
 impl RawSignal {
-    /// Calls each of the subscribers with a reference to the new data.
-    /// 
-    /// # Safety
-    /// 
-    /// The data should not be mutated during execution of this function.
     unsafe fn notify_all(&self) {
         let subscribers = self.subscribers.get();
         let mut i = 0;
@@ -54,9 +54,9 @@ impl RawSignal {
         }
     }
 
-    fn try_mutate(&self, mutater: impl FnOnce()) -> Result<(), SignalMutatingError> {
+    fn try_mutate(&self, mutater: impl FnOnce()) -> Result<(), SignalUpdatingError> {
         if self.state.get() != SignalState::Idling {
-            return Err(SignalMutatingError);
+            return Err(SignalUpdatingError);
         }
         self.state.set(SignalState::Mutating);
 
@@ -93,7 +93,7 @@ impl RawSignal {
     fn unsubscribe(&self, id: usize) {
         let subscribers = unsafe { &mut *self.subscribers.get() };
         let garbage = unsafe { &mut *self.garbage.get() };
-
+        
         subscribers[id] = None;
         garbage.push(id);
     }
@@ -119,7 +119,7 @@ impl<T: 'static> Signal<T> {
     }
 
     #[inline(always)]
-    pub fn try_mutate<F>(&self, mutater: F) -> Result<(), SignalMutatingError> 
+    pub fn try_mutate<F>(&self, mutater: F) -> Result<(), SignalUpdatingError>
     where
         F: FnOnce(&mut T),
     {
@@ -128,7 +128,7 @@ impl<T: 'static> Signal<T> {
     }
 
     #[inline(always)]
-    pub fn try_update<F>(&self, updater: F) -> Result<(), SignalMutatingError> 
+    pub fn try_update<F>(&self, updater: F) -> Result<(), SignalUpdatingError>
     where
         F: FnOnce(&T) -> T,
     {
@@ -137,13 +137,13 @@ impl<T: 'static> Signal<T> {
     }
 
     #[inline(always)]
-    pub fn try_set(&self, value: T) -> Result<(), SignalMutatingError> {
+    pub fn try_set(&self, value: T) -> Result<(), SignalUpdatingError> {
         let (raw, data) = self.0.get();
         raw.try_mutate(|| unsafe { *data = value })
     }
 
     #[inline(always)]
-    pub fn mutate<F>(&self, mutater: impl FnOnce(&mut T)) 
+    pub fn mutate<F>(&self, mutater: impl FnOnce(&mut T))
     where
         F: FnOnce(&mut T),
     {
@@ -151,7 +151,7 @@ impl<T: 'static> Signal<T> {
     }
 
     #[inline(always)]
-    pub fn update<F>(&self, updater: F) 
+    pub fn update<F>(&self, updater: F)
     where
         F: FnOnce(&T) -> T,
     {
@@ -161,6 +161,27 @@ impl<T: 'static> Signal<T> {
     #[inline(always)]
     pub fn set(&self, value: T) {
         self.try_set(value).unwrap();
+    }
+
+    pub fn subscribe<F>(&self, mut notify: F) -> Unsubscriber<T>
+    where
+        F: FnMut(&T) + 'static,
+    {
+        let (raw, data) = self.0.get();
+        let notify = move || notify(unsafe { &*data });
+        let id = raw.subscribe(Box::new(notify));
+
+        Unsubscriber {
+            signal: Some(Rc::downgrade(&self.0)), 
+            id 
+        }
+    }
+}
+
+impl<T: Clone> Signal<T> {
+    pub fn get(&self) -> T {
+        let (_, data) = self.0.get();
+        unsafe { (&*data).clone() }
     }
 }
 
@@ -192,7 +213,7 @@ impl<T> Unsubscriber<T> {
     }
 }
 
-pub struct DroppableUnsubscriber<T>(Unsubscriber<T>);
+pub struct DroppableUnsubscriber<T>(pub Unsubscriber<T>);
 
 impl<T> Drop for DroppableUnsubscriber<T> {
     #[inline(always)]
@@ -215,7 +236,7 @@ impl<T> Subscribable<T> for T {
     {
         notify(self);
 
-        Unsubscriber { 
+        Unsubscriber {
             signal: None, 
             id: 0,
         }
@@ -223,17 +244,11 @@ impl<T> Subscribable<T> for T {
 }
 
 impl<T: 'static> Subscribable<T> for Signal<T> {
-    fn subscribe<F>(&self, mut notify: F) -> Unsubscriber<T>
+    #[inline(always)]
+    fn subscribe<F>(&self, notify: F) -> Unsubscriber<T>
     where
         F: FnMut(&T) + 'static,
     {
-        let (raw, data) = self.0.get();
-        let notify = move || notify(unsafe { &*data });
-        let id = raw.subscribe(Box::new(notify));
-
-        Unsubscriber { 
-            signal: Some(Rc::downgrade(&self.0)), 
-            id 
-        }
+        self.subscribe(notify)
     }
 }
