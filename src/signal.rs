@@ -14,24 +14,24 @@ enum NotifierState {
     Deleted(NonZeroU32),
 }
 
-impl NotifierState {
-    #[inline]
-    fn id(self) -> NonZeroU32 {
-        match self {
-            Self::Active(id) | Self::Deleted(id) => id,
-        }
-    }
-
-    #[inline]
-    fn is_active(self) -> bool {
-        matches!(self, Self::Active(_))
-    }
-}
-
 #[derive(Debug)]
 struct Notifier {
     state: Cell<NotifierState>,
     notify: UnsafeCell<Box<dyn FnMut()>>,
+}
+
+impl Notifier {
+    #[inline]
+    fn id(&self) -> NonZeroU32 {
+        match self.state.get() {
+            NotifierState::Active(id) | NotifierState::Deleted(id) => id,
+        }
+    }
+
+    #[inline]
+    fn deleted(&self) -> bool {
+        matches!(self.state.get(), NotifierState::Deleted(_))
+    }
 }
 
 #[derive(Copy, Clone, PartialEq, Debug)]
@@ -76,7 +76,7 @@ impl RawSignal {
         while i < (*subscribers).len() {
             let notifier = (*subscribers).as_mut_ptr().add(i).as_ref().unwrap();
 
-            if notifier.state.get().is_active() {
+            if !notifier.deleted() {
                 let notify = notifier.notify.get();
                 (*notify)();
             }
@@ -85,7 +85,7 @@ impl RawSignal {
         }
 
         if self.needs_delete.take() {
-            (*subscribers).retain(|notifier| !notifier.state.get().is_active());
+            (*subscribers).retain(Notifier::deleted);
         }
     }
 
@@ -116,12 +116,14 @@ impl RawSignal {
         let id = self.next_id.get();
         self.next_id.set(id.saturating_add(1));
 
-        let subscribers = unsafe { &mut *self.subscribers.get() };
+        let subscribers = self.subscribers.get();
 
-        subscribers.push(Notifier {
-            state: Cell::new(NotifierState::Active(id)),
-            notify: UnsafeCell::new(notify),
-        });
+        unsafe {
+            (*subscribers).push(Notifier {
+                state: Cell::new(NotifierState::Active(id)),
+                notify: UnsafeCell::new(notify),
+            });
+        }
 
         id
     }
@@ -130,12 +132,10 @@ impl RawSignal {
         let subscribers = self.subscribers.get();
 
         unsafe {
-            if let Ok(index) =
-                (*subscribers).binary_search_by_key(&id, |notifier| notifier.state.get().id())
-            {
+            if let Ok(index) = (*subscribers).binary_search_by_key(&id, Notifier::id) {
                 if self.state.get() == SignalState::Mutating {
                     let notifier = (*subscribers).get(index).unwrap();
-                    let id = notifier.state.get().id();
+                    let id = notifier.id();
                     notifier.state.set(NotifierState::Deleted(id));
                     self.needs_delete.set(true);
                 } else {
@@ -158,7 +158,7 @@ impl<T> InnerSignal<T> {
 
 #[derive(Debug)]
 #[repr(transparent)]
-pub struct Signal<T>(Rc<InnerSignal<T>>);
+pub struct Signal<T: 'static>(Rc<InnerSignal<T>>);
 
 impl<T: 'static> Signal<T> {
     pub fn new(value: T) -> Self {
@@ -229,7 +229,7 @@ impl<T> Clone for Signal<T> {
 
 #[derive(Debug)]
 #[repr(transparent)]
-pub struct Computed<T>(Signal<T>);
+pub struct Computed<T: 'static>(Signal<T>);
 
 #[derive(Debug)]
 struct NotifierRef<T> {
@@ -240,9 +240,9 @@ struct NotifierRef<T> {
 impl<T> Clone for NotifierRef<T> {
     #[inline]
     fn clone(&self) -> Self {
-        Self { 
-            signal: self.signal.clone(), 
-            id: self.id.clone() 
+        Self {
+            signal: self.signal.clone(),
+            id: self.id,
         }
     }
 }
@@ -292,11 +292,11 @@ impl<T> Clone for DroppableUnsubscriber<T> {
     }
 }
 
-pub trait Value<T> {
+pub trait Subscribe<T> {
     fn subscribe(&self, notify: impl FnMut(&T) + 'static) -> Unsubscriber<T>;
 }
 
-impl<T> Value<T> for T {
+impl<T> Subscribe<T> for T {
     #[inline]
     fn subscribe(&self, mut notify: impl FnMut(&T) + 'static) -> Unsubscriber<T> {
         notify(self);
@@ -304,7 +304,7 @@ impl<T> Value<T> for T {
     }
 }
 
-impl<T: 'static> Value<T> for Signal<T> {
+impl<T: 'static> Subscribe<T> for Signal<T> {
     #[inline]
     fn subscribe(&self, notify: impl FnMut(&T) + 'static) -> Unsubscriber<T> {
         self.subscribe(notify)
