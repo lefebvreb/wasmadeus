@@ -119,19 +119,13 @@ impl<T: 'static> Signal<T> {
     }
 
     #[inline(always)]
-    pub fn try_mutate<F>(&self, mutater: F) -> Result<(), SignalUpdatingError>
-    where
-        F: FnOnce(&mut T),
-    {
+    pub fn try_mutate(&self, mutater: impl FnOnce(&mut T)) -> Result<(), SignalUpdatingError> {
         let (raw, data) = self.0.get();
         raw.try_mutate(|| mutater(unsafe { &mut *data }))
     }
 
     #[inline(always)]
-    pub fn try_update<F>(&self, updater: F) -> Result<(), SignalUpdatingError>
-    where
-        F: FnOnce(&T) -> T,
-    {
+    pub fn try_update(&self, updater: impl FnOnce(&T) -> T) -> Result<(), SignalUpdatingError> {
         let (raw, data) = self.0.get();
         raw.try_mutate(|| unsafe { *data = updater(&*data) })
     }
@@ -143,18 +137,12 @@ impl<T: 'static> Signal<T> {
     }
 
     #[inline(always)]
-    pub fn mutate<F>(&self, mutater: impl FnOnce(&mut T))
-    where
-        F: FnOnce(&mut T),
-    {
+    pub fn mutate(&self, mutater: impl FnOnce(&mut T)) {
         self.try_mutate(mutater).unwrap();
     }
 
     #[inline(always)]
-    pub fn update<F>(&self, updater: F)
-    where
-        F: FnOnce(&T) -> T,
-    {
+    pub fn update(&self, updater: impl FnOnce(&T) -> T) {
         self.try_update(updater).unwrap();
     }
 
@@ -163,10 +151,7 @@ impl<T: 'static> Signal<T> {
         self.try_set(value).unwrap();
     }
 
-    pub fn subscribe<F>(&self, mut notify: F) -> Unsubscriber<T>
-    where
-        F: FnMut(&T) + 'static,
-    {
+    pub fn subscribe(&self, mut notify: impl FnMut(&T) + 'static) -> Unsubscriber<T> {
         let (raw, data) = self.0.get();
         let notify = move || notify(unsafe { &*data });
         let id = raw.subscribe(Box::new(notify));
@@ -179,6 +164,7 @@ impl<T: 'static> Signal<T> {
 }
 
 impl<T: Clone> Signal<T> {
+    #[inline(always)]
     pub fn get(&self) -> T {
         let (_, data) = self.0.get();
         unsafe { (&*data).clone() }
@@ -222,20 +208,14 @@ impl<T> Drop for DroppableUnsubscriber<T> {
     }
 }
 
-pub trait Subscribable<T> {
-    fn subscribe<F>(&self, notify: F) -> Unsubscriber<T>
-    where
-        F: FnMut(&T) + 'static;
+pub trait Value<T> {
+    fn subscribe(&self, notify: impl FnMut(&T) + 'static) -> Unsubscriber<T>;
 }
 
-impl<T> Subscribable<T> for T {
+impl<T> Value<T> for T {
     #[inline(always)]
-    fn subscribe<F>(&self, mut notify: F) -> Unsubscriber<T>
-    where
-        F: FnMut(&T) + 'static,
-    {
+    fn subscribe(&self, mut notify: impl FnMut(&T) + 'static) -> Unsubscriber<T> {
         notify(self);
-
         Unsubscriber {
             signal: None, 
             id: 0,
@@ -243,12 +223,9 @@ impl<T> Subscribable<T> for T {
     }
 }
 
-impl<T: 'static> Subscribable<T> for Signal<T> {
+impl<T: 'static> Value<T> for Signal<T> {
     #[inline(always)]
-    fn subscribe<F>(&self, notify: F) -> Unsubscriber<T>
-    where
-        F: FnMut(&T) + 'static,
-    {
+    fn subscribe(&self, notify: impl FnMut(&T) + 'static) -> Unsubscriber<T> {
         self.subscribe(notify)
     }
 }
