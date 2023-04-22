@@ -5,7 +5,6 @@ use alloc::boxed::Box;
 use alloc::rc::{Rc, Weak};
 use alloc::vec::Vec;
 
-
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub struct SignalUpdatingError;
 
@@ -22,6 +21,11 @@ impl NotifierState {
             Self::Active(id) | Self::Deleted(id) => id,
         }
     }
+
+    #[inline]
+    fn is_active(self) -> bool {
+        matches!(self, Self::Active(_))
+    }
 }
 
 #[derive(Debug)]
@@ -30,7 +34,7 @@ struct Notifier {
     notify: UnsafeCell<Box<dyn FnMut()>>,
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, PartialEq, Debug)]
 enum SignalState {
     /// The signal is not currently in use.
     Idling,
@@ -62,31 +66,31 @@ impl RawSignal {
     }
 
     /// # Safety
-    /// 
-    /// The caller must ensure that no contained `self.subscribers[i].notify` gets 
+    ///
+    /// The caller must ensure that no contained `self.subscribers[i].notify` gets
     /// called or dropped.
     unsafe fn notify_all(&self) {
         let subscribers = self.subscribers.get();
         let mut i = 0;
 
         while i < (*subscribers).len() {
-            let notifier = (*subscribers)
-                .as_mut_ptr()
-                .offset(i as isize)
-                .as_ref()
-                .unwrap();
+            let notifier = (*subscribers).as_mut_ptr().add(i).as_ref().unwrap();
 
-            if matches!(notifier.state.get(), NotifierState::Active(_)) {
+            if notifier.state.get().is_active() {
                 let notify = notifier.notify.get();
                 (*notify)();
             }
 
             i += 1;
         }
+
+        if self.needs_delete.take() {
+            (*subscribers).retain(|notifier| !notifier.state.get().is_active());
+        }
     }
 
     fn try_mutate(&self, mutater: impl FnOnce()) -> Result<(), SignalUpdatingError> {
-        if !matches!(self.state.get(), SignalState::Idling) {
+        if self.state.get() != SignalState::Idling {
             return Err(SignalUpdatingError);
         }
 
@@ -94,7 +98,7 @@ impl RawSignal {
 
         mutater();
 
-        // SAFETY: we set the state to Mutating, therefore preventing 
+        // SAFETY: we set the state to Mutating, therefore preventing
         // a second call to this function until this one terminates.
         unsafe { self.notify_all() };
 
@@ -103,7 +107,7 @@ impl RawSignal {
     }
 
     fn subscribe(&self, mut notify: Box<dyn FnMut()>) -> NonZeroU32 {
-        if matches!(self.state.get(), SignalState::Mutating) {
+        if self.state.get() != SignalState::Mutating {
             let old_state = self.state.replace(SignalState::Subscribing);
             notify();
             self.state.set(old_state);
@@ -111,11 +115,11 @@ impl RawSignal {
 
         let id = self.next_id.get();
         self.next_id.set(id.saturating_add(1));
-        
+
         let subscribers = unsafe { &mut *self.subscribers.get() };
 
         subscribers.push(Notifier {
-            state: Cell::new(NotifierState::Active(id)), 
+            state: Cell::new(NotifierState::Active(id)),
             notify: UnsafeCell::new(notify),
         });
 
@@ -123,12 +127,21 @@ impl RawSignal {
     }
 
     fn unsubscribe(&self, id: NonZeroU32) {
-        let subscribers = unsafe { &*self.subscribers.get() };
+        let subscribers = self.subscribers.get();
 
-        if let Ok(index) = subscribers.binary_search_by_key(&id, |notifier| notifier.state.get().id()) {
-            let notifier = subscribers.get(index).unwrap();
-            let id = notifier.state.get().id();
-            notifier.state.set(NotifierState::Deleted(id));
+        unsafe {
+            if let Ok(index) =
+                (*subscribers).binary_search_by_key(&id, |notifier| notifier.state.get().id())
+            {
+                if self.state.get() == SignalState::Mutating {
+                    let notifier = (*subscribers).get(index).unwrap();
+                    let id = notifier.state.get().id();
+                    notifier.state.set(NotifierState::Deleted(id));
+                    self.needs_delete.set(true);
+                } else {
+                    (*subscribers).remove(index);
+                }
+            }
         }
     }
 }
@@ -162,14 +175,12 @@ impl<T: 'static> Signal<T> {
 
     #[inline]
     pub fn try_update(&self, updater: impl FnOnce(&T) -> T) -> Result<(), SignalUpdatingError> {
-        let (raw, data) = self.0.get();
-        raw.try_mutate(|| unsafe { *data = updater(&*data) })
+        self.try_mutate(|data| *data = updater(data))
     }
 
     #[inline]
     pub fn try_set(&self, value: T) -> Result<(), SignalUpdatingError> {
-        let (raw, data) = self.0.get();
-        raw.try_mutate(|| unsafe { *data = value })
+        self.try_mutate(|data| *data = value)
     }
 
     #[inline]
@@ -196,6 +207,7 @@ impl<T: 'static> Signal<T> {
             signal: Rc::downgrade(&self.0),
             id,
         };
+
         Unsubscriber(Some(info))
     }
 }
@@ -204,7 +216,7 @@ impl<T: Clone> Signal<T> {
     #[inline]
     pub fn get(&self) -> T {
         let (_, data) = self.0.get();
-        unsafe { (&*data).clone() }
+        unsafe { (*data).clone() }
     }
 }
 
