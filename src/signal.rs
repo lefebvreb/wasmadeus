@@ -228,9 +228,23 @@ impl<T> Clone for Signal<T> {
 }
 
 #[derive(Debug)]
+#[repr(transparent)]
+pub struct Computed<T>(Signal<T>);
+
+#[derive(Debug)]
 struct NotifierRef<T> {
     signal: Weak<InnerSignal<T>>,
     id: NonZeroU32,
+}
+
+impl<T> Clone for NotifierRef<T> {
+    #[inline]
+    fn clone(&self) -> Self {
+        Self { 
+            signal: self.signal.clone(), 
+            id: self.id.clone() 
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -253,6 +267,13 @@ impl<T> Unsubscriber<T> {
     }
 }
 
+impl<T> Clone for Unsubscriber<T> {
+    #[inline]
+    fn clone(&self) -> Self {
+        Self(self.0.clone())
+    }
+}
+
 #[derive(Debug)]
 #[repr(transparent)]
 pub struct DroppableUnsubscriber<T>(pub Unsubscriber<T>);
@@ -261,6 +282,13 @@ impl<T> Drop for DroppableUnsubscriber<T> {
     #[inline]
     fn drop(&mut self) {
         self.0.unsubscribe();
+    }
+}
+
+impl<T> Clone for DroppableUnsubscriber<T> {
+    #[inline]
+    fn clone(&self) -> Self {
+        Self(self.0.clone())
     }
 }
 
