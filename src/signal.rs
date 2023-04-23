@@ -24,6 +24,8 @@ struct Notifier {
 impl Drop for Notifier {
     #[inline]
     fn drop(&mut self) {
+        // SAFETY: we have exclusive access to this pointer, that is
+        // never copied.
         unsafe {
             let _ = Box::from_raw(self.notify);
         }
@@ -44,6 +46,7 @@ impl Notifier {
     }
 }
 
+#[repr(u8)]
 #[derive(Copy, Clone, PartialEq, Debug)]
 enum SignalState {
     /// The signal is not currently in use.
@@ -59,9 +62,9 @@ enum SignalState {
 #[derive(Debug)]
 struct RawSignal {
     state: Cell<SignalState>,
-    subscribers: UnsafeCell<Vec<Notifier>>,
     next_id: Cell<NonZeroU32>,
     needs_delete: Cell<bool>,
+    subscribers: UnsafeCell<Vec<Notifier>>,
 }
 
 impl RawSignal {
@@ -77,8 +80,9 @@ impl RawSignal {
 
     /// # Safety
     ///
-    /// The caller must ensure that no contained `self.subscribers[i].notify` gets
-    /// called or dropped.
+    /// The caller must ensure that:
+    /// * No element of the `self.subscribers` vector gets dropped.
+    /// * No closure contained in the `self.subscribers` vector gets borrowed.
     unsafe fn notify_all(&self) {
         let subscribers = self.subscribers.get();
         let mut i = 0;
@@ -98,7 +102,10 @@ impl RawSignal {
         }
     }
 
-    fn try_mutate(&self, mutater: impl FnOnce()) -> Result<(), SignalUpdatingError> {
+    fn try_mutate<F>(&self, mutater: F) -> Result<(), SignalUpdatingError> 
+    where
+        F: FnOnce(), 
+    {
         if self.state.get() != SignalState::Idling {
             return Err(SignalUpdatingError);
         }
@@ -108,7 +115,8 @@ impl RawSignal {
         mutater();
 
         // SAFETY: we set the state to Mutating, therefore preventing
-        // a second call to this function until this one terminates.
+        // others from removing elements from `self.subscribers` or 
+        // borrowing it's closures.
         unsafe { self.notify_all() };
 
         self.state.set(SignalState::Idling);
@@ -124,6 +132,8 @@ impl RawSignal {
 
         let subscribers = self.subscribers.get();
 
+        // SAFETY: it is always safe to append to `self.subscribers` because
+        // no one keeps a borrow of it between call boundaries.
         unsafe {
             (*subscribers).push(Notifier {
                 state: Cell::new(NotifierState::Active(id)),
@@ -132,7 +142,10 @@ impl RawSignal {
         }
     }
 
-    fn for_each(&self, make_notifier: impl FnOnce(NonZeroU32) -> Box<dyn FnMut()>) -> NonZeroU32 {
+    fn for_each<F>(&self, make_notifier: F) -> NonZeroU32 
+    where
+        F: FnOnce(NonZeroU32) -> Box<dyn FnMut()>,
+    {
         let id = self.next_id.get();
         self.next_id.set(id.saturating_add(1));
         self.append_notifier(id, make_notifier(id));
@@ -179,13 +192,19 @@ impl<T> Signal<T> {
     }
 
     #[inline]
-    pub fn try_mutate(&self, f: impl FnOnce(&mut T)) -> Result<(), SignalUpdatingError> {
+    pub fn try_mutate<F>(&self, f: F) -> Result<(), SignalUpdatingError>
+    where
+        F: FnOnce(&mut T),
+    {
         let (raw, data) = self.0.get();
         raw.try_mutate(|| f(unsafe { &mut *data }))
     }
 
     #[inline]
-    pub fn try_update(&self, f: impl FnOnce(&T) -> T) -> Result<(), SignalUpdatingError> {
+    pub fn try_update<F>(&self, f: F) -> Result<(), SignalUpdatingError> 
+    where
+        F: FnOnce(&T) -> T, 
+    {
         self.try_mutate(|data| *data = f(data))
     }
 
@@ -195,12 +214,18 @@ impl<T> Signal<T> {
     }
 
     #[inline]
-    pub fn mutate(&self, f: impl FnOnce(&mut T)) {
+    pub fn mutate<F>(&self, f: F)
+    where
+        F: FnOnce(&mut T),
+    {
         self.try_mutate(f).unwrap();
     }
 
     #[inline]
-    pub fn update(&self, f: impl FnOnce(&T) -> T) {
+    pub fn update<F>(&self, f: F)
+    where
+        F: FnOnce(&T) -> T,
+    {
         self.try_update(f).unwrap();
     }
 
@@ -235,7 +260,7 @@ impl<T> Signal<T> {
                 signal: Rc::downgrade(&self.0),
                 id,
             };
-            
+
             let mut unsub = Unsubscriber(Some(info));
             Box::new(move || f(unsafe { &*data }, &mut unsub))
         });
