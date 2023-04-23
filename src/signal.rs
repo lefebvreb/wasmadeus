@@ -17,7 +17,16 @@ enum NotifierState {
 #[derive(Debug)]
 struct Notifier {
     state: Cell<NotifierState>,
-    notify: UnsafeCell<Box<dyn FnMut()>>,
+    notify: *mut dyn FnMut(),
+}
+
+impl Drop for Notifier {
+    #[inline]
+    fn drop(&mut self) {
+        unsafe { 
+            let _ = Box::from_raw(self.notify); 
+        }
+    }
 }
 
 impl Notifier {
@@ -77,8 +86,7 @@ impl RawSignal {
             let notifier = (*subscribers).as_mut_ptr().add(i).as_ref().unwrap();
 
             if !notifier.deleted() {
-                let notify = notifier.notify.get();
-                (*notify)();
+                (*notifier.notify)();
             }
 
             i += 1;
@@ -121,7 +129,7 @@ impl RawSignal {
         unsafe {
             (*subscribers).push(Notifier {
                 state: Cell::new(NotifierState::Active(id)),
-                notify: UnsafeCell::new(notify),
+                notify: Box::into_raw(notify),
             });
         }
 
