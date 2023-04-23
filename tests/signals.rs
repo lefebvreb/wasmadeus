@@ -12,7 +12,7 @@ pub fn unsubscribe_in_notify() {
     let signal = Signal::new("hello");
 
     let rc_clone = rc.clone();
-    let unsub = signal.subscribe(move |_| {
+    let unsub = signal.for_each(move |_| {
         if let Some(mut unsub) = rc_clone.borrow_mut().take() {
             unsub.unsubscribe();
         }
