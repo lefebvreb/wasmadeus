@@ -39,8 +39,8 @@ impl Notifier {
     }
 
     #[inline]
-    fn deleted(&self) -> bool {
-        matches!(self.state.get(), NotifierState::Deleted(_))
+    fn active(&self) -> bool {
+        matches!(self.state.get(), NotifierState::Active(_))
     }
 }
 
@@ -86,7 +86,7 @@ impl RawSignal {
         while i < (*subscribers).len() {
             let notifier = (*subscribers).as_mut_ptr().add(i).as_ref().unwrap();
 
-            if !notifier.deleted() {
+            if notifier.active() {
                 (*notifier.notify)();
             }
 
@@ -94,18 +94,18 @@ impl RawSignal {
         }
 
         if self.needs_delete.take() {
-            (*subscribers).retain(Notifier::deleted);
+            (*subscribers).retain(Notifier::active);
         }
     }
 
-    fn try_mutate(&self, f: impl FnOnce()) -> Result<(), SignalUpdatingError> {
+    fn try_mutate(&self, mutater: impl FnOnce()) -> Result<(), SignalUpdatingError> {
         if self.state.get() != SignalState::Idling {
             return Err(SignalUpdatingError);
         }
 
         self.state.set(SignalState::Mutating);
 
-        f();
+        mutater();
 
         // SAFETY: we set the state to Mutating, therefore preventing
         // a second call to this function until this one terminates.
@@ -115,25 +115,27 @@ impl RawSignal {
         Ok(())
     }
 
-    fn for_each(&self, mut f: Box<dyn FnMut()>) -> NonZeroU32 {
+    fn append_notifier(&self, id: NonZeroU32, mut notifier: Box<dyn FnMut()>) {
         if self.state.get() != SignalState::Mutating {
             let old_state = self.state.replace(SignalState::Subscribing);
-            f();
+            notifier();
             self.state.set(old_state);
         }
-
-        let id = self.next_id.get();
-        self.next_id.set(id.saturating_add(1));
 
         let subscribers = self.subscribers.get();
 
         unsafe {
             (*subscribers).push(Notifier {
                 state: Cell::new(NotifierState::Active(id)),
-                notify: Box::into_raw(f),
+                notify: Box::into_raw(notifier),
             });
         }
+    }
 
+    fn for_each(&self, make_notifier: impl FnOnce(NonZeroU32) -> Box<dyn FnMut()>) -> NonZeroU32 {
+        let id = self.next_id.get();
+        self.next_id.set(id.saturating_add(1));
+        self.append_notifier(id, make_notifier(id));
         id
     }
 
@@ -209,8 +211,7 @@ impl<T> Signal<T> {
 
     pub fn for_each(&self, mut f: impl FnMut(&T) + 'static) -> Unsubscriber<T> {
         let (raw, data) = self.0.get();
-        let notify = move || f(unsafe { &*data });
-        let id = raw.for_each(Box::new(notify));
+        let id = raw.for_each(|_| Box::new(move || f(unsafe { &*data })));
 
         let info = NotifierRef {
             signal: Rc::downgrade(&self.0),
@@ -332,7 +333,7 @@ impl<T> Drop for DroppableUnsubscriber<T> {
 pub trait Value<T> {
     fn for_each(&self, f: impl FnMut(&T) + 'static) -> Unsubscriber<T>;
 
-    fn subscribe_inner(&self, f: impl FnMut(&T, &mut Unsubscriber<T>) + 'static) {
+    fn for_each_inner(&self, f: impl FnMut(&T, &mut Unsubscriber<T>) + 'static) {
         todo!()
     }
 }
