@@ -344,6 +344,11 @@ impl<T> Value<T> for T {
         f(self);
         Unsubscriber(None)
     }
+
+    fn for_each_inner(&self, mut f: impl FnMut(&T, &mut Unsubscriber<T>) + 'static) {
+        let mut unsub = Unsubscriber(None);
+        f(self, &mut unsub);
+    }
 }
 
 impl<T: 'static> Value<T> for Signal<T> {
