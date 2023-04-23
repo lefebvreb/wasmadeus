@@ -7,7 +7,7 @@ use alloc::rc::{Rc, Weak};
 use alloc::vec::Vec;
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
-pub struct SignalUpdatingError;
+pub struct SignalMutatingError;
 
 #[derive(Copy, Clone, Debug)]
 enum NotifierState {
@@ -83,6 +83,7 @@ impl RawSignal {
     /// The caller must ensure that:
     /// * No element of the `self.subscribers` vector gets dropped.
     /// * No closure contained in the `self.subscribers` vector gets borrowed.
+    /// * The parent signal's data is not mutated.
     unsafe fn notify_all(&self) {
         let subscribers = self.subscribers.get();
         let mut i = 0;
@@ -102,12 +103,12 @@ impl RawSignal {
         }
     }
 
-    fn try_mutate<F>(&self, mutater: F) -> Result<(), SignalUpdatingError> 
+    fn try_mutate<F>(&self, mutater: F) -> Result<(), SignalMutatingError>
     where
-        F: FnOnce(), 
+        F: FnOnce(),
     {
         if self.state.get() != SignalState::Idling {
-            return Err(SignalUpdatingError);
+            return Err(SignalMutatingError);
         }
 
         self.state.set(SignalState::Mutating);
@@ -115,7 +116,7 @@ impl RawSignal {
         mutater();
 
         // SAFETY: we set the state to Mutating, therefore preventing
-        // others from removing elements from `self.subscribers` or 
+        // others from removing elements from `self.subscribers` or
         // borrowing it's closures.
         unsafe { self.notify_all() };
 
@@ -142,7 +143,7 @@ impl RawSignal {
         }
     }
 
-    fn for_each<F>(&self, make_notifier: F) -> NonZeroU32 
+    fn for_each<F>(&self, make_notifier: F) -> NonZeroU32
     where
         F: FnOnce(NonZeroU32) -> Box<dyn FnMut()>,
     {
@@ -155,6 +156,9 @@ impl RawSignal {
     fn unsubscribe(&self, id: NonZeroU32) {
         let subscribers = self.subscribers.get();
 
+        // SAFETY: if the signal is mutating, we simply borrow `self.subscribers` immutably.
+        // If it is not, we remove a single element of it.
+        // In both case, we don't retain the borrow through any other function calls.
         unsafe {
             if let Ok(index) = (*subscribers).binary_search_by_key(&id, Notifier::id) {
                 if self.state.get() == SignalState::Mutating {
@@ -192,24 +196,26 @@ impl<T> Signal<T> {
     }
 
     #[inline]
-    pub fn try_mutate<F>(&self, f: F) -> Result<(), SignalUpdatingError>
+    pub fn try_mutate<F>(&self, f: F) -> Result<(), SignalMutatingError>
     where
         F: FnOnce(&mut T),
     {
         let (raw, data) = self.0.get();
+        // SAFETY: `data` will live longer than this closure. `RawSignal::try_mutate`
+        // will make sure the it is not called twice at the same time.
         raw.try_mutate(|| f(unsafe { &mut *data }))
     }
 
     #[inline]
-    pub fn try_update<F>(&self, f: F) -> Result<(), SignalUpdatingError> 
+    pub fn try_update<F>(&self, f: F) -> Result<(), SignalMutatingError>
     where
-        F: FnOnce(&T) -> T, 
+        F: FnOnce(&T) -> T,
     {
         self.try_mutate(|data| *data = f(data))
     }
 
     #[inline]
-    pub fn try_set(&self, value: T) -> Result<(), SignalUpdatingError> {
+    pub fn try_set(&self, value: T) -> Result<(), SignalMutatingError> {
         self.try_mutate(|data| *data = value)
     }
 
@@ -239,6 +245,8 @@ impl<T> Signal<T> {
         F: FnMut(&T) + 'static,
     {
         let (raw, data) = self.0.get();
+        // SAFETY: when the innermost closure gets called, there shall be no
+        // other mutable borrow to data.
         let id = raw.for_each(|_| Box::new(move || f(unsafe { &*data })));
 
         let info = NotifierRef {
@@ -262,6 +270,8 @@ impl<T> Signal<T> {
             };
 
             let mut unsub = Unsubscriber(Some(info));
+            // SAFETY: when this closure gets called, there shall be no
+            // other mutable borrow to data.
             Box::new(move || f(unsafe { &*data }, &mut unsub))
         });
     }

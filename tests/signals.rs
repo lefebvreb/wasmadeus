@@ -1,23 +1,37 @@
-//! Run those tests with [miri](https://github.com/rust-lang/miri).
+//! Run these with [miri](https://github.com/rust-lang/miri).
 
-use wasmide::signal::{Signal, Unsubscriber};
+use wasmide::signal::Signal;
 
 #[test]
 pub fn unsubscribe_in_notify() {
-    use std::cell::RefCell;
-    use std::rc::Rc;
-
-    let unsub: Option<Unsubscriber<_>> = None;
-    let rc = Rc::new(RefCell::new(unsub));
     let signal = Signal::new("hello");
 
-    let rc_clone = rc.clone();
-    let unsub = signal.for_each(move |_| {
-        if let Some(mut unsub) = rc_clone.borrow_mut().take() {
-            unsub.unsubscribe();
+    signal.for_each_inner(|_, unsub| {
+        unsub.unsubscribe();
+    });
+}
+
+#[test]
+pub fn unsubscribe_in_notify2() {
+    let signal = Signal::new("hello");
+
+    let mut count = 0;
+    signal.for_each_inner(move |_, unsub| {
+        match count {
+            2 => unsub.unsubscribe(),
+            _ => count += 1,
         }
     });
 
-    *rc.borrow_mut() = Some(unsub);
     signal.set("goodbye");
+}
+
+#[test]
+pub fn get_in_mutate() {
+    let signal = Signal::new("hello");
+
+    signal.mutate(|txt| {
+        signal.get();
+        *txt = "goodbye";
+    });
 }
