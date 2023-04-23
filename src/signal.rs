@@ -168,7 +168,7 @@ impl<T> InnerSignal<T> {
 #[repr(transparent)]
 pub struct Signal<T: 'static>(Rc<InnerSignal<T>>);
 
-impl<T: 'static> Signal<T> {
+impl<T> Signal<T> {
     pub fn new(value: T) -> Self {
         let raw = RawSignal::new();
         let data = UnsafeCell::new(value);
@@ -273,6 +273,11 @@ impl<T> Unsubscriber<T> {
     pub fn droppable(self) -> DroppableUnsubscriber<T> {
         DroppableUnsubscriber(self)
     }
+
+    #[inline]
+    pub fn needed(self) -> bool {
+        self.0.is_some()
+    }
 }
 
 impl<T> Clone for Unsubscriber<T> {
@@ -302,6 +307,10 @@ impl<T> Clone for DroppableUnsubscriber<T> {
 
 pub trait Subscribe<T> {
     fn subscribe(&self, notify: impl FnMut(&T) + 'static) -> Unsubscriber<T>;
+
+    fn subscribe_inner(&self, notify: impl FnMut(&T, &mut Unsubscriber<T>) + 'static) {
+        todo!()
+    }
 }
 
 impl<T> Subscribe<T> for T {
