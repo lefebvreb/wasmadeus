@@ -24,8 +24,8 @@ struct Notifier {
 impl Drop for Notifier {
     #[inline]
     fn drop(&mut self) {
-        unsafe { 
-            let _ = Box::from_raw(self.notify); 
+        unsafe {
+            let _ = Box::from_raw(self.notify);
         }
     }
 }
@@ -209,7 +209,10 @@ impl<T> Signal<T> {
         self.try_set(value).unwrap();
     }
 
-    pub fn for_each(&self, mut f: impl FnMut(&T) + 'static) -> Unsubscriber<T> {
+    pub fn for_each<F>(&self, mut f: F) -> Unsubscriber<T>
+    where
+        F: FnMut(&T) + 'static,
+    {
         let (raw, data) = self.0.get();
         let id = raw.for_each(|_| Box::new(move || f(unsafe { &*data })));
 
@@ -219,6 +222,23 @@ impl<T> Signal<T> {
         };
 
         Unsubscriber(Some(info))
+    }
+
+    pub fn for_each_inner<F>(&self, mut f: F)
+    where
+        F: FnMut(&T, &mut Unsubscriber<T>) + 'static,
+    {
+        let (raw, data) = self.0.get();
+
+        raw.for_each(|id| {
+            let info = NotifierRef {
+                signal: Rc::downgrade(&self.0),
+                id,
+            };
+            
+            let mut unsub = Unsubscriber(Some(info));
+            Box::new(move || f(unsafe { &*data }, &mut unsub))
+        });
     }
 }
 
@@ -296,7 +316,7 @@ pub struct DroppableUnsubscriber<T>(pub Unsubscriber<T>);
 impl<T> DroppableUnsubscriber<T> {
     #[inline]
     pub fn take(mut self) -> Unsubscriber<T> {
-        Unsubscriber(self.0.0.take())
+        Unsubscriber(self.0 .0.take())
     }
 }
 
@@ -331,21 +351,29 @@ impl<T> Drop for DroppableUnsubscriber<T> {
 }
 
 pub trait Value<T> {
-    fn for_each(&self, f: impl FnMut(&T) + 'static) -> Unsubscriber<T>;
+    fn for_each<F>(&self, f: F) -> Unsubscriber<T>
+    where
+        F: FnMut(&T) + 'static;
 
-    fn for_each_inner(&self, f: impl FnMut(&T, &mut Unsubscriber<T>) + 'static) {
-        todo!()
-    }
+    fn for_each_inner<F>(&self, f: F)
+    where
+        F: FnMut(&T, &mut Unsubscriber<T>) + 'static;
 }
 
 impl<T> Value<T> for T {
     #[inline]
-    fn for_each(&self, mut f: impl FnMut(&T) + 'static) -> Unsubscriber<T> {
+    fn for_each<F>(&self, mut f: F) -> Unsubscriber<T>
+    where
+        F: FnMut(&T) + 'static,
+    {
         f(self);
         Unsubscriber(None)
     }
 
-    fn for_each_inner(&self, mut f: impl FnMut(&T, &mut Unsubscriber<T>) + 'static) {
+    fn for_each_inner<F>(&self, mut f: F)
+    where
+        F: FnMut(&T, &mut Unsubscriber<T>) + 'static,
+    {
         let mut unsub = Unsubscriber(None);
         f(self, &mut unsub);
     }
@@ -353,7 +381,18 @@ impl<T> Value<T> for T {
 
 impl<T: 'static> Value<T> for Signal<T> {
     #[inline]
-    fn for_each(&self, f: impl FnMut(&T) + 'static) -> Unsubscriber<T> {
+    fn for_each<F>(&self, f: F) -> Unsubscriber<T>
+    where
+        F: FnMut(&T) + 'static,
+    {
         self.for_each(f)
+    }
+
+    #[inline]
+    fn for_each_inner<F>(&self, f: F)
+    where
+        F: FnMut(&T, &mut Unsubscriber<T>) + 'static,
+    {
+        self.for_each_inner(f);
     }
 }
