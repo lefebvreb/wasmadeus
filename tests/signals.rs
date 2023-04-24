@@ -27,6 +27,7 @@ pub fn unsubscribe_in_notify2() {
 }
 
 #[test]
+#[should_panic]
 pub fn get_in_mutate() {
     let signal = Signal::new("hello");
 

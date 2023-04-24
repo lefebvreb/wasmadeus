@@ -279,9 +279,21 @@ impl<T> Signal<T> {
 
 impl<T: Clone> Signal<T> {
     #[inline]
+    pub fn try_get(&self) -> Result<T, SignalMutatingError> {
+        let (raw, data) = self.0.get();
+        
+        if raw.state.get() == SignalState::Mutating {
+            return Err(SignalMutatingError);
+        }
+
+        // SAFETY: the data is not currently getting mutated, therefore it is safe
+        // to borrow it immutably.
+        Ok(unsafe { (*data).clone() })
+    }
+
+    #[inline]
     pub fn get(&self) -> T {
-        let (_, data) = self.0.get();
-        unsafe { (*data).clone() }
+        self.try_get().unwrap()
     }
 }
 
