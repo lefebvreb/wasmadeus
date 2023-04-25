@@ -6,6 +6,8 @@ use alloc::boxed::Box;
 use alloc::rc::{Rc, Weak};
 use alloc::vec::Vec;
 
+use super::Value;
+
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub struct SignalMutatingError;
 
@@ -186,9 +188,9 @@ impl<T> InnerSignal<T> {
 
 #[derive(Debug)]
 #[repr(transparent)]
-pub struct Signal<T: 'static>(Rc<InnerSignal<T>>);
+pub struct Mutable<T: 'static>(Rc<InnerSignal<T>>);
 
-impl<T> Signal<T> {
+impl<T> Mutable<T> {
     pub fn new(value: T) -> Self {
         let raw = RawSignal::new();
         let data = UnsafeCell::new(value);
@@ -277,11 +279,11 @@ impl<T> Signal<T> {
     }
 }
 
-impl<T: Clone> Signal<T> {
+impl<T: Clone> Mutable<T> {
     #[inline]
     pub fn try_get(&self) -> Result<T, SignalMutatingError> {
         let (raw, data) = self.0.get();
-        
+
         if raw.state.get() == SignalState::Mutating {
             return Err(SignalMutatingError);
         }
@@ -297,7 +299,7 @@ impl<T: Clone> Signal<T> {
     }
 }
 
-impl<T> Clone for Signal<T> {
+impl<T> Clone for Mutable<T> {
     #[inline]
     fn clone(&self) -> Self {
         Self(self.0.clone())
@@ -306,7 +308,7 @@ impl<T> Clone for Signal<T> {
 
 #[derive(Debug)]
 #[repr(transparent)]
-pub struct Computed<T: 'static>(Signal<T>);
+pub struct Computed<T: 'static>(Mutable<T>);
 
 #[derive(Debug)]
 struct NotifierRef<T> {
@@ -397,16 +399,6 @@ impl<T> Drop for DroppableUnsubscriber<T> {
     }
 }
 
-pub trait Value<T> {
-    fn for_each<F>(&self, f: F) -> Unsubscriber<T>
-    where
-        F: FnMut(&T) + 'static;
-
-    fn for_each_inner<F>(&self, f: F)
-    where
-        F: FnMut(&T, &mut Unsubscriber<T>) + 'static;
-}
-
 impl<T> Value<T> for T {
     #[inline]
     fn for_each<F>(&self, mut f: F) -> Unsubscriber<T>
@@ -426,7 +418,7 @@ impl<T> Value<T> for T {
     }
 }
 
-impl<T: 'static> Value<T> for Signal<T> {
+impl<T: 'static> Value<T> for Mutable<T> {
     #[inline]
     fn for_each<F>(&self, f: F) -> Unsubscriber<T>
     where
