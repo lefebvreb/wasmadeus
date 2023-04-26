@@ -36,6 +36,7 @@ pub trait Signal: Value<Self::Item> {
     where
         Self::Item: Clone;
 
+    #[inline]
     fn get(&self) -> Self::Item
     where
         Self::Item: Clone,
@@ -43,18 +44,7 @@ pub trait Signal: Value<Self::Item> {
         self.try_get().unwrap()
     }
 
-    fn try_take(&self) -> Result<Self::Item, SignalMutatingError>
+    fn map<B, F>(&self, f: F)
     where
-        Self::Item: Default;
-
-    fn take(&self) -> Self::Item
-    where
-        Self::Item: Default,
-    {
-        self.try_take().unwrap()
-    }
-
-    fn map<T, F>(&self, f: F)
-    where
-        F: FnMut(&Self::Item) -> T;
+        F: FnMut(&Self::Item) -> B;
 }

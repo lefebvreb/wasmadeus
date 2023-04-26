@@ -6,7 +6,7 @@ use alloc::boxed::Box;
 use alloc::rc::{Rc, Weak};
 use alloc::vec::Vec;
 
-use super::Value;
+use super::{Signal, Value};
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub struct SignalMutatingError;
@@ -419,5 +419,31 @@ impl<T: 'static> Value<T> for Mutable<T> {
         F: FnMut(&T, &mut Unsubscriber<T>) + 'static,
     {
         self.for_each_inner(f);
+    }
+}
+
+impl<T> Signal for Mutable<T> {
+    type Item = T;
+
+    fn try_get(&self) -> Result<Self::Item, SignalMutatingError>
+    where
+        Self::Item: Clone,
+    {
+        let (raw, data) = self.0.get();
+
+        if raw.state.get() == SignalState::Mutating {
+            return Err(SignalMutatingError);
+        }
+
+        // SAFETY: the data is not currently getting mutated, therefore it is safe
+        // to borrow it immutably.
+        Ok(unsafe { (*data).clone() })
+    }
+
+    fn map<B, F>(&self, f: F)
+    where
+        F: FnMut(&Self::Item) -> B,
+    {
+        todo!()
     }
 }
