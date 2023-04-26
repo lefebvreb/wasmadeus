@@ -279,36 +279,12 @@ impl<T> Mutable<T> {
     }
 }
 
-impl<T: Clone> Mutable<T> {
-    #[inline]
-    pub fn try_get(&self) -> Result<T, SignalMutatingError> {
-        let (raw, data) = self.0.get();
-
-        if raw.state.get() == SignalState::Mutating {
-            return Err(SignalMutatingError);
-        }
-
-        // SAFETY: the data is not currently getting mutated, therefore it is safe
-        // to borrow it immutably.
-        Ok(unsafe { (*data).clone() })
-    }
-
-    #[inline]
-    pub fn get(&self) -> T {
-        self.try_get().unwrap()
-    }
-}
-
 impl<T> Clone for Mutable<T> {
     #[inline]
     fn clone(&self) -> Self {
         Self(self.0.clone())
     }
 }
-
-#[derive(Debug)]
-#[repr(transparent)]
-pub struct Computed<T: 'static>(Mutable<T>);
 
 #[derive(Debug)]
 struct NotifierRef<T> {
