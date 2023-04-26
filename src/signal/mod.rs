@@ -1,5 +1,5 @@
-mod base;
+mod mutable;
 mod traits;
 
-pub use base::*;
+pub use mutable::*;
 pub use traits::*;

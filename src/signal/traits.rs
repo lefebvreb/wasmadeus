@@ -10,6 +10,25 @@ pub trait Value<T> {
         F: FnMut(&T, &mut Unsubscriber<T>) + 'static;
 }
 
+impl<T> Value<T> for T {
+    #[inline]
+    fn for_each<F>(&self, mut f: F) -> Unsubscriber<T>
+    where
+        F: FnMut(&T) + 'static,
+    {
+        f(self);
+        Unsubscriber::empty()
+    }
+
+    fn for_each_inner<F>(&self, mut f: F)
+    where
+        F: FnMut(&T, &mut Unsubscriber<T>) + 'static,
+    {
+        let mut unsub = Unsubscriber::empty();
+        f(self, &mut unsub);
+    }
+}
+
 pub trait Signal: Value<Self::Item> {
     type Item;
 
@@ -24,7 +43,18 @@ pub trait Signal: Value<Self::Item> {
         self.try_get().unwrap()
     }
 
-    fn map<U, F>(&self, f: F)
+    fn try_take(&self) -> Result<Self::Item, SignalMutatingError>
     where
-        ;
+        Self::Item: Default;
+
+    fn take(&self) -> Self::Item
+    where
+        Self::Item: Default,
+    {
+        self.try_take().unwrap()
+    }
+
+    fn map<T, F>(&self, f: F)
+    where
+        F: FnMut(&Self::Item) -> T;
 }

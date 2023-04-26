@@ -332,6 +332,11 @@ pub struct Unsubscriber<T>(Option<NotifierRef<T>>);
 
 impl<T> Unsubscriber<T> {
     #[inline]
+    pub fn empty() -> Self {
+        Self(None)
+    }
+
+    #[inline]
     pub fn needed(&self) -> bool {
         self.0.is_some()
     }
@@ -396,25 +401,6 @@ impl<T> Drop for DroppableUnsubscriber<T> {
     #[inline]
     fn drop(&mut self) {
         self.0.unsubscribe();
-    }
-}
-
-impl<T> Value<T> for T {
-    #[inline]
-    fn for_each<F>(&self, mut f: F) -> Unsubscriber<T>
-    where
-        F: FnMut(&T) + 'static,
-    {
-        f(self);
-        Unsubscriber(None)
-    }
-
-    fn for_each_inner<F>(&self, mut f: F)
-    where
-        F: FnMut(&T, &mut Unsubscriber<T>) + 'static,
-    {
-        let mut unsub = Unsubscriber(None);
-        f(self, &mut unsub);
     }
 }
 
