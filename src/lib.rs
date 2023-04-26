@@ -1,4 +1,4 @@
-#![doc(html_logo_url = "logo.svg")]
+#![doc(html_logo_url = "https://raw.githubusercontent.com/lefebvreb/wasmadeus/main/logo.svg")]
 #![no_std]
 
 extern crate alloc;

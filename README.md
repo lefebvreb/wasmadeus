@@ -1,10 +1,12 @@
-<img align="left" alt="wasmadeus" src="logo.svg" height="150"/>
+<p align="center"><img alt="wasmadeus" src="logo.svg" height="300"/></p>
 
-# Wasmadeus frontend framework
+# Wasmadeus
 
-An experimental frontend web framework in pure rust.
+[<img alt="github" src="https://img.shields.io/badge/github-lefebvreb/wasmadeus-8da0cb?style=for-the-badge&labelColor=555555&logo=github" height="20">](https://github.com/lefebvreb/wasmadeus)
+[<img alt="crates.io" src="https://img.shields.io/crates/v/wasmadeus.svg?style=for-the-badge&color=fc8d62&logo=rust" height="20">](https://crates.io/crates/wasmadeus)
+[<img alt="docs.rs" src="https://img.shields.io/badge/docs.rs-wasmadeus-66c2a5?style=for-the-badge&labelColor=555555&logo=docs.rs" height="20">](https://docs.rs/wasmadeus)
 
-Wasmadeus is focused on simplicity, ease of use and performance.
+An experimental frontend web framework in pure rust, Wasmadeus is focused on simplicity, ease of use and performance.
 
 ```rust
 TODO
@@ -25,12 +27,19 @@ Wasmadeus features:
 
 See the [examples](https://github.com/L-Benjamin/wasmadeus/tree/main/examples) directory for a list of examples built with Wasmadeus.
 
-<!-- # Roadmap
+<br>
 
-Wasmadeus won't get stabilized any time soon. I would like to wait for wasm to get
-native access to the dom before that, which might take a (very) long time.
+#### License
 
-For now, Wasmadeus is only a proof of concept. Here are the points I'd like to expand on in the near future:
-+ Remove, or at least limit, the current extensive use of `unsafe` code. This will need quite some work in the store module. Eventually the goal would be to `#![forbid(unsafe_code)` without sacrificing performance.
-+ Make more components constructors. The goal is to cover most html components, at least the ones that are not deprecated.
-+ Profiling and benchmarks for both binary size and performance. -->
+<sup>
+Licensed under either of <a href="LICENSE-APACHE">Apache License, Version
+2.0</a> or <a href="LICENSE-MIT">MIT license</a> at your option.
+</sup>
+
+<br>
+
+<sub>
+Unless you explicitly state otherwise, any contribution intentionally submitted
+for inclusion in this crate by you, as defined in the Apache-2.0 license, shall
+be dual licensed as above, without any additional terms or conditions.
+</sub>
