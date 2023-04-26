@@ -6,6 +6,8 @@
     <a href="https://docs.rs/wasmadeus"><img alt="docs.rs" src="https://img.shields.io/badge/docs.rs-wasmadeus-66c2a5?style=for-the-badge&labelColor=555555&logo=docs.rs" height="20"></a>
 </div>
 
+<br>
+
 An experimental frontend web framework in pure rust.
 
 Wasmadeus is focused on simplicity, ease of use and performance.
