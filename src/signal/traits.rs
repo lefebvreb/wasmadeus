@@ -10,15 +10,21 @@ pub trait Value<T> {
         F: FnMut(&T, &mut Unsubscriber<T>) + 'static;
 }
 
-pub trait Signal<T>: Value<T> {
-    fn try_get(&self) -> Result<T, SignalMutatingError>
-    where
-        T: Clone;
+pub trait Signal: Value<Self::Item> {
+    type Item;
 
-    fn get(&self) -> T
+    fn try_get(&self) -> Result<Self::Item, SignalMutatingError>
     where
-        T: Clone,
+        Self::Item: Clone;
+
+    fn get(&self) -> Self::Item
+    where
+        Self::Item: Clone,
     {
         self.try_get().unwrap()
     }
+
+    fn map<U, F>(&self, f: F)
+    where
+        ;
 }

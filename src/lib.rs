@@ -1,3 +1,4 @@
+#![doc(html_logo_url = "logo.svg")]
 #![no_std]
 
 extern crate alloc;

@@ -1,6 +1,6 @@
 //! Run these with [miri](https://github.com/rust-lang/miri).
 
-use wasmide::signal::Mutable;
+use wasmadeus::signal::Mutable;
 
 #[test]
 pub fn unsubscribe_in_notify() {
