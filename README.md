@@ -1,12 +1,14 @@
-<p align="center"><img alt="wasmadeus" src="logo.svg" height="300"/></p>
+<div align="center">
+    <img alt="wasmadeus" src="logo.svg" height="300"/>
+    <h1>Wasmadeus</h1>
+    <a href="https://github.com/lefebvreb/wasmadeus"><img alt="github" src="https://img.shields.io/badge/github-lefebvreb/wasmadeus-8da0cb?style=for-the-badge&labelColor=555555&logo=github" height="20"></a>
+    <a href="https://crates.io/crates/wasmadeus"><img alt="crates.io" src="https://img.shields.io/crates/v/wasmadeus.svg?style=for-the-badge&color=fc8d62&logo=rust" height="20"></a>
+    <a href="https://docs.rs/wasmadeus"><img alt="docs.rs" src="https://img.shields.io/badge/docs.rs-wasmadeus-66c2a5?style=for-the-badge&labelColor=555555&logo=docs.rs" height="20"></a>
+</div>
 
-# Wasmadeus
+An experimental frontend web framework in pure rust.
 
-[<img alt="github" src="https://img.shields.io/badge/github-lefebvreb/wasmadeus-8da0cb?style=for-the-badge&labelColor=555555&logo=github" height="20">](https://github.com/lefebvreb/wasmadeus)
-[<img alt="crates.io" src="https://img.shields.io/crates/v/wasmadeus.svg?style=for-the-badge&color=fc8d62&logo=rust" height="20">](https://crates.io/crates/wasmadeus)
-[<img alt="docs.rs" src="https://img.shields.io/badge/docs.rs-wasmadeus-66c2a5?style=for-the-badge&labelColor=555555&logo=docs.rs" height="20">](https://docs.rs/wasmadeus)
-
-An experimental frontend web framework in pure rust, Wasmadeus is focused on simplicity, ease of use and performance.
+Wasmadeus is focused on simplicity, ease of use and performance.
 
 ```rust
 TODO
