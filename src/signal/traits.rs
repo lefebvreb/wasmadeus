@@ -47,4 +47,26 @@ pub trait Signal: Value<Self::Item> {
     fn map<B, F>(&self, f: F) -> Computed<B>
     where
         F: FnMut(&Self::Item) -> B;
+
+    // fn filter<P>(&self, predicate: P) -> Computed<Self::Item>
+    // where
+    //     P: FnMut(&Self::Item) -> bool;
+
+    // fn filter_map<B, F>(&self, f: F) -> Computed<B>
+    // where
+    //     F: FnMut(&Self::Item) -> Option<B>;
+
+    // fn fold<B, F>(&self, init: B, f: F) -> Computed<B>
+    // where
+    //     F: FnMut(&mut B, &Self::Item);
+
+    // fn map_while<B, P>(&self, predicate: P) -> Computed<B>
+    // where
+    //     P: FnMut(&Self::Item) -> Option<B>;
+
+    // fn skip(&self, n: usize) -> Computed<Self::Item>;
+
+    // fn skip_while<P>(&self, predicate: P) -> Computed<Self::Item>
+    // where
+    //     P: FnMut(&Self::Item) -> bool;
 }
