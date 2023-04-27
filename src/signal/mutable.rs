@@ -39,9 +39,10 @@ impl Notifier {
 }
 
 #[repr(u8)]
-#[derive(Copy, Clone, PartialEq, Debug)]
+#[derive(Copy, Clone, PartialEq, Default, Debug)]
 enum SignalState {
     /// The signal is not currently in use.
+    #[default]
     Idling,
     /// The signal's data is currently being updated and/or
     /// its subscribers are being notified.
@@ -51,7 +52,7 @@ enum SignalState {
     Subscribing,
 }
 
-#[derive(Debug)]
+#[derive(Default, Debug)]
 struct RawSignal {
     state: Cell<SignalState>,
     next_id: Cell<u32>,
@@ -60,16 +61,6 @@ struct RawSignal {
 }
 
 impl RawSignal {
-    #[inline]
-    fn new() -> Self {
-        Self {
-            state: Cell::new(SignalState::Idling),
-            subscribers: UnsafeCell::new(Vec::new()),
-            next_id: Cell::new(0),
-            needs_delete: Cell::new(false),
-        }
-    }
-
     /// # Safety
     ///
     /// The caller must ensure that:
@@ -82,11 +73,9 @@ impl RawSignal {
 
         while i < (*subscribers).len() {
             let notifier = (*subscribers).as_mut_ptr().add(i).as_ref().unwrap();
-
             if notifier.active() {
                 (*notifier.notify.as_ptr())();
             }
-
             i += 1;
         }
 
@@ -104,9 +93,7 @@ impl RawSignal {
         }
 
         self.state.set(SignalState::Mutating);
-
         mutater();
-
         // SAFETY: we set the state to Mutating, therefore preventing
         // others from removing elements from `self.subscribers` or
         // borrowing it's closures.
@@ -182,7 +169,7 @@ pub struct Mutable<T: 'static>(Rc<InnerSignal<T>>);
 
 impl<T> Mutable<T> {
     pub fn new(value: T) -> Self {
-        let raw = RawSignal::new();
+        let raw = RawSignal::default();
         let data = UnsafeCell::new(value);
         Self(Rc::new(InnerSignal(raw, data)))
     }
@@ -362,8 +349,8 @@ impl<T> Unsubscriber<T> {
     }
 
     #[inline]
-    pub fn droppable(self) -> DroppableUnsubscriber<T> {
-        DroppableUnsubscriber(self)
+    pub fn droppable(self) -> DropUnsubscriber<T> {
+        DropUnsubscriber(self)
     }
 }
 
@@ -376,23 +363,24 @@ impl<T> Clone for Unsubscriber<T> {
 
 #[derive(Debug)]
 #[repr(transparent)]
-pub struct DroppableUnsubscriber<T>(pub Unsubscriber<T>);
+pub struct DropUnsubscriber<T>(pub Unsubscriber<T>);
 
-impl<T> DroppableUnsubscriber<T> {
+impl<T> DropUnsubscriber<T> {
     #[inline]
     pub fn take(mut self) -> Unsubscriber<T> {
-        Unsubscriber(self.0 .0.take())
+        let inner = &mut self.0;
+        Unsubscriber(inner.0.take())
     }
 }
 
-impl<T> Clone for DroppableUnsubscriber<T> {
+impl<T> Clone for DropUnsubscriber<T> {
     #[inline]
     fn clone(&self) -> Self {
         Self(self.0.clone())
     }
 }
 
-impl<T> Deref for DroppableUnsubscriber<T> {
+impl<T> Deref for DropUnsubscriber<T> {
     type Target = Unsubscriber<T>;
 
     #[inline]
@@ -401,14 +389,14 @@ impl<T> Deref for DroppableUnsubscriber<T> {
     }
 }
 
-impl<T> DerefMut for DroppableUnsubscriber<T> {
+impl<T> DerefMut for DropUnsubscriber<T> {
     #[inline]
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
     }
 }
 
-impl<T> Drop for DroppableUnsubscriber<T> {
+impl<T> Drop for DropUnsubscriber<T> {
     #[inline]
     fn drop(&mut self) {
         self.0.unsubscribe();
