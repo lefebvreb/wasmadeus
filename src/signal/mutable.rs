@@ -131,7 +131,7 @@ impl RawSignal {
             (*subscribers).push(Notifier {
                 id,
                 active: Cell::new(true),
-                notify: NonNull::new_unchecked(Box::into_raw(notifier)),
+                notify: NonNull::new(Box::into_raw(notifier)).unwrap(),
             });
         }
     }
@@ -171,8 +171,8 @@ struct InnerSignal<T>(RawSignal, UnsafeCell<T>);
 
 impl<T> InnerSignal<T> {
     #[inline]
-    fn get(&self) -> (&RawSignal, *mut T) {
-        (&self.0, self.1.get())
+    fn get(&self) -> (&RawSignal, NonNull<T>) {
+        (&self.0, NonNull::new(self.1.get()).unwrap())
     }
 }
 
@@ -192,10 +192,10 @@ impl<T> Mutable<T> {
     where
         F: FnOnce(&mut T),
     {
-        let (raw, data) = self.0.get();
+        let (raw, mut data) = self.0.get();
         // SAFETY: `data` will live longer than this closure. `RawSignal::try_mutate`
         // will make sure the it is not called twice at the same time.
-        raw.try_mutate(|| f(unsafe { &mut *data }))
+        raw.try_mutate(|| f(unsafe { data.as_mut() }))
     }
 
     #[inline]
@@ -239,7 +239,7 @@ impl<T> Mutable<T> {
         let (raw, data) = self.0.get();
         // SAFETY: when the innermost closure gets called, there shall be no
         // other mutable borrow to data.
-        let id = raw.for_each(|_| Box::new(move || f(unsafe { &*data })));
+        let id = raw.for_each(|_| Box::new(move || f(unsafe { data.as_ref() })));
 
         let info = NotifierRef {
             signal: Rc::downgrade(&self.0),
@@ -264,7 +264,7 @@ impl<T> Mutable<T> {
             let mut unsub = Unsubscriber(Some(info));
             // SAFETY: when this closure gets called, there shall be no
             // other mutable borrow to data.
-            Box::new(move || f(unsafe { &*data }, &mut unsub))
+            Box::new(move || f(unsafe { data.as_ref() }, &mut unsub))
         });
     }
 }
@@ -291,7 +291,7 @@ impl<T> Signal for Mutable<T> {
 
         // SAFETY: the data is not currently getting mutated, therefore it is safe
         // to borrow it immutably.
-        Ok(unsafe { (*data).clone() })
+        Ok(unsafe { data.as_ref() }.clone())
     }
 
     fn map<B, F>(&self, _f: F) -> Computed<B>
