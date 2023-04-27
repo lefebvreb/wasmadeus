@@ -38,18 +38,39 @@ impl Notifier {
     }
 }
 
+/// The state of a `RawSignal`, used to prevent reentrant calls from 
+/// breaking the aliasing laws of Rust.
+/// 
+/// It is set by functions that need exclusive access to part of the `RawSignal`,
+/// and are unset at the end of their executions.
 #[repr(u8)]
 #[derive(Copy, Clone, PartialEq, Default, Debug)]
 enum SignalState {
-    /// The signal is not currently in use.
+    /// The signal is not currently in use. Anyone may
+    /// change the state as appropriate.
     #[default]
     Idling,
-    /// The signal's data is currently being updated and/or
-    /// its subscribers are being notified.
+    /// The signal's data is currently being updated. 
+    /// 
+    /// A reentrant call may only:
+    /// * push a new notifier in `subscribers`.
+    /// * increment `next_id`.
+    /// * set `needs_delete` to `true`.
+    /// * set a `Notifier`'s `active` flag to `false`.
     Mutating,
-    /// The signal is currently notifying new susbcribers with
-    /// a reference to the current data.
+    /// The signal is currently notifying new susbcribers.
+    /// 
+    /// A reentrant call may only:
+    /// * call notifiers with an immutable ref to data.
+    /// * push new `Notifier`s to `subscribers`.
+    /// * increment `next_id`.
+    /// * remove a `Notifier` from the `Vec`.
     Subscribing,
+    /// The signal's data is currently uninitialized.
+    /// 
+    /// A reentrant call may only:
+    /// * set the state to `Mutating`.
+    Uninitialized,
 }
 
 #[derive(Default, Debug)]
@@ -168,6 +189,10 @@ impl<T> InnerSignal<T> {
 pub struct Mutable<T: 'static>(Rc<InnerSignal<T>>);
 
 impl<T> Mutable<T> {
+    pub(super) fn new_uninit() -> Self {
+        todo!()
+    }
+
     pub fn new(value: T) -> Self {
         let raw = RawSignal::default();
         let data = UnsafeCell::new(value);
