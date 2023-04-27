@@ -1,5 +1,4 @@
 use core::cell::{Cell, UnsafeCell};
-use core::num::NonZeroU32;
 use core::ops::{Deref, DerefMut};
 
 use alloc::boxed::Box;
@@ -8,15 +7,10 @@ use alloc::vec::Vec;
 
 use super::{Result, Signal, SignalMutatingError, Value};
 
-#[derive(Copy, Clone, Debug)]
-enum NotifierState {
-    Active(NonZeroU32),
-    Deleted(NonZeroU32),
-}
-
 #[derive(Debug)]
 struct Notifier {
-    state: Cell<NotifierState>,
+    id: u32,
+    active: Cell<bool>,
     notify: *mut dyn FnMut(),
 }
 
@@ -33,15 +27,13 @@ impl Drop for Notifier {
 
 impl Notifier {
     #[inline]
-    fn id(&self) -> NonZeroU32 {
-        match self.state.get() {
-            NotifierState::Active(id) | NotifierState::Deleted(id) => id,
-        }
+    fn id(&self) -> u32 {
+        self.id
     }
 
     #[inline]
     fn active(&self) -> bool {
-        matches!(self.state.get(), NotifierState::Active(_))
+        self.active.get()
     }
 }
 
@@ -61,7 +53,7 @@ enum SignalState {
 #[derive(Debug)]
 struct RawSignal {
     state: Cell<SignalState>,
-    next_id: Cell<NonZeroU32>,
+    next_id: Cell<u32>,
     needs_delete: Cell<bool>,
     subscribers: UnsafeCell<Vec<Notifier>>,
 }
@@ -72,7 +64,7 @@ impl RawSignal {
         Self {
             state: Cell::new(SignalState::Idling),
             subscribers: UnsafeCell::new(Vec::new()),
-            next_id: Cell::new(1.try_into().unwrap()),
+            next_id: Cell::new(0),
             needs_delete: Cell::new(false),
         }
     }
@@ -123,7 +115,7 @@ impl RawSignal {
         Ok(())
     }
 
-    fn append_notifier(&self, id: NonZeroU32, mut notifier: Box<dyn FnMut()>) {
+    fn append_notifier(&self, id: u32, mut notifier: Box<dyn FnMut()>) {
         if self.state.get() != SignalState::Mutating {
             let old_state = self.state.replace(SignalState::Subscribing);
             notifier();
@@ -136,15 +128,16 @@ impl RawSignal {
         // no one keeps a borrow of it between call boundaries.
         unsafe {
             (*subscribers).push(Notifier {
-                state: Cell::new(NotifierState::Active(id)),
+                id,
+                active: Cell::new(true),
                 notify: Box::into_raw(notifier),
             });
         }
     }
 
-    fn for_each<F>(&self, make_notifier: F) -> NonZeroU32
+    fn for_each<F>(&self, make_notifier: F) -> u32
     where
-        F: FnOnce(NonZeroU32) -> Box<dyn FnMut()>,
+        F: FnOnce(u32) -> Box<dyn FnMut()>,
     {
         let id = self.next_id.get();
         self.next_id.set(id.saturating_add(1));
@@ -152,7 +145,7 @@ impl RawSignal {
         id
     }
 
-    fn unsubscribe(&self, id: NonZeroU32) {
+    fn unsubscribe(&self, id: u32) {
         let subscribers = self.subscribers.get();
 
         // SAFETY: if the signal is mutating, we simply borrow `self.subscribers` immutably.
@@ -162,8 +155,7 @@ impl RawSignal {
             if let Ok(index) = (*subscribers).binary_search_by_key(&id, Notifier::id) {
                 if self.state.get() == SignalState::Mutating {
                     let notifier = (*subscribers).get(index).unwrap();
-                    let id = notifier.id();
-                    notifier.state.set(NotifierState::Deleted(id));
+                    notifier.active.set(false);
                     self.needs_delete.set(true);
                 } else {
                     (*subscribers).remove(index);
@@ -286,7 +278,7 @@ impl<T> Clone for Mutable<T> {
 #[derive(Debug)]
 struct NotifierRef<T> {
     signal: Weak<InnerSignal<T>>,
-    id: NonZeroU32,
+    id: u32,
 }
 
 impl<T> Clone for NotifierRef<T> {
@@ -413,7 +405,7 @@ impl<T> Signal for Mutable<T> {
         Ok(unsafe { (*data).clone() })
     }
 
-    fn map<B, F>(&self, f: F)
+    fn map<B, F>(&self, _f: F)
     where
         F: FnMut(&Self::Item) -> B,
     {

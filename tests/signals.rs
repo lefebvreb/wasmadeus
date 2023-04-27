@@ -12,12 +12,12 @@ pub fn unsubscribe_in_notify() {
 }
 
 #[test]
-pub fn unsubscribe_in_notify2() {
+pub fn unsubscribe_in_second_notify() {
     let signal = Mutable::new("hello");
 
     let mut count = 0;
     signal.for_each_inner(move |_, unsub| match count {
-        2 => unsub.unsubscribe(),
+        1 => unsub.unsubscribe(),
         _ => count += 1,
     });
 

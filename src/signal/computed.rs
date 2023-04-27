@@ -38,7 +38,7 @@ impl<T> Signal for Computed<T> {
         todo!()
     }
 
-    fn map<B, F>(&self, f: F)
+    fn map<B, F>(&self, _f: F)
     where
         F: FnMut(&Self::Item) -> B,
     {
