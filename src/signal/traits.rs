@@ -1,4 +1,4 @@
-use super::{SignalMutatingError, Unsubscriber};
+use super::{Result, Unsubscriber};
 
 pub trait Value<T> {
     fn for_each<F>(&self, f: F) -> Unsubscriber<T>
@@ -32,7 +32,7 @@ impl<T> Value<T> for T {
 pub trait Signal: Value<Self::Item> {
     type Item;
 
-    fn try_get(&self) -> Result<Self::Item, SignalMutatingError>
+    fn try_get(&self) -> Result<Self::Item>
     where
         Self::Item: Clone;
 

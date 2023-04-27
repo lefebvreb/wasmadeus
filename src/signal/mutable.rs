@@ -6,10 +6,7 @@ use alloc::boxed::Box;
 use alloc::rc::{Rc, Weak};
 use alloc::vec::Vec;
 
-use super::{Signal, Value};
-
-#[derive(Copy, Clone, PartialEq, Eq, Debug)]
-pub struct SignalMutatingError;
+use super::{Result, Signal, SignalMutatingError, Value};
 
 #[derive(Copy, Clone, Debug)]
 enum NotifierState {
@@ -105,7 +102,7 @@ impl RawSignal {
         }
     }
 
-    fn try_mutate<F>(&self, mutater: F) -> Result<(), SignalMutatingError>
+    fn try_mutate<F>(&self, mutater: F) -> Result<()>
     where
         F: FnOnce(),
     {
@@ -198,7 +195,7 @@ impl<T> Mutable<T> {
     }
 
     #[inline]
-    pub fn try_mutate<F>(&self, f: F) -> Result<(), SignalMutatingError>
+    pub fn try_mutate<F>(&self, f: F) -> Result<()>
     where
         F: FnOnce(&mut T),
     {
@@ -209,7 +206,7 @@ impl<T> Mutable<T> {
     }
 
     #[inline]
-    pub fn try_update<F>(&self, f: F) -> Result<(), SignalMutatingError>
+    pub fn try_update<F>(&self, f: F) -> Result<()>
     where
         F: FnOnce(&T) -> T,
     {
@@ -217,7 +214,7 @@ impl<T> Mutable<T> {
     }
 
     #[inline]
-    pub fn try_set(&self, value: T) -> Result<(), SignalMutatingError> {
+    pub fn try_set(&self, value: T) -> Result<()> {
         self.try_mutate(|data| *data = value)
     }
 
@@ -380,7 +377,7 @@ impl<T> Drop for DroppableUnsubscriber<T> {
     }
 }
 
-impl<T: 'static> Value<T> for Mutable<T> {
+impl<T> Value<T> for Mutable<T> {
     #[inline]
     fn for_each<F>(&self, f: F) -> Unsubscriber<T>
     where
@@ -401,7 +398,7 @@ impl<T: 'static> Value<T> for Mutable<T> {
 impl<T> Signal for Mutable<T> {
     type Item = T;
 
-    fn try_get(&self) -> Result<Self::Item, SignalMutatingError>
+    fn try_get(&self) -> Result<Self::Item>
     where
         Self::Item: Clone,
     {
