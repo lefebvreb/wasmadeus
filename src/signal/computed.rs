@@ -1,12 +1,40 @@
 use super::{Mutable, Result, Signal, Unsubscriber, Value};
 
+#[derive(Debug)]
 #[repr(transparent)]
 pub struct Computed<T: 'static>(Mutable<T>);
+
+impl<T> Computed<T> {
+    #[inline]
+    pub(super) fn new(mutable: Mutable<T>) -> Self {
+        Self(mutable)
+    } 
+}
 
 impl<T> Clone for Computed<T> {
     #[inline]
     fn clone(&self) -> Self {
         Self(self.0.clone())
+    }
+}
+
+impl<T> Signal for Computed<T> {
+    type Item = T;
+
+    #[inline]
+    fn try_get(&self) -> Result<Self::Item>
+    where
+        Self::Item: Clone,
+    {
+        self.0.try_get()
+    }
+
+    #[inline]
+    fn map<B, F>(&self, f: F) -> Computed<B>
+    where
+        F: FnMut(&Self::Item) -> B,
+    {
+        self.0.map(f)
     }
 }
 
@@ -25,23 +53,5 @@ impl<T> Value<T> for Computed<T> {
         F: FnMut(&T, &mut Unsubscriber<T>) + 'static,
     {
         self.0.for_each_inner(f)
-    }
-}
-
-impl<T> Signal for Computed<T> {
-    type Item = T;
-
-    fn try_get(&self) -> Result<Self::Item>
-    where
-        Self::Item: Clone,
-    {
-        todo!()
-    }
-
-    fn map<B, F>(&self, _f: F)
-    where
-        F: FnMut(&Self::Item) -> B,
-    {
-        todo!()
     }
 }

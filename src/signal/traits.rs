@@ -1,4 +1,4 @@
-use super::{Result, Unsubscriber};
+use super::{Result, Unsubscriber, Computed};
 
 pub trait Value<T> {
     fn for_each<F>(&self, f: F) -> Unsubscriber<T>
@@ -44,7 +44,7 @@ pub trait Signal: Value<Self::Item> {
         self.try_get().unwrap()
     }
 
-    fn map<B, F>(&self, f: F)
+    fn map<B, F>(&self, f: F) -> Computed<B>
     where
         F: FnMut(&Self::Item) -> B;
 }

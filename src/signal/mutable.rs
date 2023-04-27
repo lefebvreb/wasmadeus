@@ -5,7 +5,7 @@ use alloc::boxed::Box;
 use alloc::rc::{Rc, Weak};
 use alloc::vec::Vec;
 
-use super::{Result, Signal, SignalMutatingError, Value};
+use super::{Result, Signal, SignalMutatingError, Value, Computed};
 
 #[derive(Debug)]
 struct Notifier {
@@ -275,6 +275,51 @@ impl<T> Clone for Mutable<T> {
     }
 }
 
+impl<T> Signal for Mutable<T> {
+    type Item = T;
+
+    fn try_get(&self) -> Result<Self::Item>
+    where
+        Self::Item: Clone,
+    {
+        let (raw, data) = self.0.get();
+
+        if raw.state.get() == SignalState::Mutating {
+            return Err(SignalMutatingError);
+        }
+
+        // SAFETY: the data is not currently getting mutated, therefore it is safe
+        // to borrow it immutably.
+        Ok(unsafe { (*data).clone() })
+    }
+
+    fn map<B, F>(&self, _f: F) -> Computed<B>
+    where
+        F: FnMut(&Self::Item) -> B,
+    {
+        let (raw, data) = self.0.get();
+        todo!()
+    }
+}
+
+impl<T> Value<T> for Mutable<T> {
+    #[inline]
+    fn for_each<F>(&self, f: F) -> Unsubscriber<T>
+    where
+        F: FnMut(&T) + 'static,
+    {
+        self.for_each(f)
+    }
+
+    #[inline]
+    fn for_each_inner<F>(&self, f: F)
+    where
+        F: FnMut(&T, &mut Unsubscriber<T>) + 'static,
+    {
+        self.for_each_inner(f);
+    }
+}
+
 #[derive(Debug)]
 struct NotifierRef<T> {
     signal: Weak<InnerSignal<T>>,
@@ -297,7 +342,7 @@ pub struct Unsubscriber<T>(Option<NotifierRef<T>>);
 
 impl<T> Unsubscriber<T> {
     #[inline]
-    pub fn empty() -> Self {
+    pub(super) fn empty() -> Self {
         Self(None)
     }
 
@@ -366,49 +411,5 @@ impl<T> Drop for DroppableUnsubscriber<T> {
     #[inline]
     fn drop(&mut self) {
         self.0.unsubscribe();
-    }
-}
-
-impl<T> Value<T> for Mutable<T> {
-    #[inline]
-    fn for_each<F>(&self, f: F) -> Unsubscriber<T>
-    where
-        F: FnMut(&T) + 'static,
-    {
-        self.for_each(f)
-    }
-
-    #[inline]
-    fn for_each_inner<F>(&self, f: F)
-    where
-        F: FnMut(&T, &mut Unsubscriber<T>) + 'static,
-    {
-        self.for_each_inner(f);
-    }
-}
-
-impl<T> Signal for Mutable<T> {
-    type Item = T;
-
-    fn try_get(&self) -> Result<Self::Item>
-    where
-        Self::Item: Clone,
-    {
-        let (raw, data) = self.0.get();
-
-        if raw.state.get() == SignalState::Mutating {
-            return Err(SignalMutatingError);
-        }
-
-        // SAFETY: the data is not currently getting mutated, therefore it is safe
-        // to borrow it immutably.
-        Ok(unsafe { (*data).clone() })
-    }
-
-    fn map<B, F>(&self, _f: F)
-    where
-        F: FnMut(&Self::Item) -> B,
-    {
-        todo!()
     }
 }
