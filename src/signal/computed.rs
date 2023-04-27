@@ -8,7 +8,7 @@ impl<T> Computed<T> {
     #[inline]
     pub(super) fn new(mutable: Mutable<T>) -> Self {
         Self(mutable)
-    } 
+    }
 }
 
 impl<T> Clone for Computed<T> {

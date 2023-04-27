@@ -1,17 +1,18 @@
 use core::cell::{Cell, UnsafeCell};
 use core::ops::{Deref, DerefMut};
+use core::ptr::NonNull;
 
 use alloc::boxed::Box;
 use alloc::rc::{Rc, Weak};
 use alloc::vec::Vec;
 
-use super::{Result, Signal, SignalMutatingError, Value, Computed};
+use super::{Computed, Result, Signal, SignalMutatingError, Value};
 
 #[derive(Debug)]
 struct Notifier {
     id: u32,
     active: Cell<bool>,
-    notify: *mut dyn FnMut(),
+    notify: NonNull<dyn FnMut()>,
 }
 
 impl Drop for Notifier {
@@ -20,7 +21,7 @@ impl Drop for Notifier {
         // SAFETY: we have exclusive access to this pointer, that is
         // never copied.
         unsafe {
-            let _ = Box::from_raw(self.notify);
+            let _ = Box::from_raw(self.notify.as_ptr());
         }
     }
 }
@@ -83,7 +84,7 @@ impl RawSignal {
             let notifier = (*subscribers).as_mut_ptr().add(i).as_ref().unwrap();
 
             if notifier.active() {
-                (*notifier.notify)();
+                (*notifier.notify.as_ptr())();
             }
 
             i += 1;
@@ -130,7 +131,7 @@ impl RawSignal {
             (*subscribers).push(Notifier {
                 id,
                 active: Cell::new(true),
-                notify: Box::into_raw(notifier),
+                notify: NonNull::new_unchecked(Box::into_raw(notifier)),
             });
         }
     }
