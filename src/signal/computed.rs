@@ -4,12 +4,12 @@ use super::{Mutable, Result, Signal, Unsubscriber, Value};
 #[repr(transparent)]
 pub struct Computed<T: 'static>(Mutable<T>);
 
-impl<T> Computed<T> {
-    #[inline]
-    pub(super) fn new(mutable: Mutable<T>) -> Self {
-        Self(mutable)
-    }
-}
+// impl<T> Computed<T> {
+//     #[inline]
+//     pub(super) fn new(mutable: Mutable<T>) -> Self {
+//         Self(mutable)
+//     }
+// }
 
 impl<T> Clone for Computed<T> {
     #[inline]
@@ -29,13 +29,13 @@ impl<T> Signal for Computed<T> {
         self.0.try_get()
     }
 
-    #[inline]
-    fn map<B, F>(&self, f: F) -> Computed<B>
-    where
-        F: FnMut(&Self::Item) -> B,
-    {
-        self.0.map(f)
-    }
+    // #[inline]
+    // fn map<B, F>(&self, f: F) -> Computed<B>
+    // where
+    //     F: FnMut(&Self::Item) -> B,
+    // {
+    //     self.0.map(f)
+    // }
 }
 
 impl<T> Value<T> for Computed<T> {

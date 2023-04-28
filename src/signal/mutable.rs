@@ -1,4 +1,5 @@
 use core::cell::{Cell, UnsafeCell};
+use core::mem::MaybeUninit;
 use core::ops::{Deref, DerefMut};
 use core::ptr::NonNull;
 
@@ -6,7 +7,7 @@ use alloc::boxed::Box;
 use alloc::rc::{Rc, Weak};
 use alloc::vec::Vec;
 
-use super::{Computed, Result, Signal, SignalError, Value};
+use super::{Result, Signal, SignalError, Value};
 
 #[derive(Debug)]
 struct Notifier {
@@ -38,9 +39,9 @@ impl Notifier {
     }
 }
 
-/// The state of a `RawSignal`, used to prevent reentrant calls from 
+/// The state of a `RawSignal`, used to prevent reentrant calls from
 /// breaking the aliasing laws of Rust.
-/// 
+///
 /// It is set by functions that need exclusive access to part of the `RawSignal`,
 /// and are unset at the end of their executions.
 #[repr(u8)]
@@ -49,7 +50,7 @@ enum SignalState {
     /// The signal is not currently in use.
     #[default]
     Idling,
-    /// The signal's data is currently being updated. 
+    /// The signal's data is currently being updated.
     Mutating,
     /// The signal is currently notifying new susbcribers.
     Subscribing,
@@ -98,7 +99,10 @@ impl RawSignal {
     where
         F: FnOnce(),
     {
-        if matches!(self.state(), SignalState::Mutating | SignalState::Subscribing) {
+        if matches!(
+            self.state(),
+            SignalState::Mutating | SignalState::Subscribing
+        ) {
             return Err(SignalError);
         }
 
@@ -164,11 +168,11 @@ impl RawSignal {
 }
 
 #[derive(Debug)]
-struct InnerSignal<T>(RawSignal, UnsafeCell<T>);
+struct InnerSignal<T>(RawSignal, UnsafeCell<MaybeUninit<T>>);
 
 impl<T> InnerSignal<T> {
     #[inline]
-    fn get(&self) -> (&RawSignal, NonNull<T>) {
+    fn get(&self) -> (&RawSignal, NonNull<MaybeUninit<T>>) {
         (&self.0, NonNull::new(self.1.get()).unwrap())
     }
 }
@@ -178,15 +182,20 @@ impl<T> InnerSignal<T> {
 pub struct Mutable<T: 'static>(Rc<InnerSignal<T>>);
 
 impl<T> Mutable<T> {
-    // TODO: prevent mutate()/update(), make set() correct.
-    pub fn new_uninit() -> Self {
-        todo!()
-    }
-
-    pub fn new(value: T) -> Self {
+    fn from_maybe_uninit(value: MaybeUninit<T>) -> Self {
         let raw = RawSignal::default();
         let data = UnsafeCell::new(value);
         Self(Rc::new(InnerSignal(raw, data)))
+    }
+
+    #[inline]
+    pub fn new(value: T) -> Self {
+        Self::from_maybe_uninit(MaybeUninit::new(value))
+    }
+
+    #[inline]
+    pub fn uninit() -> Self {
+        Self::from_maybe_uninit(MaybeUninit::uninit())
     }
 
     #[inline]
@@ -207,7 +216,9 @@ impl<T> Mutable<T> {
         let (raw, mut data) = self.0.get();
         // SAFETY: `data` will live longer than this closure. `RawSignal::try_mutate`
         // will make sure the it is not called twice at the same time.
-        raw.try_mutate(|| f(unsafe { data.as_mut() }))
+        raw.try_mutate(|| unsafe {
+            f(data.as_mut().assume_init_mut());
+        })
     }
 
     #[inline]
@@ -237,12 +248,13 @@ impl<T> Mutable<T> {
     #[inline]
     pub fn try_set(&self, value: T) -> Result<()> {
         if self.initialized() {
-            return self.try_mutate(|data| *data = value)
+            return self.try_mutate(|data| *data = value);
         }
 
         let (raw, mut data) = self.0.get();
+
         raw.try_mutate(|| unsafe {
-            todo!()
+            data.as_mut().write(value);
         })
     }
 
@@ -258,7 +270,9 @@ impl<T> Mutable<T> {
         let (raw, data) = self.0.get();
         // SAFETY: when the innermost closure gets called, there shall be no
         // other mutable borrow to data.
-        let id = raw.for_each(|_| Box::new(move || f(unsafe { data.as_ref() })));
+        let id = raw.for_each(|_| Box::new(move || unsafe {
+            f(data.as_ref().assume_init_ref());
+        }));
         Unsubscriber::new(self, id)
     }
 
@@ -271,7 +285,9 @@ impl<T> Mutable<T> {
             let mut unsub = Unsubscriber::new(self, id);
             // SAFETY: when this closure gets called, there shall be no
             // other mutable borrow to data.
-            Box::new(move || f(unsafe { data.as_ref() }, &mut unsub))
+            Box::new(move || unsafe {
+                f(data.as_ref().assume_init_ref(), &mut unsub);
+            })
         });
     }
 }
@@ -291,21 +307,26 @@ impl<T> Signal for Mutable<T> {
         Self::Item: Clone,
     {
         let (raw, data) = self.0.get();
-        if matches!(raw.state(), SignalState::Mutating | SignalState::Uninitialized) {
+
+        if matches!(
+            raw.state(),
+            SignalState::Mutating | SignalState::Uninitialized
+        ) {
             return Err(SignalError);
         }
+        
         // SAFETY: the data is not currently getting mutated, therefore it is safe
         // to borrow it immutably.
-        Ok(unsafe { data.as_ref() }.clone())
+        Ok(unsafe { data.as_ref().assume_init_ref() }.clone())
     }
 
-    fn map<B, F>(&self, _f: F) -> Computed<B>
-    where
-        F: FnMut(&Self::Item) -> B,
-    {
-        let (raw, data) = self.0.get();
-        todo!()
-    }
+    // fn map<B, F>(&self, _f: F) -> Computed<B>
+    // where
+    //     F: FnMut(&Self::Item) -> B,
+    // {
+    //     let (raw, data) = self.0.get();
+    //     todo!()
+    // }
 }
 
 impl<T> Value<T> for Mutable<T> {
@@ -349,9 +370,9 @@ pub struct Unsubscriber<T>(Option<NotifierRef<T>>);
 impl<T> Unsubscriber<T> {
     #[inline]
     fn new(mutable: &Mutable<T>, id: u32) -> Self {
-        Self(Some(NotifierRef { 
-            signal: Rc::downgrade(&mutable.0), 
-            id, 
+        Self(Some(NotifierRef {
+            signal: Rc::downgrade(&mutable.0),
+            id,
         }))
     }
 
