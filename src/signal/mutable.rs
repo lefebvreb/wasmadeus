@@ -284,7 +284,7 @@ impl<T> Mutable<T> {
         F: FnMut(&T, &mut Unsubscriber<T>) + 'static,
     {
         let (raw, data) = self.0.get();
-        
+
         raw.for_each(|id| {
             let mut unsub = Unsubscriber::new(self, id);
             // SAFETY: when this closure gets called, there shall be no

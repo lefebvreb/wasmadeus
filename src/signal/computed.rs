@@ -5,11 +5,27 @@ use super::{Mutable, Result, Signal, Unsubscriber, Value};
 pub struct Computed<T: 'static>(Mutable<T>);
 
 impl<T> Computed<T> {
+    /// Returns an uninitialized [`Computed`] signal.
+    ///
+    /// The observant reader should remark that a free, uninitialized computed
+    /// signal is useless on its own, as nothing will come to provide it with
+    /// a value (unless [`Computed::as_mutable`] is used...).
+    ///
+    /// This method is only provided for advanced use cases, for example
+    /// when implementing your own monadic operations on signals.
     #[inline]
     pub fn uninit() -> Self {
         Self(Mutable::uninit())
     }
 
+    /// Gives a reference to the underlying [`Mutable`] signal behind
+    /// this computed signal.
+    ///
+    /// * *Wait, it's all mutable ?*
+    /// * *Always has been...*
+    ///
+    /// You should not need this method for normal use cases, however
+    /// it can come in handy when fiddling with signals.
     #[inline]
     pub fn as_mutable(&self) -> &Mutable<T> {
         &self.0

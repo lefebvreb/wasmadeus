@@ -1,4 +1,4 @@
-use super::{Result, Unsubscriber, Computed};
+use super::{Computed, Result, Unsubscriber};
 
 pub trait Value<T> {
     fn for_each<F>(&self, f: F) -> Unsubscriber<T>
