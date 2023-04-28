@@ -6,7 +6,7 @@ use alloc::boxed::Box;
 use alloc::rc::{Rc, Weak};
 use alloc::vec::Vec;
 
-use super::{Computed, Result, Signal, SignalMutatingError, Value};
+use super::{Computed, Result, Signal, SignalError, Value};
 
 #[derive(Debug)]
 struct Notifier {
@@ -46,30 +46,14 @@ impl Notifier {
 #[repr(u8)]
 #[derive(Copy, Clone, PartialEq, Default, Debug)]
 enum SignalState {
-    /// The signal is not currently in use. Anyone may
-    /// change the state as appropriate.
+    /// The signal is not currently in use.
     #[default]
     Idling,
     /// The signal's data is currently being updated. 
-    /// 
-    /// A reentrant call may only:
-    /// * push a new notifier in `subscribers`.
-    /// * increment `next_id`.
-    /// * set `needs_delete` to `true`.
-    /// * set a `Notifier`'s `active` flag to `false`.
     Mutating,
     /// The signal is currently notifying new susbcribers.
-    /// 
-    /// A reentrant call may only:
-    /// * call notifiers with an immutable ref to data.
-    /// * push new `Notifier`s to `subscribers`.
-    /// * increment `next_id`.
-    /// * remove a `Notifier` from the `Vec`.
     Subscribing,
     /// The signal's data is currently uninitialized.
-    /// 
-    /// A reentrant call may only:
-    /// * set the state to `Mutating`.
     Uninitialized,
 }
 
@@ -82,6 +66,11 @@ struct RawSignal {
 }
 
 impl RawSignal {
+    #[inline]
+    fn state(&self) -> SignalState {
+        self.state.get()
+    }
+
     /// # Safety
     ///
     /// The caller must ensure that:
@@ -109,8 +98,8 @@ impl RawSignal {
     where
         F: FnOnce(),
     {
-        if self.state.get() != SignalState::Idling {
-            return Err(SignalMutatingError);
+        if matches!(self.state(), SignalState::Mutating | SignalState::Subscribing) {
+            return Err(SignalError);
         }
 
         self.state.set(SignalState::Mutating);
@@ -125,7 +114,7 @@ impl RawSignal {
     }
 
     fn append_notifier(&self, id: u32, mut notifier: Box<dyn FnMut()>) {
-        if self.state.get() != SignalState::Mutating {
+        if matches!(self.state(), SignalState::Idling | SignalState::Subscribing) {
             let old_state = self.state.replace(SignalState::Subscribing);
             notifier();
             self.state.set(old_state);
@@ -162,7 +151,7 @@ impl RawSignal {
         // In both case, we don't retain the borrow through any other function calls.
         unsafe {
             if let Ok(index) = (*subscribers).binary_search_by_key(&id, Notifier::id) {
-                if self.state.get() == SignalState::Mutating {
+                if self.state() == SignalState::Mutating {
                     let notifier = (*subscribers).get(index).unwrap();
                     notifier.active.set(false);
                     self.needs_delete.set(true);
@@ -189,7 +178,8 @@ impl<T> InnerSignal<T> {
 pub struct Mutable<T: 'static>(Rc<InnerSignal<T>>);
 
 impl<T> Mutable<T> {
-    pub(super) fn new_uninit() -> Self {
+    // TODO: prevent mutate()/update(), make set() correct.
+    pub fn new_uninit() -> Self {
         todo!()
     }
 
@@ -200,10 +190,20 @@ impl<T> Mutable<T> {
     }
 
     #[inline]
+    pub fn initialized(&self) -> bool {
+        let (raw, _) = self.0.get();
+        raw.state() != SignalState::Uninitialized
+    }
+
+    #[inline]
     pub fn try_mutate<F>(&self, f: F) -> Result<()>
     where
         F: FnOnce(&mut T),
     {
+        if !self.initialized() {
+            return Err(SignalError);
+        }
+
         let (raw, mut data) = self.0.get();
         // SAFETY: `data` will live longer than this closure. `RawSignal::try_mutate`
         // will make sure the it is not called twice at the same time.
@@ -216,11 +216,6 @@ impl<T> Mutable<T> {
         F: FnOnce(&T) -> T,
     {
         self.try_mutate(|data| *data = f(data))
-    }
-
-    #[inline]
-    pub fn try_set(&self, value: T) -> Result<()> {
-        self.try_mutate(|data| *data = value)
     }
 
     #[inline]
@@ -240,6 +235,18 @@ impl<T> Mutable<T> {
     }
 
     #[inline]
+    pub fn try_set(&self, value: T) -> Result<()> {
+        if self.initialized() {
+            return self.try_mutate(|data| *data = value)
+        }
+
+        let (raw, mut data) = self.0.get();
+        raw.try_mutate(|| unsafe {
+            todo!()
+        })
+    }
+
+    #[inline]
     pub fn set(&self, value: T) {
         self.try_set(value).unwrap();
     }
@@ -252,13 +259,7 @@ impl<T> Mutable<T> {
         // SAFETY: when the innermost closure gets called, there shall be no
         // other mutable borrow to data.
         let id = raw.for_each(|_| Box::new(move || f(unsafe { data.as_ref() })));
-
-        let info = NotifierRef {
-            signal: Rc::downgrade(&self.0),
-            id,
-        };
-
-        Unsubscriber(Some(info))
+        Unsubscriber::new(self, id)
     }
 
     pub fn for_each_inner<F>(&self, mut f: F)
@@ -266,14 +267,8 @@ impl<T> Mutable<T> {
         F: FnMut(&T, &mut Unsubscriber<T>) + 'static,
     {
         let (raw, data) = self.0.get();
-
         raw.for_each(|id| {
-            let info = NotifierRef {
-                signal: Rc::downgrade(&self.0),
-                id,
-            };
-
-            let mut unsub = Unsubscriber(Some(info));
+            let mut unsub = Unsubscriber::new(self, id);
             // SAFETY: when this closure gets called, there shall be no
             // other mutable borrow to data.
             Box::new(move || f(unsafe { data.as_ref() }, &mut unsub))
@@ -296,11 +291,9 @@ impl<T> Signal for Mutable<T> {
         Self::Item: Clone,
     {
         let (raw, data) = self.0.get();
-
-        if raw.state.get() == SignalState::Mutating {
-            return Err(SignalMutatingError);
+        if matches!(raw.state(), SignalState::Mutating | SignalState::Uninitialized) {
+            return Err(SignalError);
         }
-
         // SAFETY: the data is not currently getting mutated, therefore it is safe
         // to borrow it immutably.
         Ok(unsafe { data.as_ref() }.clone())
@@ -354,6 +347,14 @@ impl<T> Clone for NotifierRef<T> {
 pub struct Unsubscriber<T>(Option<NotifierRef<T>>);
 
 impl<T> Unsubscriber<T> {
+    #[inline]
+    fn new(mutable: &Mutable<T>, id: u32) -> Self {
+        Self(Some(NotifierRef { 
+            signal: Rc::downgrade(&mutable.0), 
+            id, 
+        }))
+    }
+
     #[inline]
     pub(super) fn empty() -> Self {
         Self(None)

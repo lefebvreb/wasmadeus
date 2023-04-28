@@ -7,6 +7,6 @@ pub use mutable::*;
 pub use traits::*;
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
-pub struct SignalMutatingError;
+pub struct SignalError;
 
-pub type Result<T> = core::result::Result<T, SignalMutatingError>;
+pub type Result<T> = core::result::Result<T, SignalError>;
