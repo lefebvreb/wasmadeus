@@ -284,6 +284,7 @@ impl<T> Mutable<T> {
         F: FnMut(&T, &mut Unsubscriber<T>) + 'static,
     {
         let (raw, data) = self.0.get();
+        
         raw.for_each(|id| {
             let mut unsub = Unsubscriber::new(self, id);
             // SAFETY: when this closure gets called, there shall be no
@@ -322,14 +323,6 @@ impl<T> Signal for Mutable<T> {
         // to borrow it immutably.
         Ok(unsafe { data.as_ref().assume_init_ref() }.clone())
     }
-
-    // fn map<B, F>(&self, _f: F) -> Computed<B>
-    // where
-    //     F: FnMut(&Self::Item) -> B,
-    // {
-    //     let (raw, data) = self.0.get();
-    //     todo!()
-    // }
 }
 
 impl<T> Value<T> for Mutable<T> {
