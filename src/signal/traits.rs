@@ -51,7 +51,7 @@ pub trait Signal: Value<Self::Item> {
         // todo: maybe monomorphize this to gain code size ? This is elegant but probably inefficient...
         let computed = Computed::uninit();
         let mutable = computed.as_mutable().clone();
-        self.for_each(move |data| mutable.set(f(data)));
+        let _ = self.for_each(move |data| mutable.set(f(data)));
         computed
     }
 

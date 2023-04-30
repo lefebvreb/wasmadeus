@@ -7,7 +7,7 @@ use alloc::boxed::Box;
 use alloc::rc::{Rc, Weak};
 use alloc::vec::Vec;
 
-use super::{Result, Signal, SignalError, Value};
+use super::{Result, Signal, SignalError, Value, Computed};
 
 #[derive(Debug)]
 struct Notifier {
@@ -45,10 +45,9 @@ impl Notifier {
 /// It is set by functions that need exclusive access to part of the `RawSignal`,
 /// and are unset at the end of their executions.
 #[repr(u8)]
-#[derive(Copy, Clone, PartialEq, Default, Debug)]
+#[derive(Copy, Clone, PartialEq, Debug)]
 enum SignalState {
     /// The signal is not currently in use.
-    #[default]
     Idling,
     /// The signal's data is currently being updated.
     Mutating,
@@ -58,7 +57,7 @@ enum SignalState {
     Uninitialized,
 }
 
-#[derive(Default, Debug)]
+#[derive(Debug)]
 struct RawSignal {
     state: Cell<SignalState>,
     next_id: Cell<u32>,
@@ -67,6 +66,16 @@ struct RawSignal {
 }
 
 impl RawSignal {
+    #[inline]
+    fn new(state: SignalState) -> Self {
+        Self {
+            state: Cell::new(state),
+            next_id: Cell::new(0),
+            needs_delete: Cell::new(false),
+            subscribers: UnsafeCell::new(Vec::new()),
+        }
+    }
+
     #[inline]
     fn state(&self) -> SignalState {
         self.state.get()
@@ -180,20 +189,20 @@ impl<T> InnerSignal<T> {
 pub struct Mutable<T: 'static>(Rc<InnerSignal<T>>);
 
 impl<T> Mutable<T> {
-    fn from_maybe_uninit(value: MaybeUninit<T>) -> Self {
-        let raw = RawSignal::default();
+    fn from_maybe_uninit(value: MaybeUninit<T>, state: SignalState) -> Self {
+        let raw = RawSignal::new(state);
         let data = UnsafeCell::new(value);
         Self(Rc::new(InnerSignal(raw, data)))
     }
 
     #[inline]
     pub fn new(value: T) -> Self {
-        Self::from_maybe_uninit(MaybeUninit::new(value))
+        Self::from_maybe_uninit(MaybeUninit::new(value), SignalState::Idling)
     }
 
     #[inline]
     pub fn uninit() -> Self {
-        Self::from_maybe_uninit(MaybeUninit::uninit())
+        Self::from_maybe_uninit(MaybeUninit::uninit(), SignalState::Uninitialized)
     }
 
     #[inline]
@@ -294,6 +303,17 @@ impl<T> Mutable<T> {
             })
         });
     }
+
+    pub(super) fn compose<B, F, G>(&self, g: G) -> Computed<B>
+    where
+        F: FnMut(&T) + 'static,
+        G: FnOnce(Mutable<B>) -> F,
+    {
+        let computed = Computed::uninit();
+        let mutable = computed.as_mutable().clone();
+        let _ = self.for_each(g(mutable));
+        computed
+    }
 }
 
 impl<T> Clone for Mutable<T> {
@@ -359,6 +379,7 @@ impl<T> Clone for NotifierRef<T> {
     }
 }
 
+#[must_use]
 #[derive(Debug)]
 #[repr(transparent)]
 pub struct Unsubscriber<T>(Option<NotifierRef<T>>);
@@ -404,6 +425,7 @@ impl<T> Clone for Unsubscriber<T> {
     }
 }
 
+#[must_use]
 #[derive(Debug)]
 #[repr(transparent)]
 pub struct DropUnsubscriber<T>(pub Unsubscriber<T>);
