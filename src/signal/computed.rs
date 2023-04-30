@@ -27,8 +27,8 @@ impl<T> Computed<T> {
     ///
     /// You should not need this method for normal use cases, however
     /// it can come in handy when fiddling with signals.
-    /// 
-    /// Note that there is nothing unsafe in mutating a computed signal. 
+    ///
+    /// Note that there is nothing unsafe in mutating a computed signal.
     #[inline]
     pub fn as_mutable(&self) -> &Mutable<T> {
         &self.0
@@ -51,6 +51,14 @@ impl<T> Signal for Computed<T> {
         Self::Item: Clone,
     {
         self.0.try_get()
+    }
+
+    #[inline]
+    fn map<B, F>(&self, f: F) -> Computed<B>
+    where
+        F: FnMut(&Self::Item) -> B + 'static,
+    {
+        self.0.map(f)
     }
 }
 

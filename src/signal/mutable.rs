@@ -7,7 +7,7 @@ use alloc::boxed::Box;
 use alloc::rc::{Rc, Weak};
 use alloc::vec::Vec;
 
-use super::{Result, Signal, SignalError, Value, Computed};
+use super::{Computed, Result, Signal, SignalError, Value};
 
 #[derive(Debug)]
 struct Notifier {
@@ -342,6 +342,13 @@ impl<T> Signal for Mutable<T> {
         // SAFETY: the data is not currently getting mutated, therefore it is safe
         // to borrow it immutably.
         Ok(unsafe { data.as_ref().assume_init_ref() }.clone())
+    }
+
+    fn map<B, F>(&self, mut f: F) -> Computed<B>
+    where
+        F: FnMut(&Self::Item) -> B + 'static,
+    {
+        self.compose(|mutable| move |data| mutable.set(f(data)))
     }
 }
 

@@ -44,16 +44,9 @@ pub trait Signal: Value<Self::Item> {
         self.try_get().unwrap()
     }
 
-    fn map<B, F>(&self, mut f: F) -> Computed<B>
+    fn map<B, F>(&self, f: F) -> Computed<B>
     where
-        F: FnMut(&Self::Item) -> B + 'static,
-    {
-        // todo: maybe monomorphize this to gain code size ? This is elegant but probably inefficient...
-        let computed = Computed::uninit();
-        let mutable = computed.as_mutable().clone();
-        let _ = self.for_each(move |data| mutable.set(f(data)));
-        computed
-    }
+        F: FnMut(&Self::Item) -> B + 'static;
 
     // fn filter<P>(&self, predicate: P) -> Computed<Self::Item>
     // where
