@@ -90,7 +90,6 @@ impl RawSignal {
     unsafe fn notify_all(&self) {
         let subscribers = self.subscribers.get();
         let mut i = 0;
-
         while i < (*subscribers).len() {
             let notifier = (*subscribers).as_mut_ptr().add(i).as_ref().unwrap();
             if notifier.active() {
@@ -98,7 +97,6 @@ impl RawSignal {
             }
             i += 1;
         }
-
         if self.needs_delete.take() {
             (*subscribers).retain(Notifier::active);
         }
@@ -119,7 +117,6 @@ impl RawSignal {
         // others from removing elements from `self.subscribers` or
         // borrowing it's closures.
         unsafe { self.notify_all() };
-
         self.state.set(SignalState::Idling);
         Ok(())
     }
@@ -130,9 +127,7 @@ impl RawSignal {
             notifier();
             self.state.set(old_state);
         }
-
         let subscribers = self.subscribers.get();
-
         // SAFETY: it is always safe to append to `self.subscribers` because
         // no one keeps a borrow of it between call boundaries.
         unsafe {
@@ -188,9 +183,7 @@ impl<T> Drop for InnerSignal<T> {
     fn drop(&mut self) {
         let (raw, mut data) = self.get();
         if raw.state() != SignalState::Uninitialized {
-            unsafe { 
-                data.as_mut().assume_init_drop(); 
-            }
+            unsafe { data.as_mut().assume_init_drop() };
         }
     }
 }
@@ -228,11 +221,9 @@ impl<T> Mutable<T> {
         F: FnOnce(&mut T),
     {
         let (raw, mut data) = self.0.get();
-
         if raw.state() != SignalState::Idling {
             return Err(SignalError);
         }
-
         // SAFETY: `data` will live longer than this closure. `RawSignal::try_mutate`
         // will make sure the it is not called twice at the same time.
         unsafe { raw.try_mutate(|| f(data.as_mut().assume_init_mut())) }
@@ -265,7 +256,6 @@ impl<T> Mutable<T> {
     #[inline]
     pub fn try_set(&self, value: T) -> Result<()> {
         let (raw, mut data) = self.0.get();
-
         match raw.state() {
             SignalState::Idling => self.try_mutate(|data| *data = value),
             SignalState::Uninitialized => unsafe {
@@ -287,7 +277,6 @@ impl<T> Mutable<T> {
         F: FnMut(&T) + 'static,
     {
         let (raw, data) = self.0.get();
-
         let id = raw.for_each(|_| {
             // SAFETY: when this closure gets called, there shall be no
             // other mutable borrow to data.
@@ -295,7 +284,6 @@ impl<T> Mutable<T> {
                 f(data.as_ref().assume_init_ref());
             })
         });
-
         Unsubscriber::new(self, id)
     }
 
@@ -304,7 +292,6 @@ impl<T> Mutable<T> {
         F: FnMut(&T, &mut Unsubscriber<T>) + 'static,
     {
         let (raw, data) = self.0.get();
-
         raw.for_each(|id| {
             let mut unsub = Unsubscriber::new(self, id);
             // SAFETY: when this closure gets called, there shall be no
@@ -342,14 +329,12 @@ impl<T> Signal for Mutable<T> {
         Self::Item: Clone,
     {
         let (raw, data) = self.0.get();
-
         if matches!(
             raw.state(),
             SignalState::Mutating | SignalState::Uninitialized
         ) {
             return Err(SignalError);
         }
-
         // SAFETY: the data is not currently getting mutated, therefore it is safe
         // to borrow it immutably.
         Ok(unsafe { data.as_ref().assume_init_ref() }.clone())
