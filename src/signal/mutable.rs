@@ -54,7 +54,7 @@ enum SignalState {
     /// The signal is currently notifying new susbcribers.
     Subscribing,
     /// The signal's data is currently uninitialized.
-    Uninitialized,
+    Uninit,
 }
 
 #[derive(Debug)]
@@ -182,7 +182,7 @@ impl<T> InnerSignal<T> {
 impl<T> Drop for InnerSignal<T> {
     fn drop(&mut self) {
         let (raw, mut data) = self.get();
-        if raw.state() != SignalState::Uninitialized {
+        if raw.state() != SignalState::Uninit {
             unsafe { data.as_mut().assume_init_drop() };
         }
     }
@@ -206,13 +206,13 @@ impl<T> Mutable<T> {
 
     #[inline]
     pub fn uninit() -> Self {
-        Self::from_maybe_uninit(MaybeUninit::uninit(), SignalState::Uninitialized)
+        Self::from_maybe_uninit(MaybeUninit::uninit(), SignalState::Uninit)
     }
 
     #[inline]
     pub fn initialized(&self) -> bool {
         let (raw, _) = self.0.get();
-        raw.state() != SignalState::Uninitialized
+        raw.state() != SignalState::Uninit
     }
 
     #[inline]
@@ -258,7 +258,7 @@ impl<T> Mutable<T> {
         let (raw, mut data) = self.0.get();
         match raw.state() {
             SignalState::Idling => self.try_mutate(|data| *data = value),
-            SignalState::Uninitialized => unsafe {
+            SignalState::Uninit => unsafe {
                 raw.try_mutate(|| {
                     data.as_mut().write(value);
                 })
@@ -329,10 +329,7 @@ impl<T> Signal for Mutable<T> {
         Self::Item: Clone,
     {
         let (raw, data) = self.0.get();
-        if matches!(
-            raw.state(),
-            SignalState::Mutating | SignalState::Uninitialized
-        ) {
+        if matches!(raw.state(), SignalState::Mutating | SignalState::Uninit) {
             return Err(SignalError);
         }
         // SAFETY: the data is not currently getting mutated, therefore it is safe
