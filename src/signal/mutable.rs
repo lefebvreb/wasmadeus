@@ -184,6 +184,17 @@ impl<T> InnerSignal<T> {
     }
 }
 
+impl<T> Drop for InnerSignal<T> {
+    fn drop(&mut self) {
+        let (raw, mut data) = self.get();
+        if raw.state() != SignalState::Uninitialized {
+            unsafe { 
+                data.as_mut().assume_init_drop(); 
+            }
+        }
+    }
+}
+
 #[derive(Debug)]
 #[repr(transparent)]
 pub struct Mutable<T: 'static>(Rc<InnerSignal<T>>);
