@@ -350,6 +350,13 @@ impl<T> Signal for Mutable<T> {
     {
         self.compose(|mutable| move |data| mutable.set(f(data)))
     }
+
+    fn filter<P>(&self, predicate: P) -> Computed<Self::Item>
+    where
+        P: FnMut(&Self::Item) -> bool,
+    {
+        self.compose(|mutable| move |data| todo!())
+    }
 }
 
 impl<T> Value<T> for Mutable<T> {

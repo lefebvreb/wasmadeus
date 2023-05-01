@@ -48,9 +48,9 @@ pub trait Signal: Value<Self::Item> {
     where
         F: FnMut(&Self::Item) -> B + 'static;
 
-    // fn filter<P>(&self, predicate: P) -> Computed<Self::Item>
-    // where
-    //     P: FnMut(&Self::Item) -> bool;
+    fn filter<P>(&self, predicate: P) -> Computed<Self::Item>
+    where
+        P: FnMut(&Self::Item) -> bool;
 
     // fn filter_map<B, F>(&self, f: F) -> Computed<B>
     // where

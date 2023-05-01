@@ -38,7 +38,7 @@ impl<T> Computed<T> {
 impl<T> Clone for Computed<T> {
     #[inline]
     fn clone(&self) -> Self {
-        Self(self.0.clone())
+        Self(self.as_mutable().clone())
     }
 }
 
@@ -50,7 +50,7 @@ impl<T> Signal for Computed<T> {
     where
         Self::Item: Clone,
     {
-        self.0.try_get()
+        self.as_mutable().try_get()
     }
 
     #[inline]
@@ -58,7 +58,14 @@ impl<T> Signal for Computed<T> {
     where
         F: FnMut(&Self::Item) -> B + 'static,
     {
-        self.0.map(f)
+        self.as_mutable().map(f)
+    }
+
+    fn filter<P>(&self, predicate: P) -> Computed<Self::Item>
+    where
+        P: FnMut(&Self::Item) -> bool,
+    {
+        self.as_mutable().filter(predicate)
     }
 }
 
@@ -68,7 +75,7 @@ impl<T> Value<T> for Computed<T> {
     where
         F: FnMut(&T) + 'static,
     {
-        self.0.for_each(f)
+        self.as_mutable().for_each(f)
     }
 
     #[inline]
@@ -76,6 +83,6 @@ impl<T> Value<T> for Computed<T> {
     where
         F: FnMut(&T, &mut Unsubscriber<T>) + 'static,
     {
-        self.0.for_each_inner(f)
+        self.as_mutable().for_each_inner(f)
     }
 }
