@@ -28,7 +28,7 @@ impl Erased {
     }
 }
 
-type Notify = dyn FnMut(Erased);
+pub type Notify = dyn FnMut(Erased);
 
 struct Subscriber {
     id: SubscriberId,
@@ -68,25 +68,24 @@ pub struct Broadcast {
 pub struct SubscriberId(u32);
 
 impl Broadcast {
-    /// Returns the next id
-    fn next_id(&self) -> SubscriberId {
-        let id = self.next_id.get();
-        self.next_id.set(id + 1);
-        SubscriberId(id)
-    }
-
     #[inline]
     pub fn subscribe<T, F, G>(&self, make_notifier: G) -> (SubscriberId, NonNull<Notify>)
     where
         F: FnMut(&T) + 'static,
         G: FnOnce(SubscriberId) -> F,
     {
-        let id = self.next_id();
+        let id = {
+            let id = self.next_id.get();
+            self.next_id.set(id + 1);
+            SubscriberId(id)
+        };
+
         let notify = {
             let mut f = make_notifier(id);
             let boxed = Box::new(move |data: Erased| f(unsafe { data.cast() }));
             NonNull::new(Box::into_raw(boxed)).unwrap()
         };
+
         {
             let subscribers = self.subscribers.get();
             unsafe {
@@ -97,6 +96,7 @@ impl Broadcast {
                 })
             }
         }
+        
         (id, notify)
     }
 
