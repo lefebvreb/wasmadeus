@@ -14,17 +14,17 @@ type NotifyFn = dyn FnMut(Erased);
 
 #[repr(transparent)]
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct ListenerId(usize);
+pub struct SubscriberId(usize);
 
-struct Listener {
-    id: ListenerId,
+struct Subscriber {
+    id: SubscriberId,
     active: Cell<bool>,
     notify: NonNull<NotifyFn>,
 }
 
-impl Listener {
+impl Subscriber {
     #[inline]
-    fn id(&self) -> ListenerId {
+    fn id(&self) -> SubscriberId {
         self.id
     }
 
@@ -34,7 +34,7 @@ impl Listener {
     }
 }
 
-impl Drop for Listener {
+impl Drop for Subscriber {
     #[inline]
     fn drop(&mut self) {
         unsafe {
@@ -56,7 +56,7 @@ struct InnerRawSignal {
     state: Cell<State>,
     next_id: Cell<usize>,
     needs_retain: Cell<bool>,
-    listeners: UnsafeCell<Vec<Listener>>,
+    subscribers: UnsafeCell<Vec<Subscriber>>,
 }
 
 impl InnerRawSignal {
@@ -66,7 +66,7 @@ impl InnerRawSignal {
             state: Cell::new(state),
             next_id: Cell::new(0),
             needs_retain: Cell::new(false),
-            listeners: UnsafeCell::new(Vec::new()),
+            subscribers: UnsafeCell::new(Vec::new()),
         }
     }
 
@@ -75,28 +75,28 @@ impl InnerRawSignal {
         self.state.get()
     }
 
-    fn next_id(&self) -> ListenerId {
+    fn next_id(&self) -> SubscriberId {
         let id = self.next_id.get();
         self.next_id.set(id + 1);
-        ListenerId(id)
+        SubscriberId(id)
     }
 
     /// # Safety
     /// 
     /// The state must neither be `Subscribing` or `Mutating`, so
-    /// that none of the listeners are currently borrowed.
+    /// that none of the subscribers are currently borrowed.
     unsafe fn retain(&self) {
         if self.needs_retain.replace(false) {
-            let listeners = self.listeners.get();
-            (*listeners).retain(Listener::active)
+            let subscribers = self.subscribers.get();
+            (*subscribers).retain(Subscriber::active)
         }
     }
 
-    fn push_listener(&self, id: ListenerId, mut notify: NonNull<NotifyFn>) {
-        let listeners = self.listeners.get();
+    fn push_subscriber(&self, id: SubscriberId, mut notify: NonNull<NotifyFn>) {
+        let subscribers = self.subscribers.get();
 
         unsafe {
-            (*listeners).push(Listener {
+            (*subscribers).push(Subscriber {
                 id,
                 active: Cell::new(true),
                 notify,
@@ -117,19 +117,19 @@ impl InnerRawSignal {
         }
     }
 
-    fn unsubscribe(&self, id: ListenerId) -> Option<()> {
-        let listeners = self.listeners.get();
+    fn unsubscribe(&self, id: SubscriberId) -> Option<()> {
+        let subscribers = self.subscribers.get();
 
-        let index = unsafe { (*listeners).binary_search_by_key(&id, Listener::id).ok()? };
+        let index = unsafe { (*subscribers).binary_search_by_key(&id, Subscriber::id).ok()? };
 
         match self.state() {
             State::Mutating | State::Subscribing => unsafe {
-                let listener = &(*listeners)[index];
-                listener.active.set(false);
+                let subscriber = &(*subscribers)[index];
+                subscriber.active.set(false);
                 self.needs_retain.set(true);
             },
             _ => unsafe {
-                (*listeners).remove(index);
+                (*subscribers).remove(index);
             },
         }
 
@@ -138,14 +138,14 @@ impl InnerRawSignal {
 
     // TODO: check states
     unsafe fn notify_all(&self) {
-        let listeners = self.listeners.get();
+        let subscribers = self.subscribers.get();
         let mut i = 0;
 
         unsafe {
-            while i < (*listeners).len() {
-                let listener = (*listeners).as_mut_ptr().add(i).as_ref().unwrap();
-                if listener.active() {
-                    let mut notify = listener.notify;
+            while i < (*subscribers).len() {
+                let subscriber = (*subscribers).as_mut_ptr().add(i).as_ref().unwrap();
+                if subscriber.active() {
+                    let mut notify = subscriber.notify;
                     (notify.as_mut())(self.value);
                 }
                 i += 1;
@@ -184,10 +184,10 @@ impl<T> RawSignal<T> {
         self.inner.state() != State::Uninit
     }
 
-    pub unsafe fn for_each<F, G>(&self, make_notify: G) -> ListenerId
+    pub unsafe fn for_each<F, G>(&self, make_notify: G) -> SubscriberId
     where
         F: FnMut(&T) + 'static,
-        G: FnOnce(ListenerId) -> F,
+        G: FnOnce(SubscriberId) -> F,
     {
         let id = self.inner.next_id();
 
@@ -200,13 +200,13 @@ impl<T> RawSignal<T> {
             NonNull::new(Box::into_raw(boxed)).unwrap()
         };
 
-        self.inner.push_listener(id, notify);
+        self.inner.push_subscriber(id, notify);
 
         id
     }
 
     #[inline]
-    pub fn unsubscribe(&self, id: ListenerId) {
+    pub fn unsubscribe(&self, id: SubscriberId) {
         self.inner.unsubscribe(id);
     }
 
