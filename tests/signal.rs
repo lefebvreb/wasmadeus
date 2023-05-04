@@ -6,7 +6,7 @@ use wasmadeus::signal::{Mutable, Signal};
 pub fn unsubscribe_in_notify() {
     let signal = Mutable::new("hello");
 
-    signal.for_each_inner(|_, unsub| {
+    signal.for_each_inner(move |_, unsub| {
         unsub.unsubscribe();
     });
 }
