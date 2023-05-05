@@ -1,5 +1,5 @@
 use core::cell::{Cell, UnsafeCell};
-use core::marker::PhantomData;
+use core::mem::MaybeUninit;
 use core::ptr::NonNull;
 
 use alloc::boxed::Box;
@@ -10,12 +10,19 @@ use super::Result;
 /// A pointer to a value whose type was erased.
 type Erased = NonNull<()>;
 
+/// A closure that reacts to a new value, passed by reference.
+/// 
+/// Must not mutate the reference.
 type NotifyFn = dyn FnMut(Erased);
 
+/// The ID of a subscription to a signal, can be used to unsubscribe from
+/// this signal.
 #[repr(transparent)]
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct SubscriberId(usize);
 
+/// A subscriber to a signal, with it's ID, notify closure
+/// and wether it is still active or is awaiting being dropped.
 struct Subscriber {
     id: SubscriberId,
     active: Cell<bool>,
@@ -23,11 +30,15 @@ struct Subscriber {
 }
 
 impl Subscriber {
+    /// Returns the ID of this subscriber.
     #[inline]
     fn id(&self) -> SubscriberId {
         self.id
     }
 
+    /// Returns true iff this subscriber is still willing
+    /// to receive more values, and false if it needs to be
+    /// dropped.
     #[inline]
     fn active(&self) -> bool {
         self.active.get()
@@ -43,6 +54,7 @@ impl Drop for Subscriber {
     }
 }
 
+/// The internal state of a RawSignal.
 #[derive(Copy, Clone, PartialEq, Eq)]
 enum State {
     Idling,
@@ -52,7 +64,6 @@ enum State {
 }
 
 struct InnerRawSignal {
-    value: Erased,
     state: Cell<State>,
     next_id: Cell<usize>,
     needs_retain: Cell<bool>,
@@ -60,9 +71,8 @@ struct InnerRawSignal {
 }
 
 impl InnerRawSignal {
-    fn new_with_state(value: Erased, state: State) -> Self {
+    fn new_with_state(state: State) -> Self {
         Self {
-            value,
             state: Cell::new(state),
             next_id: Cell::new(0),
             needs_retain: Cell::new(false),
@@ -92,7 +102,7 @@ impl InnerRawSignal {
         }
     }
 
-    fn push_subscriber(&self, id: SubscriberId, mut notify: NonNull<NotifyFn>) {
+    fn push_subscriber(&self, id: SubscriberId, mut notify: NonNull<NotifyFn>, value: Erased) {
         let subscribers = self.subscribers.get();
 
         unsafe {
@@ -106,12 +116,12 @@ impl InnerRawSignal {
         match self.state() {
             State::Idling => unsafe {
                 self.state.set(State::Subscribing);
-                notify.as_mut()(self.value);
+                notify.as_mut()(value);
                 self.state.set(State::Idling);
                 self.retain();
             },
             State::Subscribing => unsafe {
-                notify.as_mut()(self.value);
+                notify.as_mut()(value);
             },
             _ => (),
         }
@@ -137,7 +147,7 @@ impl InnerRawSignal {
     }
 
     // TODO: check states
-    unsafe fn notify_all(&self) {
+    unsafe fn notify_all(&self, value: Erased) {
         let subscribers = self.subscribers.get();
         let mut i = 0;
 
@@ -146,7 +156,7 @@ impl InnerRawSignal {
                 let subscriber = (*subscribers).as_mut_ptr().add(i).as_ref().unwrap();
                 if subscriber.active() {
                     let mut notify = subscriber.notify;
-                    (notify.as_mut())(self.value);
+                    (notify.as_mut())(value);
                 }
                 i += 1;
             }
@@ -156,27 +166,41 @@ impl InnerRawSignal {
     }
 }
 
-pub struct RawSignal<T> {
-    _phantom: PhantomData<T>,
+pub trait SignalStorage {
+    type Data;
+
+    fn get(&self) -> NonNull<()>;
+}
+
+impl<T> SignalStorage for UnsafeCell<MaybeUninit<T>> {
+    type Data = T;
+
+    #[inline]
+    fn get(&self) -> NonNull<()> {
+        NonNull::new(self.get()).unwrap().cast()
+    }
+}
+
+impl<T> SignalStorage for NonNull<T> {
+    type Data = T;
+
+    #[inline]
+    fn get(&self) -> NonNull<()> {
+        self.cast()
+    }
+}
+
+pub struct RawSignal<S: SignalStorage> {
+    storage: S,
     inner: InnerRawSignal,
 }
 
-impl<T> RawSignal<T> {
-    fn new_with_state(value: NonNull<T>, state: State) -> Self {
+impl<S: SignalStorage> RawSignal<S> {
+    fn new_with_state(storage: S, state: State) -> Self {
         Self {
-            _phantom: PhantomData,
-            inner: InnerRawSignal::new_with_state(value.cast(), state),
+            storage,
+            inner: InnerRawSignal::new_with_state(state),
         }
-    }
-
-    #[inline]
-    pub fn new(value: NonNull<T>) -> Self {
-        Self::new_with_state(value, State::Idling)
-    }
-
-    #[inline]
-    pub fn uninit(value: NonNull<T>) -> Self {
-        Self::new_with_state(value, State::Uninit)
     }
 
     #[inline]
@@ -186,7 +210,7 @@ impl<T> RawSignal<T> {
 
     pub unsafe fn for_each<F, G>(&self, make_notify: G) -> SubscriberId
     where
-        F: FnMut(&T) + 'static,
+        F: FnMut(&S::Data) + 'static,
         G: FnOnce(SubscriberId) -> F,
     {
         let id = self.inner.next_id();
@@ -200,7 +224,7 @@ impl<T> RawSignal<T> {
             NonNull::new(Box::into_raw(boxed)).unwrap()
         };
 
-        self.inner.push_subscriber(id, notify);
+        self.inner.push_subscriber(id, notify, self.storage.get());
 
         id
     }
@@ -209,10 +233,19 @@ impl<T> RawSignal<T> {
     pub fn unsubscribe(&self, id: SubscriberId) {
         self.inner.unsubscribe(id);
     }
+}
+
+impl<T> RawSignal<UnsafeCell<MaybeUninit<T>>> {
+    #[inline]
+    pub fn new(value: T) -> Self {
+        let storage = UnsafeCell::new(MaybeUninit::new(value));
+        Self::new_with_state(storage, State::Idling)
+    }
 
     #[inline]
-    pub unsafe fn notify_all(&self) -> Result<()> {
-        todo!()
+    pub fn uninit() -> Self {
+        let storage = UnsafeCell::new(MaybeUninit::uninit());
+        Self::new_with_state(storage, State::Uninit)
     }
 
     #[inline]
@@ -228,3 +261,23 @@ impl<T> RawSignal<T> {
         todo!()
     }
 }
+
+impl<T> RawSignal<NonNull<T>> {
+    #[inline]
+    pub fn new(value: NonNull<T>) -> Self {
+        Self::new_with_state(value, State::Idling)
+    }
+
+    #[inline]
+    pub fn uninit(value: NonNull<T>) -> Self {
+        Self::new_with_state(value, State::Uninit)
+    }
+
+    pub unsafe fn notify_all(&self) {
+        todo!()
+    }
+}
+
+// pub type RawMutable<T> = RawSignal<UnsafeCell<MaybeUninit<T>>>;
+
+// pub type RawFilter<T> = RawSignal<NonNull<T>>;
