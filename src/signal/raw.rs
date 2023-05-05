@@ -172,7 +172,7 @@ impl InnerRawSignal {
     }
 }
 
-pub trait SignalStorage: 'static {
+pub trait SignalStorage {
     type Data;
 
     fn get(&self) -> NonNull<()>;
@@ -184,7 +184,7 @@ pub trait SignalStorage: 'static {
     unsafe fn drop(&mut self) {}
 }
 
-impl<T: 'static> SignalStorage for UnsafeCell<MaybeUninit<T>> {
+impl<T> SignalStorage for UnsafeCell<MaybeUninit<T>> {
     type Data = T;
 
     #[inline]
@@ -198,7 +198,7 @@ impl<T: 'static> SignalStorage for UnsafeCell<MaybeUninit<T>> {
     }
 }
 
-impl<T: 'static> SignalStorage for NonNull<T> {
+impl<T> SignalStorage for NonNull<T> {
     type Data = T;
 
     #[inline]
@@ -267,7 +267,7 @@ impl<S: SignalStorage> RawSignal<S> {
     }
 }
 
-impl<T: 'static> RawSignal<UnsafeCell<MaybeUninit<T>>> {
+impl<T> RawSignal<UnsafeCell<MaybeUninit<T>>> {
     #[inline]
     pub fn new(value: T) -> Self {
         let storage = UnsafeCell::new(MaybeUninit::new(value));
@@ -318,7 +318,7 @@ impl<T: 'static> RawSignal<UnsafeCell<MaybeUninit<T>>> {
     }
 }
 
-impl<T: 'static> RawSignal<NonNull<T>> {
+impl<T> RawSignal<NonNull<T>> {
     #[inline]
     pub fn new(value: NonNull<T>) -> Self {
         Self::new_with_state(value, State::Idling)
