@@ -1,218 +1,29 @@
-use core::cell::{Cell, UnsafeCell};
+use core::cell::UnsafeCell;
 use core::mem::MaybeUninit;
-use core::ops::{Deref, DerefMut};
-use core::ptr::NonNull;
 
-use alloc::boxed::Box;
-use alloc::rc::{Rc, Weak};
-use alloc::vec::Vec;
+use alloc::rc::Rc;
 
-use super::{Computed, Result, Signal, SignalError, Value};
-
-#[derive(Debug)]
-struct Notifier {
-    id: u32,
-    active: Cell<bool>,
-    notify: NonNull<dyn FnMut()>,
-}
-
-impl Drop for Notifier {
-    #[inline]
-    fn drop(&mut self) {
-        // SAFETY: we have exclusive access to this pointer, that is
-        // never copied.
-        unsafe {
-            let _ = Box::from_raw(self.notify.as_ptr());
-        }
-    }
-}
-
-impl Notifier {
-    #[inline]
-    fn id(&self) -> u32 {
-        self.id
-    }
-
-    #[inline]
-    fn active(&self) -> bool {
-        self.active.get()
-    }
-}
-
-/// The state of a `RawSignal`, used to prevent reentrant calls from
-/// breaking the aliasing laws of Rust.
-///
-/// It is set by functions that need exclusive access to part of the `RawSignal`,
-/// and are unset at the end of their executions.
-#[repr(u8)]
-#[derive(Copy, Clone, PartialEq, Debug)]
-enum SignalState {
-    /// The signal is not currently in use.
-    Idling,
-    /// The signal's data is currently being updated.
-    Mutating,
-    /// The signal is currently notifying new susbcribers.
-    Subscribing,
-    /// The signal's data is currently uninitialized.
-    Uninit,
-}
-
-#[derive(Debug)]
-struct RawSignal {
-    state: Cell<SignalState>,
-    next_id: Cell<u32>,
-    needs_delete: Cell<bool>,
-    subscribers: UnsafeCell<Vec<Notifier>>,
-}
-
-impl RawSignal {
-    #[inline]
-    fn new(state: SignalState) -> Self {
-        Self {
-            state: Cell::new(state),
-            next_id: Cell::new(0),
-            needs_delete: Cell::new(false),
-            subscribers: UnsafeCell::new(Vec::new()),
-        }
-    }
-
-    #[inline]
-    fn state(&self) -> SignalState {
-        self.state.get()
-    }
-
-    /// # Safety
-    ///
-    /// The caller must ensure that:
-    /// * No element of the `self.subscribers` vector gets dropped.
-    /// * No closure contained in the `self.subscribers` vector gets borrowed.
-    /// * The parent signal's data is not mutated.
-    unsafe fn notify_all(&self) {
-        let subscribers = self.subscribers.get();
-        let mut i = 0;
-        while i < (*subscribers).len() {
-            let notifier = (*subscribers).as_mut_ptr().add(i).as_ref().unwrap();
-            if notifier.active() {
-                (*notifier.notify.as_ptr())();
-            }
-            i += 1;
-        }
-        if self.needs_delete.take() {
-            (*subscribers).retain(Notifier::active);
-        }
-    }
-
-    /// # Safety
-    ///
-    /// The caller must ensure that the state should be either `Idling` or
-    /// `Uninitialized`. In this last case, the old data may not be read or
-    /// dropped when `mutater` is called.
-    unsafe fn try_mutate<F>(&self, mutater: F) -> Result<()>
-    where
-        F: FnOnce(),
-    {
-        self.state.set(SignalState::Mutating);
-        mutater();
-        // SAFETY: we set the state to Mutating, therefore preventing
-        // others from removing elements from `self.subscribers` or
-        // borrowing it's closures.
-        unsafe { self.notify_all() };
-        self.state.set(SignalState::Idling);
-        Ok(())
-    }
-
-    fn append_notifier(&self, id: u32, mut notifier: Box<dyn FnMut()>) {
-        if matches!(self.state(), SignalState::Idling | SignalState::Subscribing) {
-            let old_state = self.state.replace(SignalState::Subscribing);
-            notifier();
-            self.state.set(old_state);
-        }
-        let subscribers = self.subscribers.get();
-        // SAFETY: it is always safe to append to `self.subscribers` because
-        // no one keeps a borrow of it between call boundaries.
-        unsafe {
-            (*subscribers).push(Notifier {
-                id,
-                active: Cell::new(true),
-                notify: NonNull::new(Box::into_raw(notifier)).unwrap(),
-            });
-        }
-    }
-
-    fn for_each<F>(&self, make_notifier: F) -> u32
-    where
-        F: FnOnce(u32) -> Box<dyn FnMut()>,
-    {
-        let id = self.next_id.get();
-        self.next_id.set(id.saturating_add(1));
-        self.append_notifier(id, make_notifier(id));
-        id
-    }
-
-    fn unsubscribe(&self, id: u32) {
-        let subscribers = self.subscribers.get();
-
-        // SAFETY: if the signal is mutating, we simply borrow `self.subscribers` immutably.
-        // If it is not, we remove a single element of it.
-        // In both case, we don't retain the borrow through any other function calls.
-        unsafe {
-            if let Ok(index) = (*subscribers).binary_search_by_key(&id, Notifier::id) {
-                if self.state() == SignalState::Mutating {
-                    let notifier = (*subscribers).get(index).unwrap();
-                    notifier.active.set(false);
-                    self.needs_delete.set(true);
-                } else {
-                    (*subscribers).remove(index);
-                }
-            }
-        }
-    }
-}
-
-#[derive(Debug)]
-struct InnerSignal<T>(RawSignal, UnsafeCell<MaybeUninit<T>>);
-
-impl<T> InnerSignal<T> {
-    #[inline]
-    fn get(&self) -> (&RawSignal, NonNull<MaybeUninit<T>>) {
-        (&self.0, NonNull::new(self.1.get()).unwrap())
-    }
-}
-
-impl<T> Drop for InnerSignal<T> {
-    fn drop(&mut self) {
-        let (raw, mut data) = self.get();
-        if raw.state() != SignalState::Uninit {
-            unsafe { data.as_mut().assume_init_drop() };
-        }
-    }
-}
+use super::Result;
+use super::raw::RawSignal;
 
 #[derive(Debug)]
 #[repr(transparent)]
-pub struct Mutable<T: 'static>(Rc<InnerSignal<T>>);
+pub struct Mutable<T: 'static>(Rc<RawSignal<UnsafeCell<MaybeUninit<T>>>>);
 
 impl<T> Mutable<T> {
-    fn from_maybe_uninit(value: MaybeUninit<T>, state: SignalState) -> Self {
-        let raw = RawSignal::new(state);
-        let data = UnsafeCell::new(value);
-        Self(Rc::new(InnerSignal(raw, data)))
-    }
-
     #[inline]
     pub fn new(value: T) -> Self {
-        Self::from_maybe_uninit(MaybeUninit::new(value), SignalState::Idling)
+        Self(Rc::new(RawSignal::new(value)))
     }
 
     #[inline]
     pub fn uninit() -> Self {
-        Self::from_maybe_uninit(MaybeUninit::uninit(), SignalState::Uninit)
+        Self(Rc::new(RawSignal::uninit()))
     }
 
     #[inline]
-    pub fn initialized(&self) -> bool {
-        let (raw, _) = self.0.get();
-        raw.state() != SignalState::Uninit
+    pub fn is_initialized(&self) -> bool {
+        self.0.is_initialized()
     }
 
     #[inline]

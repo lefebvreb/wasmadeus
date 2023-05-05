@@ -1,31 +1,80 @@
-use super::{Computed, Result, Unsubscriber};
+use core::mem;
+use core::ops::{Deref, DerefMut};
+
+use super::Result;
+
+pub trait Unsubscriber {
+    #[inline]
+    fn unsubscribe(&mut self) {}
+}
+
+#[derive(Clone)]
+#[repr(transparent)]
+pub struct DropUnsubscriber<U: Unsubscriber>(pub U);
+
+impl<U: Unsubscriber> DropUnsubscriber<U> {
+    #[inline]
+    pub fn take(self) -> U {
+        // SAFETY: `Self` and `U` have the same `repr`.
+        let inner = unsafe { mem::transmute_copy::<Self, U>(&self) };
+        mem::forget(self);
+        inner
+    }
+}
+
+impl<U: Unsubscriber> Deref for DropUnsubscriber<U> {
+    type Target = U;
+
+    #[inline]
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl<U: Unsubscriber> DerefMut for DropUnsubscriber<U> {
+    #[inline]
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+impl<U: Unsubscriber> Drop for DropUnsubscriber<U> {
+    #[inline]
+    fn drop(&mut self) {
+        self.unsubscribe()
+    }
+}
+
+impl Unsubscriber for () {}
 
 pub trait Value<T> {
-    fn for_each<F>(&self, f: F) -> Unsubscriber<T>
+    type Unsubscriber;
+
+    fn for_each<F>(&self, f: F) -> Self::Unsubscriber
     where
         F: FnMut(&T) + 'static;
 
     fn for_each_inner<F>(&self, f: F)
     where
-        F: FnMut(&T, &mut Unsubscriber<T>) + 'static;
+        F: FnMut(&T, &mut Self::Unsubscriber) + 'static;
 }
 
 impl<T> Value<T> for T {
+    type Unsubscriber = ();
+
     #[inline]
-    fn for_each<F>(&self, mut f: F) -> Unsubscriber<T>
+    fn for_each<F>(&self, f: F) -> Self::Unsubscriber
     where
-        F: FnMut(&T) + 'static,
+        F: FnOnce(&T),
     {
         f(self);
-        Unsubscriber::empty()
     }
 
-    fn for_each_inner<F>(&self, mut f: F)
+    fn for_each_inner<F>(&self, f: F)
     where
-        F: FnMut(&T, &mut Unsubscriber<T>) + 'static,
+        F: FnOnce(&T, &mut Self::Unsubscriber),
     {
-        let mut unsub = Unsubscriber::empty();
-        f(self, &mut unsub);
+        f(self, &mut ());
     }
 }
 
@@ -44,13 +93,13 @@ pub trait Signal: Value<Self::Item> {
         self.try_get().unwrap()
     }
 
-    fn map<B, F>(&self, f: F) -> Computed<B>
-    where
-        F: FnMut(&Self::Item) -> B + 'static;
+    // fn map<B, F>(&self, f: F) -> Computed<B>
+    // where
+    //     F: FnMut(&Self::Item) -> B + 'static;
 
-    fn filter<P>(&self, predicate: P) -> Computed<Self::Item>
-    where
-        P: FnMut(&Self::Item) -> bool;
+    // fn filter<P>(&self, predicate: P) -> Computed<Self::Item>
+    // where
+    //     P: FnMut(&Self::Item) -> bool;
 
     // fn filter_map<B, F>(&self, f: F) -> Computed<B>
     // where

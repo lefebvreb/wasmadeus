@@ -86,7 +86,7 @@ impl InnerRawSignal {
     fn state(&self) -> State {
         self.state.get()
     }
-    
+
     fn next_id(&self) -> SubscriberId {
         let id = self.next_id.get();
         self.next_id.set(id + 1);
@@ -152,7 +152,6 @@ impl InnerRawSignal {
         Some(())
     }
 
-    // TODO: check states
     unsafe fn notify_all(&self, value: Erased) {
         let subscribers = self.subscribers.get();
         let mut i = 0;
@@ -173,19 +172,19 @@ impl InnerRawSignal {
 }
 
 pub trait SignalStorage {
-    type Data;
+    type Value;
 
     fn get(&self) -> NonNull<()>;
 
     /// # Safety
-    /// 
+    ///
     /// `self` must be initialized and valid to call this method.
     #[inline]
     unsafe fn drop(&mut self) {}
 }
 
 impl<T> SignalStorage for UnsafeCell<MaybeUninit<T>> {
-    type Data = T;
+    type Value = T;
 
     #[inline]
     fn get(&self) -> NonNull<()> {
@@ -199,7 +198,7 @@ impl<T> SignalStorage for UnsafeCell<MaybeUninit<T>> {
 }
 
 impl<T> SignalStorage for NonNull<T> {
-    type Data = T;
+    type Value = T;
 
     #[inline]
     fn get(&self) -> NonNull<()> {
@@ -243,7 +242,7 @@ impl<S: SignalStorage> RawSignal<S> {
 
     pub unsafe fn for_each<F, G>(&self, make_notify: G) -> SubscriberId
     where
-        F: FnMut(&S::Data) + 'static,
+        F: FnMut(&S::Value) + 'static,
         G: FnOnce(SubscriberId) -> F,
     {
         let id = self.inner.next_id();
@@ -264,6 +263,18 @@ impl<S: SignalStorage> RawSignal<S> {
     #[inline]
     pub fn unsubscribe(&self, id: SubscriberId) {
         self.inner.unsubscribe(id);
+    }
+
+    pub fn get(&self) -> Result<S::Value>
+    where
+        S::Value: Clone,
+    {
+        if matches!(self.state(), State::Mutating | State::Uninit) {
+            return Err(SignalError);
+        }
+
+        let value = unsafe { self.storage.get().cast::<S::Value>().as_ref().clone() };
+        Ok(value)
     }
 }
 
@@ -286,10 +297,10 @@ impl<T> RawSignal<UnsafeCell<MaybeUninit<T>>> {
         match self.state() {
             State::Idling => {
                 *(*storage).assume_init_mut() = new_value;
-            },
+            }
             State::Uninit => {
                 (*storage).write(new_value);
-            },
+            }
             _ => return Err(SignalError),
         }
 
@@ -347,7 +358,3 @@ impl<S: SignalStorage> Drop for RawSignal<S> {
         }
     }
 }
-
-// pub type RawMutable<T> = RawSignal<UnsafeCell<MaybeUninit<T>>>;
-
-// pub type RawFilter<T> = RawSignal<NonNull<T>>;
