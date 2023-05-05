@@ -5,13 +5,15 @@ use core::ptr::NonNull;
 use alloc::boxed::Box;
 use alloc::vec::Vec;
 
+use crate::signal::SignalError;
+
 use super::Result;
 
 /// A pointer to a value whose type was erased.
 type Erased = NonNull<()>;
 
 /// A closure that reacts to a new value, passed by reference.
-/// 
+///
 /// Must not mutate the reference.
 type NotifyFn = dyn FnMut(Erased);
 
@@ -84,7 +86,7 @@ impl InnerRawSignal {
     fn state(&self) -> State {
         self.state.get()
     }
-
+    
     fn next_id(&self) -> SubscriberId {
         let id = self.next_id.get();
         self.next_id.set(id + 1);
@@ -92,7 +94,7 @@ impl InnerRawSignal {
     }
 
     /// # Safety
-    /// 
+    ///
     /// The state must neither be `Subscribing` or `Mutating`, so
     /// that none of the subscribers are currently borrowed.
     unsafe fn retain(&self) {
@@ -130,7 +132,11 @@ impl InnerRawSignal {
     fn unsubscribe(&self, id: SubscriberId) -> Option<()> {
         let subscribers = self.subscribers.get();
 
-        let index = unsafe { (*subscribers).binary_search_by_key(&id, Subscriber::id).ok()? };
+        let index = unsafe {
+            (*subscribers)
+                .binary_search_by_key(&id, Subscriber::id)
+                .ok()?
+        };
 
         match self.state() {
             State::Mutating | State::Subscribing => unsafe {
@@ -166,22 +172,33 @@ impl InnerRawSignal {
     }
 }
 
-pub trait SignalStorage {
+pub trait SignalStorage: 'static {
     type Data;
 
     fn get(&self) -> NonNull<()>;
+
+    /// # Safety
+    /// 
+    /// `self` must be initialized and valid to call this method.
+    #[inline]
+    unsafe fn drop(&mut self) {}
 }
 
-impl<T> SignalStorage for UnsafeCell<MaybeUninit<T>> {
+impl<T: 'static> SignalStorage for UnsafeCell<MaybeUninit<T>> {
     type Data = T;
 
     #[inline]
     fn get(&self) -> NonNull<()> {
         NonNull::new(self.get()).unwrap().cast()
     }
+
+    #[inline]
+    unsafe fn drop(&mut self) {
+        (*self.get()).assume_init_drop();
+    }
 }
 
-impl<T> SignalStorage for NonNull<T> {
+impl<T: 'static> SignalStorage for NonNull<T> {
     type Data = T;
 
     #[inline]
@@ -196,11 +213,27 @@ pub struct RawSignal<S: SignalStorage> {
 }
 
 impl<S: SignalStorage> RawSignal<S> {
+    #[inline]
     fn new_with_state(storage: S, state: State) -> Self {
         Self {
             storage,
             inner: InnerRawSignal::new_with_state(state),
         }
+    }
+
+    #[inline]
+    fn value(&self) -> Erased {
+        self.storage.get()
+    }
+
+    #[inline]
+    fn state(&self) -> State {
+        self.inner.state()
+    }
+
+    #[inline]
+    fn set_state(&self, state: State) {
+        self.inner.state.set(state);
     }
 
     #[inline]
@@ -218,8 +251,7 @@ impl<S: SignalStorage> RawSignal<S> {
         let notify = {
             let mut f = make_notify(id);
             let boxed = Box::new(move |data: Erased| {
-                let data = unsafe { data.cast().as_mut() };
-                f(data);
+                f(data.cast().as_mut());
             });
             NonNull::new(Box::into_raw(boxed)).unwrap()
         };
@@ -235,7 +267,7 @@ impl<S: SignalStorage> RawSignal<S> {
     }
 }
 
-impl<T> RawSignal<UnsafeCell<MaybeUninit<T>>> {
+impl<T: 'static> RawSignal<UnsafeCell<MaybeUninit<T>>> {
     #[inline]
     pub fn new(value: T) -> Self {
         let storage = UnsafeCell::new(MaybeUninit::new(value));
@@ -248,9 +280,24 @@ impl<T> RawSignal<UnsafeCell<MaybeUninit<T>>> {
         Self::new_with_state(storage, State::Uninit)
     }
 
-    #[inline]
     pub unsafe fn set(&self, new_value: T) -> Result<()> {
-        todo!()
+        let storage = self.storage.get();
+
+        match self.state() {
+            State::Idling => {
+                *(*storage).assume_init_mut() = new_value;
+            },
+            State::Uninit => {
+                (*storage).write(new_value);
+            },
+            _ => return Err(SignalError),
+        }
+
+        self.set_state(State::Mutating);
+        self.inner.notify_all(self.value());
+        self.set_state(State::Idling);
+
+        Ok(())
     }
 
     #[inline]
@@ -258,11 +305,20 @@ impl<T> RawSignal<UnsafeCell<MaybeUninit<T>>> {
     where
         F: FnOnce(&mut T),
     {
-        todo!()
+        if self.state() != State::Idling {
+            return Err(SignalError);
+        }
+
+        self.set_state(State::Mutating);
+        mutate(self.value().cast().as_mut());
+        self.inner.notify_all(self.value());
+        self.set_state(State::Idling);
+
+        Ok(())
     }
 }
 
-impl<T> RawSignal<NonNull<T>> {
+impl<T: 'static> RawSignal<NonNull<T>> {
     #[inline]
     pub fn new(value: NonNull<T>) -> Self {
         Self::new_with_state(value, State::Idling)
@@ -274,7 +330,21 @@ impl<T> RawSignal<NonNull<T>> {
     }
 
     pub unsafe fn notify_all(&self) {
-        todo!()
+        self.set_state(State::Mutating);
+        self.inner.notify_all(self.value());
+        self.set_state(State::Idling);
+    }
+}
+
+impl<S: SignalStorage> Drop for RawSignal<S> {
+    #[inline]
+    fn drop(&mut self) {
+        if self.is_initialized() {
+            // SAFETY: the data is initialized and valid.
+            unsafe {
+                self.storage.drop();
+            }
+        }
     }
 }
 
