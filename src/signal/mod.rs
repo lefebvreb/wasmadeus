@@ -1,9 +1,9 @@
-//mod computed;
+mod computed;
 mod mutable;
 mod raw;
 mod traits;
 
-// pub use computed::*;
+pub use computed::*;
 pub use mutable::*;
 pub use traits::*;
 

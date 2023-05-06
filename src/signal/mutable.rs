@@ -64,21 +64,21 @@ impl<T> Mutable<T> {
         self.try_update(update).unwrap();
     }
 
-    pub fn for_each<F>(&self, f: F) -> MutableUnsubscriber<T>
+    pub fn for_each<F>(&self, f: F) -> SignalUnsubscriber<T>
     where
         F: FnMut(&T) + 'static,
     {
         let id = self.0.raw_for_each(|_| f);
-        MutableUnsubscriber::new(Rc::downgrade(&self.0), id)
+        SignalUnsubscriber::new(Rc::downgrade(&self.0), id)
     }
 
     pub fn for_each_inner<F>(&self, mut f: F)
     where
-        F: FnMut(&T, &mut MutableUnsubscriber<T>) + 'static,
+        F: FnMut(&T, &mut SignalUnsubscriber<T>) + 'static,
     {
         let weak = Rc::downgrade(&self.0);
         self.0.raw_for_each(|id| {
-            let mut unsub = MutableUnsubscriber::new(weak, id);
+            let mut unsub = SignalUnsubscriber::new(weak, id);
             move |data| f(data, &mut unsub)
         });
     }
@@ -93,7 +93,7 @@ impl<T> Mutable<T> {
 }
 
 impl<T> Value<T> for &Mutable<T> {
-    type Unsubscriber = MutableUnsubscriber<T>;
+    type Unsubscriber = SignalUnsubscriber<T>;
 
     #[inline]
     fn for_each<F>(self, f: F) -> Self::Unsubscriber
@@ -140,9 +140,9 @@ impl<T> Clone for Mutable<T> {
 }
 
 #[repr(transparent)]
-pub struct MutableUnsubscriber<T>(Option<(Weak<RawMutable<T>>, SubscriberId)>);
+pub struct SignalUnsubscriber<T>(Option<(Weak<RawMutable<T>>, SubscriberId)>);
 
-impl<T> MutableUnsubscriber<T> {
+impl<T> SignalUnsubscriber<T> {
     #[inline]
     fn new(weak: Weak<RawMutable<T>>, id: SubscriberId) -> Self {
         Self(Some((weak, id)))
@@ -162,7 +162,7 @@ impl<T> MutableUnsubscriber<T> {
     }
 }
 
-impl<T> Unsubscribe for MutableUnsubscriber<T> {
+impl<T> Unsubscribe for SignalUnsubscriber<T> {
     #[inline]
     fn unsubscribe(&mut self) {
         self.unsubscribe()
@@ -174,7 +174,7 @@ impl<T> Unsubscribe for MutableUnsubscriber<T> {
     }
 }
 
-impl<T> Clone for MutableUnsubscriber<T> {
+impl<T> Clone for SignalUnsubscriber<T> {
     #[inline]
     fn clone(&self) -> Self {
         Self(self.0.clone())

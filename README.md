@@ -23,15 +23,13 @@ Wasmadeus features:
 + Functional reactive programming (FRP) types and concepts.
 + Modular, customizable and reusable components.
 + Rustic API featuring no macro magic.
-+ `no_std` support.
-+ Integrates nicely with HTML, CSS and JavaScript.
++ `no_std` support, light code size.
++ Nice integration with HTML, CSS and JavaScript.
 + Easy bundling with [trunk](https://trunkrs.dev/).
 
 ## Examples
 
 See the [examples](https://github.com/L-Benjamin/wasmadeus/tree/main/examples) directory for a list of examples built with Wasmadeus.
-
-<br>
 
 #### License
 
