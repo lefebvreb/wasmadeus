@@ -1,6 +1,6 @@
 use alloc::rc::{Rc, Weak};
 
-use super::raw::{RawMutable, SubscriberId, RawMutableUnsubscriber};
+use super::raw::{RawMutable, RawMutableUnsubscriber, SubscriberId};
 use super::{Result, Signal, Unsubscribe, Value};
 
 #[repr(transparent)]
@@ -64,21 +64,21 @@ impl<T> Mutable<T> {
         self.try_update(update).unwrap();
     }
 
-    pub fn for_each<F>(&self, f: F) -> Unsubscriber<T>
+    pub fn for_each<F>(&self, f: F) -> MutableUnsubscriber<T>
     where
         F: FnMut(&T) + 'static,
     {
         let id = self.0.raw_for_each(|_| f);
-        Unsubscriber::new(Rc::downgrade(&self.0), id)
+        MutableUnsubscriber::new(Rc::downgrade(&self.0), id)
     }
 
     pub fn for_each_inner<F>(&self, mut f: F)
     where
-        F: FnMut(&T, &mut Unsubscriber<T>) + 'static,
+        F: FnMut(&T, &mut MutableUnsubscriber<T>) + 'static,
     {
         let weak = Rc::downgrade(&self.0);
         self.0.raw_for_each(|id| {
-            let mut unsub = Unsubscriber::new(weak, id);
+            let mut unsub = MutableUnsubscriber::new(weak, id);
             move |data| f(data, &mut unsub)
         });
     }
@@ -93,7 +93,7 @@ impl<T> Mutable<T> {
 }
 
 impl<T> Value<T> for &Mutable<T> {
-    type Unsubscriber = Unsubscriber<T>;
+    type Unsubscriber = MutableUnsubscriber<T>;
 
     #[inline]
     fn for_each<F>(self, f: F) -> Self::Unsubscriber
@@ -139,10 +139,11 @@ impl<T> Clone for Mutable<T> {
     }
 }
 
+#[must_use]
 #[repr(transparent)]
-pub struct Unsubscriber<T>(RawMutableUnsubscriber<T>);
+pub struct MutableUnsubscriber<T>(RawMutableUnsubscriber<T>);
 
-impl<T> Unsubscriber<T> {
+impl<T> MutableUnsubscriber<T> {
     #[inline]
     fn new(weak: Weak<RawMutable<T>>, id: SubscriberId) -> Self {
         Self(RawMutableUnsubscriber::new(weak, id))
@@ -159,7 +160,7 @@ impl<T> Unsubscriber<T> {
     }
 }
 
-impl<T> Unsubscribe for Unsubscriber<T> {
+impl<T> Unsubscribe for MutableUnsubscriber<T> {
     #[inline]
     fn unsubscribe(&mut self) {
         self.unsubscribe()
@@ -171,7 +172,7 @@ impl<T> Unsubscribe for Unsubscriber<T> {
     }
 }
 
-impl<T> Clone for Unsubscriber<T> {
+impl<T> Clone for MutableUnsubscriber<T> {
     #[inline]
     fn clone(&self) -> Self {
         Self(self.0.clone())

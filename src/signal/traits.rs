@@ -57,7 +57,7 @@ impl<T: Copy> Value<T> for T {
     #[inline]
     fn for_each<F>(self, f: F) -> Self::Unsubscriber
     where
-        F: FnOnce(&T) 
+        F: FnOnce(&T),
     {
         f(&self)
     }
@@ -65,7 +65,7 @@ impl<T: Copy> Value<T> for T {
     #[inline]
     fn for_each_inner<F>(self, f: F)
     where
-        F: FnOnce(&T, &mut Self::Unsubscriber), 
+        F: FnOnce(&T, &mut Self::Unsubscriber),
     {
         f(&self, &mut ())
     }

@@ -1,4 +1,4 @@
-use super::{Mutable, Unsubscriber, Value, Signal, Result};
+use super::{Mutable, MutableUnsubscriber, Result, Signal, Value};
 
 #[repr(transparent)]
 pub struct Computed<T: 'static>(Mutable<T>);
@@ -34,7 +34,7 @@ impl<T> Computed<T> {
     }
 
     #[inline]
-    pub fn for_each<F>(&self, f: F) -> Unsubscriber<T>
+    pub fn for_each<F>(&self, f: F) -> MutableUnsubscriber<T>
     where
         F: FnMut(&T) + 'static,
     {
@@ -44,7 +44,7 @@ impl<T> Computed<T> {
     #[inline]
     pub fn for_each_inner<F>(&self, f: F)
     where
-        F: FnMut(&T, &mut Unsubscriber<T>) + 'static,
+        F: FnMut(&T, &mut MutableUnsubscriber<T>) + 'static,
     {
         self.0.for_each_inner(f)
     }
@@ -66,7 +66,7 @@ impl<T> Clone for Computed<T> {
 }
 
 impl<T> Value<T> for &Computed<T> {
-    type Unsubscriber = Unsubscriber<T>;
+    type Unsubscriber = MutableUnsubscriber<T>;
 
     #[inline]
     fn for_each<F>(self, f: F) -> Self::Unsubscriber
@@ -79,7 +79,7 @@ impl<T> Value<T> for &Computed<T> {
     #[inline]
     fn for_each_inner<F>(self, f: F)
     where
-        F: FnMut(&T, &mut Self::Unsubscriber) + 'static, 
+        F: FnMut(&T, &mut Self::Unsubscriber) + 'static,
     {
         self.0.for_each_inner(f)
     }

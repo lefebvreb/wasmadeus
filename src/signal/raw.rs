@@ -337,24 +337,24 @@ impl<T> RawMutable<T> {
 pub type RawFiltered<T> = RawSignal<NonNull<T>>;
 
 impl<T> RawFiltered<T> {
-    pub fn from_mutable<F>(signal: &RawMutable<T>, filter: F) -> Self
-    where
-        F: FnMut(&T) -> bool,
-    {
-        let state = match signal.state() {
-            State::Mutating => State::Mutating,
-            _ => State::Idling,
-        };
-        let this = Self::new_with_state(signal.value().cast(), state);
-        // todo(benjamin): for_each_inner and filter, using this.notify_all()
-        todo!()
-    }
+    // pub fn from_mutable<F>(signal: &RawMutable<T>, filter: F) -> Self
+    // where
+    //     F: FnMut(&T) -> bool,
+    // {
+    //     let state = match signal.state() {
+    //         State::Mutating => State::Mutating,
+    //         _ => State::Idling,
+    //     };
+    //     let this = Self::new_with_state(signal.value().cast(), state);
+    //     // todo(benjamin): for_each_inner and filter, using this.notify_all()
+    //     todo!()
+    // }
 
-    unsafe fn notify_all(&self) {
-        self.set_state(State::Mutating);
-        unsafe { self.inner.notify_all(self.value()) };
-        self.set_state(State::Idling);
-    }
+    // unsafe fn notify_all(&self) {
+    //     self.set_state(State::Mutating);
+    //     unsafe { self.inner.notify_all(self.value()) };
+    //     self.set_state(State::Idling);
+    // }
 }
 
 impl<S: SignalStorage> Drop for RawSignal<S> {
