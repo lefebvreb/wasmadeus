@@ -1,7 +1,7 @@
 use core::mem;
 use core::ops::{Deref, DerefMut};
 
-use super::Result;
+use super::{Computed, Result};
 
 pub trait Value<T>: Sized {
     type Unsubscriber;
@@ -97,9 +97,9 @@ where
         self.try_get().unwrap()
     }
 
-    // fn map<B, F>(&self, f: F) -> Computed<B>
-    // where
-    //     F: FnMut(&Self::Item) -> B + 'static;
+    fn map<B, F>(&self, f: F) -> Computed<B>
+    where
+        F: FnMut(&Self::Item) -> B + 'static;
 
     // fn filter<P>(&self, predicate: P) -> Computed<Self::Item>
     // where

@@ -1,7 +1,7 @@
 use alloc::rc::{Rc, Weak};
 
 use super::raw::{RawMutable, RawMutableUnsubscriber, SubscriberId};
-use super::{Result, Signal, Unsubscribe, Value};
+use super::{Computed, Result, Signal, Unsubscribe, Value};
 
 #[repr(transparent)]
 pub struct Mutable<T: 'static>(Rc<RawMutable<T>>);
@@ -129,6 +129,14 @@ impl<T> Signal for Mutable<T> {
         Self::Item: Clone,
     {
         self.0.try_get()
+    }
+
+    fn map<B, F>(&self, f: F) -> Computed<B>
+    where
+        F: FnMut(&Self::Item) -> B + 'static,
+    {
+        let computed = Computed::uninit();
+        computed
     }
 }
 

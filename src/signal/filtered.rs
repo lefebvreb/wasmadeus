@@ -1,7 +1,7 @@
 use alloc::rc::{Rc, Weak};
 
 use super::raw::{RawFiltered, RawFilteredUnsubscriber, SubscriberId};
-use super::{Unsubscribe, Value};
+use super::{Computed, Result, Signal, Unsubscribe, Value};
 
 #[repr(transparent)]
 pub struct Filtered<T: 'static>(Rc<RawFiltered<T>>);
@@ -67,6 +67,25 @@ impl<T> Value<T> for &Filtered<T> {
         F: FnMut(&T) + 'static,
     {
         self.for_each_forever(f);
+    }
+}
+
+impl<T> Signal for Filtered<T> {
+    type Item = T;
+
+    #[inline]
+    fn try_get(&self) -> Result<Self::Item>
+    where
+        Self::Item: Clone,
+    {
+        self.0.try_get()
+    }
+
+    fn map<B, F>(&self, f: F) -> Computed<B>
+    where
+        F: FnMut(&Self::Item) -> B + 'static,
+    {
+        todo!()
     }
 }
 

@@ -103,4 +103,12 @@ impl<T> Signal for Computed<T> {
     {
         self.0.try_get()
     }
+
+    #[inline]
+    fn map<B, F>(&self, f: F) -> Computed<B>
+    where
+        F: FnMut(&Self::Item) -> B + 'static,
+    {
+        self.0.map(f)
+    }
 }

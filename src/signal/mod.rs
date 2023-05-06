@@ -8,7 +8,6 @@ pub use computed::*;
 pub use filtered::*;
 pub use mutable::*;
 pub use traits::*;
-//pub use unsubscriber::*;
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub struct SignalError;
