@@ -3,14 +3,14 @@
 use wasmadeus::signal::{Mutable, Signal, Value};
 
 #[test]
-fn value_polymorphism() {
+fn ergonomic_polymorphism() {
     fn do_something(v: impl Value<i32>) {
         v.for_each(|i| println!("{i}"));
     }
 
     let mutable = Mutable::new(777);
 
-    do_something(&42);
+    do_something(42);
     do_something(&mutable);
 }
 

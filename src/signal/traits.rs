@@ -51,6 +51,34 @@ impl<T> Value<T> for &T {
     }
 }
 
+impl<T: Copy> Value<T> for T {
+    type Unsubscriber = ();
+
+    #[inline]
+    fn for_each<F>(self, f: F) -> Self::Unsubscriber
+    where
+        F: FnOnce(&T) 
+    {
+        f(&self)
+    }
+
+    #[inline]
+    fn for_each_inner<F>(self, f: F)
+    where
+        F: FnOnce(&T, &mut Self::Unsubscriber), 
+    {
+        f(&self, &mut ())
+    }
+
+    #[inline]
+    fn for_each_forever<F>(self, f: F)
+    where
+        F: FnOnce(&T),
+    {
+        f(&self);
+    }
+}
+
 pub trait Signal
 where
     for<'x> &'x Self: Value<Self::Item>,
