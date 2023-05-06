@@ -50,14 +50,12 @@ impl Subscriber {
 impl Drop for Subscriber {
     #[inline]
     fn drop(&mut self) {
-        unsafe {
-            let _ = Box::from_raw(self.notify.as_mut());
-        }
+        let _ = unsafe { Box::from_raw(self.notify.as_mut()) };
     }
 }
 
 /// The internal state of a RawSignal.
-#[derive(Copy, Clone, PartialEq, Eq)]
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
 enum State {
     Idling,
     Mutating,
@@ -240,7 +238,7 @@ impl<S: SignalStorage> RawSignal<S> {
         self.inner.state() != State::Uninit
     }
 
-    pub unsafe fn for_each<F, G>(&self, make_notify: G) -> SubscriberId
+    pub fn for_each<F, G>(&self, make_notify: G) -> SubscriberId
     where
         F: FnMut(&S::Value) + 'static,
         G: FnOnce(SubscriberId) -> F,
@@ -250,7 +248,8 @@ impl<S: SignalStorage> RawSignal<S> {
         let notify = {
             let mut f = make_notify(id);
             let boxed = Box::new(move |data: Erased| {
-                f(data.cast().as_mut());
+                let data = unsafe { data.cast().as_mut() };
+                f(data);
             });
             NonNull::new(Box::into_raw(boxed)).unwrap()
         };
@@ -278,7 +277,9 @@ impl<S: SignalStorage> RawSignal<S> {
     }
 }
 
-impl<T> RawSignal<UnsafeCell<MaybeUninit<T>>> {
+pub type RawMutable<T> = RawSignal<UnsafeCell<MaybeUninit<T>>>;
+
+impl<T> RawMutable<T> {
     #[inline]
     pub fn new(value: T) -> Self {
         let storage = UnsafeCell::new(MaybeUninit::new(value));
@@ -291,28 +292,28 @@ impl<T> RawSignal<UnsafeCell<MaybeUninit<T>>> {
         Self::new_with_state(storage, State::Uninit)
     }
 
-    pub unsafe fn set(&self, new_value: T) -> Result<()> {
+    pub fn set(&self, new_value: T) -> Result<()> {
         let storage = self.storage.get();
 
         match self.state() {
-            State::Idling => {
+            State::Idling => unsafe {
                 *(*storage).assume_init_mut() = new_value;
             }
-            State::Uninit => {
+            State::Uninit => unsafe {
                 (*storage).write(new_value);
             }
             _ => return Err(SignalError),
         }
 
         self.set_state(State::Mutating);
-        self.inner.notify_all(self.value());
+        unsafe { self.inner.notify_all(self.value()) };
         self.set_state(State::Idling);
 
         Ok(())
     }
 
     #[inline]
-    pub unsafe fn mutate<F>(&self, mutate: F) -> Result<()>
+    pub fn mutate<F>(&self, mutate: F) -> Result<()>
     where
         F: FnOnce(&mut T),
     {
@@ -321,28 +322,36 @@ impl<T> RawSignal<UnsafeCell<MaybeUninit<T>>> {
         }
 
         self.set_state(State::Mutating);
-        mutate(self.value().cast().as_mut());
-        self.inner.notify_all(self.value());
+        unsafe {
+            let value = self.value();
+            mutate(value.cast().as_mut());
+            self.inner.notify_all(value);
+        }
         self.set_state(State::Idling);
 
         Ok(())
     }
 }
 
-impl<T> RawSignal<NonNull<T>> {
-    #[inline]
-    pub fn new(value: NonNull<T>) -> Self {
-        Self::new_with_state(value, State::Idling)
+pub type RawFiltered<T> = RawSignal<NonNull<T>>;
+
+impl<T> RawFiltered<T> {
+    pub fn from_mutable<F>(signal: &RawMutable<T>, filter: F) -> Self
+    where
+        F: FnMut(&T) -> bool,
+    {
+        let state = match signal.state() {
+            State::Mutating => State::Mutating,
+            _ => State::Idling,
+        };
+        let this = Self::new_with_state(signal.value().cast(), state);
+        // todo(benjamin): for_each_inner and filter, using this.notify_all()
+        todo!()
     }
 
-    #[inline]
-    pub fn uninit(value: NonNull<T>) -> Self {
-        Self::new_with_state(value, State::Uninit)
-    }
-
-    pub unsafe fn notify_all(&self) {
+    unsafe fn notify_all(&self) {
         self.set_state(State::Mutating);
-        self.inner.notify_all(self.value());
+        unsafe { self.inner.notify_all(self.value()) };
         self.set_state(State::Idling);
     }
 }
@@ -352,9 +361,7 @@ impl<S: SignalStorage> Drop for RawSignal<S> {
     fn drop(&mut self) {
         if self.is_initialized() {
             // SAFETY: the data is initialized and valid.
-            unsafe {
-                self.storage.drop();
-            }
+            unsafe { self.storage.drop() };
         }
     }
 }

@@ -16,7 +16,7 @@ impl<U: Unsubscriber> DropUnsubscriber<U> {
     #[inline]
     pub fn take(self) -> U {
         // SAFETY: `Self` and `U` have the same `repr`.
-        let inner = unsafe { mem::transmute_copy::<Self, U>(&self) };
+        let inner = unsafe { mem::transmute_copy(&self) };
         mem::forget(self);
         inner
     }
