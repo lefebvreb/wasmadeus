@@ -63,14 +63,14 @@ enum State {
     Uninit,
 }
 
-struct InnerRawSignal {
+struct Broadcast {
     state: Cell<State>,
     next_id: Cell<usize>,
     needs_retain: Cell<bool>,
     subscribers: UnsafeCell<Vec<Subscriber>>,
 }
 
-impl InnerRawSignal {
+impl Broadcast {
     fn new_with_state(state: State) -> Self {
         Self {
             state: Cell::new(state),
@@ -206,7 +206,7 @@ impl<T> SignalStorage for NonNull<T> {
 
 pub struct RawSignal<S: SignalStorage> {
     storage: S,
-    inner: InnerRawSignal,
+    inner: Broadcast,
 }
 
 impl<S: SignalStorage> RawSignal<S> {
@@ -214,7 +214,7 @@ impl<S: SignalStorage> RawSignal<S> {
     fn new_with_state(storage: S, state: State) -> Self {
         Self {
             storage,
-            inner: InnerRawSignal::new_with_state(state),
+            inner: Broadcast::new_with_state(state),
         }
     }
 
@@ -238,7 +238,7 @@ impl<S: SignalStorage> RawSignal<S> {
         self.inner.state() != State::Uninit
     }
 
-    pub fn for_each<F, G>(&self, make_notify: G) -> SubscriberId
+    pub fn raw_for_each<F, G>(&self, make_notify: G) -> SubscriberId
     where
         F: FnMut(&S::Value) + 'static,
         G: FnOnce(SubscriberId) -> F,
@@ -264,7 +264,7 @@ impl<S: SignalStorage> RawSignal<S> {
         self.inner.unsubscribe(id);
     }
 
-    pub fn get(&self) -> Result<S::Value>
+    pub fn try_get(&self) -> Result<S::Value>
     where
         S::Value: Clone,
     {
@@ -281,8 +281,8 @@ pub type RawMutable<T> = RawSignal<UnsafeCell<MaybeUninit<T>>>;
 
 impl<T> RawMutable<T> {
     #[inline]
-    pub fn new(value: T) -> Self {
-        let storage = UnsafeCell::new(MaybeUninit::new(value));
+    pub fn new(initial_value: T) -> Self {
+        let storage = UnsafeCell::new(MaybeUninit::new(initial_value));
         Self::new_with_state(storage, State::Idling)
     }
 
@@ -292,16 +292,16 @@ impl<T> RawMutable<T> {
         Self::new_with_state(storage, State::Uninit)
     }
 
-    pub fn set(&self, new_value: T) -> Result<()> {
+    pub fn try_set(&self, new_value: T) -> Result<()> {
         let storage = self.storage.get();
 
         match self.state() {
             State::Idling => unsafe {
                 *(*storage).assume_init_mut() = new_value;
-            }
+            },
             State::Uninit => unsafe {
                 (*storage).write(new_value);
-            }
+            },
             _ => return Err(SignalError),
         }
 
@@ -313,7 +313,7 @@ impl<T> RawMutable<T> {
     }
 
     #[inline]
-    pub fn mutate<F>(&self, mutate: F) -> Result<()>
+    pub fn try_mutate<F>(&self, mutate: F) -> Result<()>
     where
         F: FnOnce(&mut T),
     {

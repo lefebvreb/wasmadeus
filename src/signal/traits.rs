@@ -3,50 +3,6 @@ use core::ops::{Deref, DerefMut};
 
 use super::Result;
 
-pub trait Unsubscriber {
-    #[inline]
-    fn unsubscribe(&mut self) {}
-}
-
-#[derive(Clone)]
-#[repr(transparent)]
-pub struct DropUnsubscriber<U: Unsubscriber>(pub U);
-
-impl<U: Unsubscriber> DropUnsubscriber<U> {
-    #[inline]
-    pub fn take(self) -> U {
-        // SAFETY: `Self` and `U` have the same `repr`.
-        let inner = unsafe { mem::transmute_copy(&self) };
-        mem::forget(self);
-        inner
-    }
-}
-
-impl<U: Unsubscriber> Deref for DropUnsubscriber<U> {
-    type Target = U;
-
-    #[inline]
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl<U: Unsubscriber> DerefMut for DropUnsubscriber<U> {
-    #[inline]
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
-
-impl<U: Unsubscriber> Drop for DropUnsubscriber<U> {
-    #[inline]
-    fn drop(&mut self) {
-        self.unsubscribe()
-    }
-}
-
-impl Unsubscriber for () {}
-
 pub trait Value<T> {
     type Unsubscriber;
 
@@ -57,6 +13,14 @@ pub trait Value<T> {
     fn for_each_inner<F>(&self, f: F)
     where
         F: FnMut(&T, &mut Self::Unsubscriber) + 'static;
+
+    #[inline]
+    fn for_each_forever<F>(&self, f: F)
+    where
+        F: FnMut(&T) + 'static,
+    {
+        let _ = self.for_each(f);
+    }
 }
 
 impl<T> Value<T> for T {
@@ -70,11 +34,20 @@ impl<T> Value<T> for T {
         f(self);
     }
 
+    #[inline]
     fn for_each_inner<F>(&self, f: F)
     where
         F: FnOnce(&T, &mut Self::Unsubscriber),
     {
         f(self, &mut ());
+    }
+
+    #[inline]
+    fn for_each_forever<F>(&self, f: F)
+    where
+        F: FnOnce(&T),
+    {
+        f(self);
     }
 }
 
@@ -119,3 +92,60 @@ pub trait Signal: Value<Self::Item> {
     // where
     //     P: FnMut(&Self::Item) -> bool;
 }
+
+pub trait Unsubscribe {
+    #[inline]
+    fn unsubscribe(&mut self) {}
+
+    #[inline]
+    fn has_effect(&self) -> bool {
+        false
+    }
+
+    #[inline]
+    fn droppable(self) -> DropUnsubscriber<Self>
+    where
+        Self: Sized,
+    {
+        DropUnsubscriber(self)
+    }
+}
+
+#[derive(Clone)]
+#[repr(transparent)]
+pub struct DropUnsubscriber<U: Unsubscribe>(pub U);
+
+impl<U: Unsubscribe> DropUnsubscriber<U> {
+    #[inline]
+    pub fn take(self) -> U {
+        // SAFETY: `Self` and `U` have the same `repr`.
+        let inner = unsafe { mem::transmute_copy(&self) };
+        mem::forget(self);
+        inner
+    }
+}
+
+impl<U: Unsubscribe> Deref for DropUnsubscriber<U> {
+    type Target = U;
+
+    #[inline]
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl<U: Unsubscribe> DerefMut for DropUnsubscriber<U> {
+    #[inline]
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+impl<U: Unsubscribe> Drop for DropUnsubscriber<U> {
+    #[inline]
+    fn drop(&mut self) {
+        self.unsubscribe()
+    }
+}
+
+impl Unsubscribe for () {}

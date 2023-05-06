@@ -1,10 +1,10 @@
 //mod computed;
-//mod mutable;
+mod mutable;
 mod raw;
 mod traits;
 
 // pub use computed::*;
-// pub use mutable::*;
+pub use mutable::*;
 pub use traits::*;
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
