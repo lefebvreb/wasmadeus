@@ -3,6 +3,7 @@ use core::mem::MaybeUninit;
 use core::ptr::NonNull;
 
 use alloc::boxed::Box;
+use alloc::rc::Weak;
 use alloc::vec::Vec;
 
 use crate::signal::SignalError;
@@ -365,3 +366,37 @@ impl<S: SignalStorage> Drop for RawSignal<S> {
         }
     }
 }
+
+#[repr(transparent)]
+pub struct RawUnsubscriber<S: SignalStorage>(Option<(Weak<RawSignal<S>>, SubscriberId)>);
+
+impl<S: SignalStorage> RawUnsubscriber<S> {
+    #[inline]
+    pub fn new(weak: Weak<RawSignal<S>>, id: SubscriberId) -> Self {
+        Self(Some((weak, id)))
+    }
+
+    pub fn unsubscribe(&mut self) {
+        if let Some((weak, id)) = self.0.take() {
+            if let Some(raw) = weak.upgrade() {
+                raw.unsubscribe(id);
+            }
+        }
+    }
+
+    #[inline]
+    pub fn has_effect(&self) -> bool {
+        self.0.is_some()
+    }
+}
+
+impl<S: SignalStorage> Clone for RawUnsubscriber<S> {
+    #[inline]
+    fn clone(&self) -> Self {
+        Self(self.0.clone())
+    }
+}
+
+pub type RawMutableUnsubscriber<T> = RawUnsubscriber<UnsafeCell<MaybeUninit<T>>>;
+
+pub type RawFilteredUnsubscriber<T> = RawUnsubscriber<NonNull<T>>;

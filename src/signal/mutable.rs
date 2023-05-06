@@ -1,6 +1,6 @@
 use alloc::rc::{Rc, Weak};
 
-use super::raw::{RawMutable, SubscriberId};
+use super::raw::{RawMutable, SubscriberId, RawMutableUnsubscriber};
 use super::{Result, Signal, Unsubscribe, Value};
 
 #[repr(transparent)]
@@ -64,21 +64,21 @@ impl<T> Mutable<T> {
         self.try_update(update).unwrap();
     }
 
-    pub fn for_each<F>(&self, f: F) -> SignalUnsubscriber<T>
+    pub fn for_each<F>(&self, f: F) -> Unsubscriber<T>
     where
         F: FnMut(&T) + 'static,
     {
         let id = self.0.raw_for_each(|_| f);
-        SignalUnsubscriber::new(Rc::downgrade(&self.0), id)
+        Unsubscriber::new(Rc::downgrade(&self.0), id)
     }
 
     pub fn for_each_inner<F>(&self, mut f: F)
     where
-        F: FnMut(&T, &mut SignalUnsubscriber<T>) + 'static,
+        F: FnMut(&T, &mut Unsubscriber<T>) + 'static,
     {
         let weak = Rc::downgrade(&self.0);
         self.0.raw_for_each(|id| {
-            let mut unsub = SignalUnsubscriber::new(weak, id);
+            let mut unsub = Unsubscriber::new(weak, id);
             move |data| f(data, &mut unsub)
         });
     }
@@ -93,7 +93,7 @@ impl<T> Mutable<T> {
 }
 
 impl<T> Value<T> for &Mutable<T> {
-    type Unsubscriber = SignalUnsubscriber<T>;
+    type Unsubscriber = Unsubscriber<T>;
 
     #[inline]
     fn for_each<F>(self, f: F) -> Self::Unsubscriber
@@ -140,29 +140,26 @@ impl<T> Clone for Mutable<T> {
 }
 
 #[repr(transparent)]
-pub struct SignalUnsubscriber<T>(Option<(Weak<RawMutable<T>>, SubscriberId)>);
+pub struct Unsubscriber<T>(RawMutableUnsubscriber<T>);
 
-impl<T> SignalUnsubscriber<T> {
+impl<T> Unsubscriber<T> {
     #[inline]
     fn new(weak: Weak<RawMutable<T>>, id: SubscriberId) -> Self {
-        Self(Some((weak, id)))
-    }
-
-    pub fn unsubscribe(&mut self) {
-        if let Some((weak, id)) = self.0.take() {
-            if let Some(raw) = weak.upgrade() {
-                raw.unsubscribe(id);
-            }
-        }
+        Self(RawMutableUnsubscriber::new(weak, id))
     }
 
     #[inline]
-    fn has_effect(&self) -> bool {
-        self.0.is_some()
+    pub fn unsubscribe(&mut self) {
+        self.0.unsubscribe()
+    }
+
+    #[inline]
+    pub fn has_effect(&self) -> bool {
+        self.0.has_effect()
     }
 }
 
-impl<T> Unsubscribe for SignalUnsubscriber<T> {
+impl<T> Unsubscribe for Unsubscriber<T> {
     #[inline]
     fn unsubscribe(&mut self) {
         self.unsubscribe()
@@ -174,7 +171,7 @@ impl<T> Unsubscribe for SignalUnsubscriber<T> {
     }
 }
 
-impl<T> Clone for SignalUnsubscriber<T> {
+impl<T> Clone for Unsubscriber<T> {
     #[inline]
     fn clone(&self) -> Self {
         Self(self.0.clone())
