@@ -58,6 +58,13 @@ impl<T> Computed<T> {
     }
 }
 
+impl<T> Clone for Computed<T> {
+    #[inline]
+    fn clone(&self) -> Self {
+        Self(self.0.clone())
+    }
+}
+
 impl<T> Value<T> for &Computed<T> {
     type Unsubscriber = SignalUnsubscriber<T>;
 

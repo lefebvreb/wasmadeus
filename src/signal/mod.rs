@@ -1,9 +1,11 @@
 mod computed;
+mod filtered;
 mod mutable;
 mod raw;
 mod traits;
 
 pub use computed::*;
+pub use filtered::*;
 pub use mutable::*;
 pub use traits::*;
 
