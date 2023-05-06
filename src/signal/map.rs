@@ -1,14 +1,14 @@
 use super::{Mutable, MutableUnsubscriber, Result, Signal, Value};
 
 #[repr(transparent)]
-pub struct Computed<T: 'static>(Mutable<T>);
+pub struct Map<T: 'static>(Mutable<T>);
 
-impl<T> Computed<T> {
-    /// Returns an uninitialized [`Computed`] signal.
+impl<T> Map<T> {
+    /// Returns an uninitialized [`Map`] signal.
     ///
-    /// The observant reader may object that a free, uninitialized computed
+    /// The observant reader may object that a free, uninitialized map
     /// signal is useless on its own, as nothing will come to provide it with
-    /// a value (unless [`Computed::as_mutable`] is used...), and they would
+    /// a value (unless [`Map::as_mutable`] is used...), and they would
     /// be right.
     ///
     /// This method is only provided for advanced use cases, for example
@@ -19,7 +19,7 @@ impl<T> Computed<T> {
     }
 
     /// Gives a reference to the underlying [`Mutable`] signal behind
-    /// this computed signal.
+    /// this map signal.
     ///
     /// * *Wait, it's all mutable ?*
     /// * *Always has been...*
@@ -27,7 +27,7 @@ impl<T> Computed<T> {
     /// You should not need this method for normal use cases, however
     /// it can come in handy when fiddling with signals.
     ///
-    /// Note that there is nothing unsafe in mutating a computed signal.
+    /// Note that there is nothing unsafe in mutating a map signal.
     #[inline]
     pub fn as_mutable(&self) -> &Mutable<T> {
         &self.0
@@ -58,14 +58,14 @@ impl<T> Computed<T> {
     }
 }
 
-impl<T> Clone for Computed<T> {
+impl<T> Clone for Map<T> {
     #[inline]
     fn clone(&self) -> Self {
         Self(self.0.clone())
     }
 }
 
-impl<T> Value<T> for &Computed<T> {
+impl<T> Value<T> for &Map<T> {
     type Unsubscriber = MutableUnsubscriber<T>;
 
     #[inline]
@@ -93,7 +93,7 @@ impl<T> Value<T> for &Computed<T> {
     }
 }
 
-impl<T> Signal for Computed<T> {
+impl<T> Signal for Map<T> {
     type Item = T;
 
     #[inline]
@@ -105,7 +105,7 @@ impl<T> Signal for Computed<T> {
     }
 
     #[inline]
-    fn map<B, F>(&self, f: F) -> Computed<B>
+    fn map<B, F>(&self, f: F) -> Map<B>
     where
         F: FnMut(&Self::Item) -> B + 'static,
     {

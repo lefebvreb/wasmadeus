@@ -1,11 +1,11 @@
-mod computed;
-mod filtered;
+mod filter;
+mod map;
 mod mutable;
 mod raw;
 mod traits;
 
-pub use computed::*;
-pub use filtered::*;
+pub use filter::*;
+pub use map::*;
 pub use mutable::*;
 pub use traits::*;
 

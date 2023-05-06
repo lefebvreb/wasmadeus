@@ -1,7 +1,7 @@
 use alloc::rc::{Rc, Weak};
 
 use super::raw::{RawMutable, RawMutableUnsubscriber, SubscriberId};
-use super::{Computed, Result, Signal, Unsubscribe, Value};
+use super::{DropUnsubscriber, Map, Result, Signal, Unsubscribe, Value};
 
 #[repr(transparent)]
 pub struct Mutable<T: 'static>(Rc<RawMutable<T>>);
@@ -131,12 +131,12 @@ impl<T> Signal for Mutable<T> {
         self.0.try_get()
     }
 
-    fn map<B, F>(&self, f: F) -> Computed<B>
+    fn map<B, F>(&self, f: F) -> Map<B>
     where
         F: FnMut(&Self::Item) -> B + 'static,
     {
-        let computed = Computed::uninit();
-        computed
+        let map = Map::uninit();
+        map
     }
 }
 
@@ -165,6 +165,11 @@ impl<T> MutableUnsubscriber<T> {
     #[inline]
     pub fn has_effect(&self) -> bool {
         self.0.has_effect()
+    }
+
+    #[inline]
+    pub fn droppable(self) -> DropUnsubscriber<Self> {
+        DropUnsubscriber(self)
     }
 }
 

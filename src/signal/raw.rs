@@ -157,9 +157,9 @@ impl Broadcast {
 
         unsafe {
             while i < (*subscribers).len() {
-                let subscriber = (*subscribers).as_mut_ptr().add(i).as_ref().unwrap();
-                if subscriber.active() {
-                    let mut notify = subscriber.notify;
+                let subscriber = (*subscribers).as_mut_ptr().add(i);
+                if (*subscriber).active() {
+                    let mut notify = (*subscriber).notify;
                     (notify.as_mut())(value);
                 }
                 i += 1;
@@ -334,9 +334,9 @@ impl<T> RawMutable<T> {
     }
 }
 
-pub type RawFiltered<T> = RawSignal<NonNull<T>>;
+pub type RawFilter<T> = RawSignal<NonNull<T>>;
 
-impl<T> RawFiltered<T> {
+impl<T> RawFilter<T> {
     // pub fn from_mutable<F>(signal: &RawMutable<T>, filter: F) -> Self
     // where
     //     F: FnMut(&T) -> bool,

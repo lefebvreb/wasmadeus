@@ -1,27 +1,27 @@
 use alloc::rc::{Rc, Weak};
 
-use super::raw::{RawFiltered, RawFilteredUnsubscriber, SubscriberId};
-use super::{Computed, Result, Signal, Unsubscribe, Value};
+use super::raw::{RawFilter, RawFilteredUnsubscriber, SubscriberId};
+use super::{DropUnsubscriber, Map, Result, Signal, Unsubscribe, Value};
 
 #[repr(transparent)]
-pub struct Filtered<T: 'static>(Rc<RawFiltered<T>>);
+pub struct Filter<T: 'static>(Rc<RawFilter<T>>);
 
-impl<T> Filtered<T> {
-    fn for_each<F>(&self, f: F) -> FilteredUnsubscriber<T>
+impl<T> Filter<T> {
+    fn for_each<F>(&self, f: F) -> FilterUnsubscriber<T>
     where
         F: FnMut(&T) + 'static,
     {
         let id = self.0.raw_for_each(|_| f);
-        FilteredUnsubscriber::new(Rc::downgrade(&self.0), id)
+        FilterUnsubscriber::new(Rc::downgrade(&self.0), id)
     }
 
     fn for_each_inner<F>(&self, mut f: F)
     where
-        F: FnMut(&T, &mut FilteredUnsubscriber<T>) + 'static,
+        F: FnMut(&T, &mut FilterUnsubscriber<T>) + 'static,
     {
         let weak = Rc::downgrade(&self.0);
         self.0.raw_for_each(|id| {
-            let mut unsub = FilteredUnsubscriber::new(weak, id);
+            let mut unsub = FilterUnsubscriber::new(weak, id);
             move |data| f(data, &mut unsub)
         });
     }
@@ -35,15 +35,15 @@ impl<T> Filtered<T> {
     }
 }
 
-impl<T> Clone for Filtered<T> {
+impl<T> Clone for Filter<T> {
     #[inline]
     fn clone(&self) -> Self {
         Self(self.0.clone())
     }
 }
 
-impl<T> Value<T> for &Filtered<T> {
-    type Unsubscriber = FilteredUnsubscriber<T>;
+impl<T> Value<T> for &Filter<T> {
+    type Unsubscriber = FilterUnsubscriber<T>;
 
     #[inline]
     fn for_each<F>(self, f: F) -> Self::Unsubscriber
@@ -70,7 +70,7 @@ impl<T> Value<T> for &Filtered<T> {
     }
 }
 
-impl<T> Signal for Filtered<T> {
+impl<T> Signal for Filter<T> {
     type Item = T;
 
     #[inline]
@@ -81,7 +81,7 @@ impl<T> Signal for Filtered<T> {
         self.0.try_get()
     }
 
-    fn map<B, F>(&self, f: F) -> Computed<B>
+    fn map<B, F>(&self, f: F) -> Map<B>
     where
         F: FnMut(&Self::Item) -> B + 'static,
     {
@@ -91,11 +91,11 @@ impl<T> Signal for Filtered<T> {
 
 #[must_use]
 #[repr(transparent)]
-pub struct FilteredUnsubscriber<T>(RawFilteredUnsubscriber<T>);
+pub struct FilterUnsubscriber<T>(RawFilteredUnsubscriber<T>);
 
-impl<T> FilteredUnsubscriber<T> {
+impl<T> FilterUnsubscriber<T> {
     #[inline]
-    fn new(weak: Weak<RawFiltered<T>>, id: SubscriberId) -> Self {
+    fn new(weak: Weak<RawFilter<T>>, id: SubscriberId) -> Self {
         Self(RawFilteredUnsubscriber::new(weak, id))
     }
 
@@ -108,9 +108,14 @@ impl<T> FilteredUnsubscriber<T> {
     pub fn has_effect(&self) -> bool {
         self.0.has_effect()
     }
+
+    #[inline]
+    pub fn droppable(self) -> DropUnsubscriber<Self> {
+        DropUnsubscriber(self)
+    }
 }
 
-impl<T> Unsubscribe for FilteredUnsubscriber<T> {
+impl<T> Unsubscribe for FilterUnsubscriber<T> {
     #[inline]
     fn unsubscribe(&mut self) {
         self.unsubscribe()
@@ -122,7 +127,7 @@ impl<T> Unsubscribe for FilteredUnsubscriber<T> {
     }
 }
 
-impl<T> Clone for FilteredUnsubscriber<T> {
+impl<T> Clone for FilterUnsubscriber<T> {
     #[inline]
     fn clone(&self) -> Self {
         Self(self.0.clone())
