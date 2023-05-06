@@ -92,11 +92,11 @@ impl<T> Mutable<T> {
     }
 }
 
-impl<T> Value<T> for Mutable<T> {
+impl<T> Value<T> for &Mutable<T> {
     type Unsubscriber = MutableUnsubscriber<T>;
 
     #[inline]
-    fn for_each<F>(&self, f: F) -> Self::Unsubscriber
+    fn for_each<F>(self, f: F) -> Self::Unsubscriber
     where
         F: FnMut(&T) + 'static,
     {
@@ -104,7 +104,7 @@ impl<T> Value<T> for Mutable<T> {
     }
 
     #[inline]
-    fn for_each_inner<F>(&self, f: F)
+    fn for_each_inner<F>(self, f: F)
     where
         F: FnMut(&T, &mut Self::Unsubscriber) + 'static,
     {
@@ -112,7 +112,7 @@ impl<T> Value<T> for Mutable<T> {
     }
 
     #[inline]
-    fn for_each_forever<F>(&self, f: F)
+    fn for_each_forever<F>(self, f: F)
     where
         F: FnMut(&T) + 'static,
     {

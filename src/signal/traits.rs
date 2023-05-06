@@ -3,19 +3,19 @@ use core::ops::{Deref, DerefMut};
 
 use super::Result;
 
-pub trait Value<T> {
+pub trait Value<T>: Sized {
     type Unsubscriber;
 
-    fn for_each<F>(&self, f: F) -> Self::Unsubscriber
+    fn for_each<F>(self, f: F) -> Self::Unsubscriber
     where
         F: FnMut(&T) + 'static;
 
-    fn for_each_inner<F>(&self, f: F)
+    fn for_each_inner<F>(self, f: F)
     where
         F: FnMut(&T, &mut Self::Unsubscriber) + 'static;
 
     #[inline]
-    fn for_each_forever<F>(&self, f: F)
+    fn for_each_forever<F>(self, f: F)
     where
         F: FnMut(&T) + 'static,
     {
@@ -23,11 +23,11 @@ pub trait Value<T> {
     }
 }
 
-impl<T> Value<T> for T {
+impl<T> Value<T> for &T {
     type Unsubscriber = ();
 
     #[inline]
-    fn for_each<F>(&self, f: F) -> Self::Unsubscriber
+    fn for_each<F>(self, f: F) -> Self::Unsubscriber
     where
         F: FnOnce(&T),
     {
@@ -35,7 +35,7 @@ impl<T> Value<T> for T {
     }
 
     #[inline]
-    fn for_each_inner<F>(&self, f: F)
+    fn for_each_inner<F>(self, f: F)
     where
         F: FnOnce(&T, &mut Self::Unsubscriber),
     {
@@ -43,7 +43,7 @@ impl<T> Value<T> for T {
     }
 
     #[inline]
-    fn for_each_forever<F>(&self, f: F)
+    fn for_each_forever<F>(self, f: F)
     where
         F: FnOnce(&T),
     {
@@ -51,7 +51,10 @@ impl<T> Value<T> for T {
     }
 }
 
-pub trait Signal: Value<Self::Item> {
+pub trait Signal
+where
+    for<'x> &'x Self: Value<Self::Item>,
+{
     type Item;
 
     fn try_get(&self) -> Result<Self::Item>
