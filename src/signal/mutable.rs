@@ -131,11 +131,13 @@ impl<T> Signal for Mutable<T> {
         self.0.try_get()
     }
 
-    fn map<B, F>(&self, f: F) -> Map<B>
+    fn map<B, F>(&self, mut f: F) -> Map<B>
     where
         F: FnMut(&Self::Item) -> B + 'static,
     {
         let map = Map::uninit();
+        let clone = map.clone();
+        self.for_each_forever(move |data| clone.as_mutable().set(f(data)));
         map
     }
 }
