@@ -1,8 +1,6 @@
 use core::mem;
 use core::ops::{Deref, DerefMut};
 
-use super::{Map, Result};
-
 pub trait Value<T>: Sized {
     type Unsubscriber;
 
@@ -79,50 +77,50 @@ impl<T: Copy> Value<T> for T {
     }
 }
 
-pub trait Signal
-where
-    for<'x> &'x Self: Value<Self::Item>,
-{
-    type Item;
+// pub trait Signal
+// where
+//     for<'x> &'x Self: Value<Self::Item>,
+// {
+//     type Item;
 
-    fn try_get(&self) -> Result<Self::Item>
-    where
-        Self::Item: Clone;
+//     fn try_get(&self) -> Result<Self::Item>
+//     where
+//         Self::Item: Clone;
 
-    #[inline]
-    fn get(&self) -> Self::Item
-    where
-        Self::Item: Clone,
-    {
-        self.try_get().unwrap()
-    }
+//     #[inline]
+//     fn get(&self) -> Self::Item
+//     where
+//         Self::Item: Clone,
+//     {
+//         self.try_get().unwrap()
+//     }
 
-    fn map<B, F>(&self, f: F) -> Map<B>
-    where
-        F: FnMut(&Self::Item) -> B + 'static;
+//     // fn map<B, F>(&self, f: F) -> Map<B>
+//     // where
+//     //     F: FnMut(&Self::Item) -> B + 'static;
 
-    // fn filter<P>(&self, predicate: P) -> Computed<Self::Item>
-    // where
-    //     P: FnMut(&Self::Item) -> bool;
+//     // fn filter<P>(&self, predicate: P) -> Computed<Self::Item>
+//     // where
+//     //     P: FnMut(&Self::Item) -> bool;
 
-    // fn filter_map<B, F>(&self, f: F) -> Computed<B>
-    // where
-    //     F: FnMut(&Self::Item) -> Option<B>;
+//     // fn filter_map<B, F>(&self, f: F) -> Computed<B>
+//     // where
+//     //     F: FnMut(&Self::Item) -> Option<B>;
 
-    // fn fold<B, F>(&self, init: B, f: F) -> Computed<B>
-    // where
-    //     F: FnMut(&mut B, &Self::Item);
+//     // fn fold<B, F>(&self, init: B, f: F) -> Computed<B>
+//     // where
+//     //     F: FnMut(&mut B, &Self::Item);
 
-    // fn map_while<B, P>(&self, predicate: P) -> Computed<B>
-    // where
-    //     P: FnMut(&Self::Item) -> Option<B>;
+//     // fn map_while<B, P>(&self, predicate: P) -> Computed<B>
+//     // where
+//     //     P: FnMut(&Self::Item) -> Option<B>;
 
-    // fn skip(&self, n: usize) -> Computed<Self::Item>;
+//     // fn skip(&self, n: usize) -> Computed<Self::Item>;
 
-    // fn skip_while<P>(&self, predicate: P) -> Computed<Self::Item>
-    // where
-    //     P: FnMut(&Self::Item) -> bool;
-}
+//     // fn skip_while<P>(&self, predicate: P) -> Computed<Self::Item>
+//     // where
+//     //     P: FnMut(&Self::Item) -> bool;
+// }
 
 pub trait Unsubscribe {
     #[inline]
