@@ -1,6 +1,8 @@
 use core::mem;
 use core::ops::{Deref, DerefMut};
 
+use super::signal::Unsubscriber;
+
 pub trait Value<T>: Sized {
     type Unsubscriber;
 
@@ -140,6 +142,20 @@ pub trait Unsubscribe {
     }
 }
 
+impl Unsubscribe for () {}
+
+impl<T> Unsubscribe for Unsubscriber<T> {
+    #[inline]
+    fn unsubscribe(&mut self) {
+        self.unsubscribe();
+    }
+
+    #[inline]
+    fn has_effect(&self) -> bool {
+        self.has_effect()
+    }
+}
+
 #[derive(Clone)]
 #[repr(transparent)]
 pub struct DropUnsubscriber<U: Unsubscribe>(pub U);
@@ -176,5 +192,3 @@ impl<U: Unsubscribe> Drop for DropUnsubscriber<U> {
         self.unsubscribe()
     }
 }
-
-impl Unsubscribe for () {}

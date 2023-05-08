@@ -1,7 +1,7 @@
 // mod filter;
 // mod map;
 // mod mutable;
-mod raw;
+mod signal;
 mod traits;
 
 // pub use filter::*;
