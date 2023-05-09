@@ -4,25 +4,25 @@ use core::ptr::NonNull;
 use alloc::boxed::Box;
 use alloc::vec::Vec;
 
-use super::{Erased, SubscriberId};
+use super::SubscriberId;
 
 /// A dynamic closure that reacts to a new value, passed by reference.
 ///
 /// Must not mutate the reference.
-type NotifyFn = dyn FnMut(Erased);
+type NotifyFn<T> = dyn FnMut(&T);
 
 /// A subscriber to a signal, with it's ID, notify closure
 /// and wether it is still active or is awaiting being dropped.
-pub struct Subscriber {
+struct Subscriber<T> {
     id: SubscriberId,
     active: Cell<bool>,
-    notify: NonNull<NotifyFn>,
+    notify: Box<NotifyFn<T>>,
 }
 
-impl Subscriber {
+impl<T> Subscriber<T> {
     /// Returns the ID of this subscriber.
     #[inline]
-    pub fn id(&self) -> SubscriberId {
+    fn id(&self) -> SubscriberId {
         self.id
     }
 
@@ -30,63 +30,68 @@ impl Subscriber {
     /// to receive more values, and false if it needs to be
     /// dropped.
     #[inline]
-    pub fn active(&self) -> bool {
+    fn active(&self) -> bool {
         self.active.get()
     }
-}
 
-impl Drop for Subscriber {
+    /// Returns a pointer to the notify function of this
+    /// subscriber.
     #[inline]
-    fn drop(&mut self) {
-        let _ = unsafe { Box::from_raw(self.notify.as_mut()) };
+    fn notify(&self) -> NonNull<NotifyFn<T>> {
+        NonNull::from(&*self.notify)
     }
 }
 
-#[derive(Default)]
-pub struct Broadcast {
+pub struct Broadcast<T> {
     next_id: Cell<usize>,
     notifying: Cell<bool>,
     needs_retain: Cell<bool>,
-    subscribers: UnsafeCell<Vec<Subscriber>>,
+    subscribers: UnsafeCell<Vec<Subscriber<T>>>,
 }
 
-impl Broadcast {
+impl<T> Broadcast<T> {
     pub fn next_id(&self) -> SubscriberId {
         let id = self.next_id.get();
         self.next_id.set(id + 1);
         SubscriberId(id)
     }
 
-    pub unsafe fn retain(&self) {
+    unsafe fn retain(&self) {
         if self.needs_retain.replace(false) {
             let subscribers = self.subscribers.get();
             (*subscribers).retain(Subscriber::active)
         }
     }
 
-    pub unsafe fn push_subscriber(
+    pub fn push_subscriber(
         &self,
         id: SubscriberId,
-        mut notify: NonNull<NotifyFn>,
-        value: Option<Erased>,
+        notify: Box<NotifyFn<T>>,
+        value: Option<&T>,
     ) {
-        let subscribers = self.subscribers.get();
-
-        (*subscribers).push(Subscriber {
+        let subscriber = Subscriber {
             id,
             active: Cell::new(true),
             notify,
-        });
+        };
+        
+        let mut notify = subscriber.notify();
+        let subscribers = self.subscribers.get();
 
-        if let Some(value) = value {
-            if self.notifying.replace(true) {
-                notify.as_mut()(value);
-            } else {
-                notify.as_mut()(value);
-                self.notifying.set(false);
-                self.retain();
+        unsafe {
+            (*subscribers).push(subscriber);
+
+            if let Some(value) = value {
+                if self.notifying.replace(true) {
+                    notify.as_mut()(value);
+                } else {
+                    notify.as_mut()(value);
+                    self.notifying.set(false);
+                    self.retain();
+                }
             }
         }
+
     }
 
     pub fn unsubscribe(&self, id: SubscriberId) {
@@ -108,27 +113,43 @@ impl Broadcast {
         }
     }
 
-    pub unsafe fn notify(&self, value: Erased) {
+    pub fn notify(&self, value: &T) {
         if self.notifying.replace(true) {
             return;
         }
 
         let subscribers = self.subscribers.get();
 
-        let mut i = 0;
-        while i < (*subscribers).len() {
-            let subscriber = (*subscribers).as_mut_ptr().add(i);
-
-            if (*subscriber).active() {
-                let mut notify = (*subscriber).notify;
-                notify.as_mut()(value);
+        unsafe {
+            let mut i = 0;
+            while i < (*subscribers).len() {
+                let subscriber = (*subscribers).as_mut_ptr().add(i);
+    
+                if (*subscriber).active() {
+                    let mut notify = (*subscriber).notify();
+                    notify.as_mut()(value);
+                }
+    
+                i += 1;
             }
-
-            i += 1;
         }
 
         self.notifying.set(false);
-        self.retain();
+
+        unsafe {
+            self.retain();
+        }
     }
 }
 
+impl<T> Default for Broadcast<T> {
+    #[inline]
+    fn default() -> Self {
+        Self {
+            next_id: Cell::new(0),
+            notifying: Cell::new(false),
+            needs_retain: Cell::new(false),
+            subscribers: UnsafeCell::new(Vec::new()),
+        }    
+    }
+}
