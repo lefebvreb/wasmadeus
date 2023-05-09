@@ -6,14 +6,12 @@ use alloc::boxed::Box;
 use alloc::rc::Rc;
 use alloc::vec::Vec;
 
-use crate::signal::SignalError;
+use super::{Result, SignalError};
 
-use super::Result;
-
-/// A pointer to a value whose type was erased.
+/// A pointer to a ([`Sized`]) value whose type was erased.
 type Erased = NonNull<()>;
 
-/// A closure that reacts to a new value, passed by reference.
+/// A dynamic closure that reacts to a new value, passed by reference.
 ///
 /// Must not mutate the reference.
 type NotifyFn = dyn FnMut(Erased);
@@ -55,22 +53,10 @@ impl Drop for Subscriber {
     }
 }
 
-/// The internal state of a signal.
-#[derive(Copy, Clone, PartialEq, Eq, Debug)]
-enum State {
-    Idling,
-    Notifying,
-    Subscribing,
-    Uninit,
-}
-
-// broadcast state:
-// * idling
-// * notifying
-
 #[derive(Default)]
 struct Broadcast {
     next_id: Cell<usize>,
+    notifying: Cell<bool>,
     needs_retain: Cell<bool>,
     subscribers: UnsafeCell<Vec<Subscriber>>,
 }
@@ -82,10 +68,6 @@ impl Broadcast {
         SubscriberId(id)
     }
 
-    /// # Safety
-    ///
-    /// The state must neither be `Subscribing` or `Notifying`, so
-    /// that none of the subscribers are currently borrowed.
     unsafe fn retain(&self) {
         if self.needs_retain.replace(false) {
             let subscribers = self.subscribers.get();
@@ -93,85 +75,81 @@ impl Broadcast {
         }
     }
 
-    unsafe fn push_subscriber(&self, id: SubscriberId, mut notify: NonNull<NotifyFn>, erased: ErasedData) {
+    unsafe fn push_subscriber(
+        &self,
+        id: SubscriberId,
+        mut notify: NonNull<NotifyFn>,
+        value: Option<Erased>,
+    ) {
         let subscribers = self.subscribers.get();
 
-        unsafe {
-            (*subscribers).push(Subscriber {
-                id,
-                active: Cell::new(true),
-                notify,
-            });
-        }
+        (*subscribers).push(Subscriber {
+            id,
+            active: Cell::new(true),
+            notify,
+        });
 
-        match erased.state.get() {
-            State::Idling => unsafe {
-                erased.state.set(State::Subscribing);
-                notify.as_mut()(erased.value);
-                erased.state.set(State::Idling);
+        if let Some(value) = value {
+            if self.notifying.replace(true) {
+                notify.as_mut()(value);
+            } else {
+                notify.as_mut()(value);
+                self.notifying.set(false);
                 self.retain();
-            },
-            State::Subscribing => unsafe {
-                notify.as_mut()(erased.value);
-            },
-            _ => (),
+            }
         }
     }
 
-    unsafe fn unsubscribe(&self, id: SubscriberId, state: State) -> Option<()> {
+    fn unsubscribe(&self, id: SubscriberId) {
         let subscribers = self.subscribers.get();
-
-        let index = unsafe {
-            (*subscribers)
-                .binary_search_by_key(&id, Subscriber::id)
-                .ok()?
-        };
-
-        match state {
-            State::Notifying | State::Subscribing => unsafe {
-                let subscriber = &(*subscribers)[index];
-                subscriber.active.set(false);
-                self.needs_retain.set(true);
-            },
-            _ => unsafe {
-                (*subscribers).remove(index);
-            },
-        }
-
-        Some(())
-    }
-
-    unsafe fn notify(&self, data: ErasedData) {
-        data.state.set(State::Notifying);
-
-        let subscribers = self.subscribers.get();
-        let mut i = 0;
 
         unsafe {
-            while i < (*subscribers).len() {
-                let subscriber = (*subscribers).as_mut_ptr().add(i);
-                if (*subscriber).active() {
-                    let mut notify = (*subscriber).notify;
-                    (notify.as_mut())(data.value);
+            if let Some(index) = (*subscribers)
+                .binary_search_by_key(&id, Subscriber::id)
+                .ok()
+            {
+                if self.notifying.get() {
+                    let subscriber = &(*subscribers)[index];
+                    subscriber.active.set(false);
+                    self.needs_retain.set(true);
+                } else {
+                    (*subscribers).remove(index);
                 }
-                i += 1;
+            }
+        }
+    }
+
+    unsafe fn notify(&self, value: Erased) {
+        if self.notifying.replace(true) {
+            return;
+        }
+
+        let subscribers = self.subscribers.get();
+
+        let mut i = 0;
+        while i < (*subscribers).len() {
+            let subscriber = (*subscribers).as_mut_ptr().add(i);
+
+            if (*subscriber).active() {
+                let mut notify = (*subscriber).notify;
+                notify.as_mut()(value);
             }
 
-            self.retain();
+            i += 1;
         }
 
-        data.state.set(State::Idling);
+        self.notifying.set(false);
+        self.retain();
     }
+}
 
-    // unsafe fn mutate<F>(&self, make_value: F) 
-    // where
-    //     F: FnOnce() -> Erased,
-    // {
-    //     self.state.set(State::Mutating);
-    //     let value = make_value();
-    //     self.notify(value);
-    //     self.state.set(State::Idling);
-    // }
+/// The state of a signal's data.
+#[derive(Copy, Clone, PartialEq, Eq)]
+enum State {
+    Idling,
+    Borrowed,
+    Mutating,
+    Uninit,
 }
 
 struct SignalData<T> {
@@ -197,28 +175,73 @@ impl<T> SignalData<T> {
     }
 
     #[inline]
-    fn value(&self) -> Erased {
-        NonNull::new(self.value.get()).unwrap().cast()
-    }
+    fn borrow_then<F>(&self, action: F) -> Result<()>
+    where
+        F: FnOnce(&T),
+    {
+        let value = self.value.get();
 
-    #[inline]
-    fn erased(&self) -> ErasedData {
-        ErasedData {
-            state: &self.state,
-            value: self.value(),
+        match self.state.get() {
+            State::Idling => unsafe {
+                self.state.set(State::Borrowed);
+                action((*value).assume_init_ref());
+                self.state.set(State::Mutating);
+            },
+            State::Borrowed => unsafe {
+                action((*value).assume_init_ref());
+            },
+            State::Mutating => return Err(SignalError),
+            _ => (),
         }
+
+        Ok(())
     }
-}
 
-// data state:
-// * idling
-// * uninit
-// * mutating
-// * borrowed
+    fn try_get(&self) -> Result<T> 
+    where
+        T: Clone,
+    {
+        if matches!(self.state.get(), State::Mutating | State::Uninit) {
+            return Err(SignalError);
+        }
 
-struct ErasedData<'a> {
-    state: &'a Cell<State>,
-    value: Erased,
+        let value = self.value.get();
+        Ok(unsafe { (*value).assume_init_ref().clone() })
+    }
+
+    fn try_set(&self, new_value: T) -> Result<()> {       
+        let value = self.value.get();
+
+        match self.state.get() {
+            State::Idling => unsafe {
+                *(*value).assume_init_mut() = new_value;
+            },
+            State::Uninit => unsafe {
+                (*value).write(new_value);
+            },
+            _ => return Err(SignalError),
+        }
+
+        Ok(())
+    }
+
+    fn try_mutate<F>(&self, mutate: F) -> Result<()>
+    where
+        F: FnOnce(&mut T),
+    {
+        if self.state.get() != State::Idling {
+            return Err(SignalError);
+        }
+
+        self.state.set(State::Mutating);
+        unsafe {
+            let value = self.value.get();
+            mutate((*value).assume_init_mut());
+        }
+        self.state.set(State::Idling);
+
+        Ok(())
+    }
 }
 
 pub struct RawSignal<T> {
@@ -251,10 +274,10 @@ impl<T> RawSignal<T> {
         Self::new_with_data(self.data.clone())
     }
 
-    #[inline]
-    fn value(&self) -> Erased {
-        self.data.value()
-    }
+    // #[inline]
+    // fn value(&self) -> Erased {
+    //     self.data.value()
+    // }
 
     #[inline]
     fn state(&self) -> &Cell<State> {
@@ -263,21 +286,20 @@ impl<T> RawSignal<T> {
 
     #[inline]
     pub fn unsubscribe(&self, id: SubscriberId) {
-        unsafe {
-            self.broadcast.unsubscribe(id, self.state().get());
-        }
+        self.broadcast.unsubscribe(id);
     }
 
     pub fn try_get(&self) -> Result<T>
     where
         T: Clone,
     {
-        if matches!(self.state().get(), State::Notifying | State::Uninit) {
+        if matches!(self.state().get(), State::Mutating | State::Uninit) {
             return Err(SignalError);
         }
 
-        let value = unsafe { self.value().cast::<T>().as_ref().clone() };
-        Ok(value)
+        // let value = unsafe { self.value().cast::<T>().as_ref().clone() };
+        // Ok(value)
+        todo!()
     }
 
     pub fn raw_for_each<F, G>(&self, make_notify: G) -> SubscriberId
@@ -295,9 +317,10 @@ impl<T> RawSignal<T> {
             NonNull::new(Box::into_raw(boxed)).unwrap()
         };
 
-        unsafe {
-            self.broadcast.push_subscriber(id, notify, self.data.erased());
-        }
+        // unsafe {
+        //     self.broadcast
+        //         .push_subscriber(id, notify, Some(self.value()));
+        // }
 
         id
     }
@@ -319,14 +342,14 @@ impl<T> RawSignal<T> {
             _ => return Err(SignalError),
         }
 
-        unsafe {
-            self.broadcast.notify(self.data.erased());
-        }
+        // unsafe {
+        //     self.broadcast.notify(self.data.erased());
+        // }
 
         Ok(())
     }
 
-    pub fn try_mutate<F>(&self, mutate: F) -> Result<()> 
+    pub fn try_mutate<F>(&self, mutate: F) -> Result<()>
     where
         F: FnOnce(&mut T),
     {

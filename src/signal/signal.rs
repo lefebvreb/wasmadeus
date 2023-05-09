@@ -1,6 +1,6 @@
 use core::ops::Deref;
 
-use alloc::rc::{Weak, Rc};
+use alloc::rc::{Rc, Weak};
 
 use super::raw::{RawSignal, SubscriberId};
 use super::Result;
@@ -61,14 +61,14 @@ impl<T> Signal<T> {
 
     pub fn map<B, F>(&self, map: F) -> Signal<B>
     where
-        F: FnMut(&T) -> B + 'static
+        F: FnMut(&T) -> B + 'static,
     {
         todo!()
     }
 
     pub fn filter<P>(&self, predicate: P) -> Signal<T>
     where
-        P: FnMut(&T) -> bool
+        P: FnMut(&T) -> bool,
     {
         todo!()
     }
