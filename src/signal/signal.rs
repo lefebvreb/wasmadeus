@@ -15,11 +15,6 @@ impl<T> Signal<T> {
     }
 
     #[inline]
-    fn new_derived(&self) -> Self {
-        Self::new_from_raw(RawSignal::new_derived(&self.0))
-    }
-
-    #[inline]
     fn inner(&self) -> &Rc<RawSignal<T>> {
         &self.0
     }
