@@ -60,7 +60,7 @@ impl Drop for Subscriber {
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 enum State {
     Idling,
-    Notifying,
+    Mutating,
     Subscribing,
     Uninit,
 }
@@ -140,7 +140,7 @@ impl Broadcast {
         };
 
         match self.state() {
-            State::Notifying | State::Subscribing => unsafe {
+            State::Mutating | State::Subscribing => unsafe {
                 let subscriber = &(*subscribers)[index];
                 subscriber.active.set(false);
                 self.needs_retain.set(true);
@@ -153,7 +153,7 @@ impl Broadcast {
         Some(())
     }
 
-    unsafe fn notify_all(&self, value: Erased) {
+    unsafe fn notify(&self, value: Erased) {
         let subscribers = self.subscribers.get();
         let mut i = 0;
 
@@ -170,17 +170,29 @@ impl Broadcast {
             self.retain();
         }
     }
+
+    unsafe fn mutate<F>(&self, make_value: F) 
+    where
+        F: FnOnce() -> Erased,
+    {
+        self.state.set(State::Mutating);
+        let value = make_value();
+        self.notify(value);
+        self.state.set(State::Idling);
+    }
 }
 
 struct InnerSignal<T> {
     broadcast: Broadcast,
-    value: Rc<UnsafeCell<MaybeUninit<T>>>,
+    value: UnsafeCell<MaybeUninit<Rc<UnsafeCell<T>>>>,
 }
 
 impl<T> InnerSignal<T> {
     #[inline]
     fn value(&self) -> Erased {
-        NonNull::new(self.value.get()).unwrap().cast()
+        // let rc = self.value.get();
+        // NonNull::new().unwrap().cast()
+        todo!()
     }
 
     #[inline]
@@ -207,7 +219,7 @@ impl<T> InnerSignal<T> {
     where
         T: Clone,
     {
-        if matches!(self.state(), State::Notifying | State::Uninit) {
+        if matches!(self.state(), State::Mutating | State::Uninit) {
             return Err(SignalError);
         }
 
@@ -235,43 +247,24 @@ impl<T> InnerSignal<T> {
         id
     }
 
-    #[inline]
     fn try_set(&self, new_value: T) -> Result<()> {
         let value = self.value.get();
 
         match self.state() {
             State::Idling => unsafe {
-                *(*value).assume_init_mut() = new_value;
+                *(*value).assume_init_mut().get() = new_value;
             },
             State::Uninit => unsafe {
-                (*value).write(new_value);
+                let rc = Rc::new(UnsafeCell::new(new_value));
+                *value = MaybeUninit::new(rc);
             },
             _ => return Err(SignalError),
         }
 
-        self.set_state(State::Notifying);
-        unsafe { self.broadcast.notify_all(self.value()) };
-        self.set_state(State::Idling);
-
-        Ok(())
-    }
-
-    #[inline]
-    fn try_mutate<F>(&self, mutate: F) -> Result<()>
-    where
-        F: FnOnce(&mut T),
-    {
-        if self.state() != State::Idling {
-            return Err(SignalError);
-        }
-
-        self.set_state(State::Notifying);
         unsafe {
             let value = self.value();
-            mutate(value.cast().as_mut());
-            self.broadcast.notify_all(value);
+            self.broadcast.mutate(|| value);
         }
-        self.set_state(State::Idling);
 
         Ok(())
     }
@@ -281,11 +274,12 @@ impl<T> InnerSignal<T> {
 pub struct Signal<T: 'static>(Rc<InnerSignal<T>>);
 
 impl<T> Signal<T> {
-    fn new(value: Rc::<UnsafeCell<MaybeUninit<T>>>, state: State) -> Self {
-        Self(Rc::new(InnerSignal {
-            broadcast: Broadcast::new(state),
-            value,
-        }))
+    fn new(value: Rc<UnsafeCell<MaybeUninit<T>>>, state: State) -> Self {
+        // Self(Rc::new(InnerSignal {
+        //     broadcast: Broadcast::new(state),
+        //     value,
+        // }))
+        todo!()
     }
 
     #[inline]
@@ -301,7 +295,7 @@ impl<T> Signal<T> {
         self.0.try_get()
     }
 
-    pub fn for_each<F>(&self, notify: F) -> Unsubscriber<T> 
+    pub fn for_each<F>(&self, notify: F) -> Unsubscriber<T>
     where
         F: FnMut(&T) + 'static,
     {
@@ -354,6 +348,49 @@ impl<T> Mutable<T> {
     pub fn uninit() -> Self {
         Self::new_with_state(MaybeUninit::uninit(), State::Uninit)
     }
+
+    // #[inline]
+    // pub fn try_set(&self, new_value: T) -> Result<()> {
+    //     let value = self.inner().value.get();
+
+    //     match self.inner().state() {
+    //         State::Idling => unsafe {
+    //             *(*value).assume_init_mut().get() = new_value;
+    //         },
+    //         State::Uninit => unsafe {
+    //             let rc = Rc::new(UnsafeCell::new(new_value));
+    //             *value = MaybeUninit::new(rc);
+    //         },
+    //         _ => return Err(SignalError),
+    //     }
+
+    //     unsafe {
+    //         let value = self.inner().value();
+    //         self.inner().broadcast.notify_with(|| value);
+    //     }
+
+    //     Ok(())
+    // }
+
+    // #[inline]
+    // fn try_mutate<F>(&self, mutate: F) -> Result<()>
+    // where
+    //     F: FnOnce(&mut T),
+    // {
+    //     if self.state() != State::Idling {
+    //         return Err(SignalError);
+    //     }
+
+    //     unsafe {
+    //         let value = self.value();
+    //         self.broadcast.notify_with(|| {
+    //             mutate(value.cast().as_mut());
+    //             value
+    //         });
+    //     }
+
+    //     Ok(())
+    // }
 }
 
 impl<T> Clone for Mutable<T> {
