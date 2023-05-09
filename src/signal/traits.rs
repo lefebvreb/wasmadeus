@@ -1,7 +1,7 @@
 use core::mem;
 use core::ops::{Deref, DerefMut};
 
-use super::signal::Unsubscriber;
+use super::Unsubscriber;
 
 pub trait Value<T>: Sized {
     type Unsubscriber;
