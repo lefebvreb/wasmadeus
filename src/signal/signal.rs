@@ -56,38 +56,27 @@ impl Drop for Subscriber {
     }
 }
 
-/// The internal state of a [`Broadcast`].
+/// The internal state of a signal.
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 enum State {
     Idling,
-    Mutating,
+    Notifying,
     Subscribing,
     Uninit,
 }
 
+// broadcast state:
+// * idling
+// * notifying
+
+#[derive(Default)]
 struct Broadcast {
-    state: Cell<State>,
     next_id: Cell<usize>,
     needs_retain: Cell<bool>,
     subscribers: UnsafeCell<Vec<Subscriber>>,
 }
 
 impl Broadcast {
-    #[inline]
-    fn new(state: State) -> Self {
-        Self {
-            state: Cell::new(state),
-            next_id: Cell::new(0),
-            needs_retain: Cell::new(false),
-            subscribers: UnsafeCell::new(Vec::new()),
-        }
-    }
-
-    #[inline]
-    fn state(&self) -> State {
-        self.state.get()
-    }
-
     fn next_id(&self) -> SubscriberId {
         let id = self.next_id.get();
         self.next_id.set(id + 1);
@@ -105,7 +94,7 @@ impl Broadcast {
         }
     }
 
-    fn push_subscriber(&self, id: SubscriberId, mut notify: NonNull<NotifyFn>, value: Erased) {
+    unsafe fn push_subscriber(&self, id: SubscriberId, mut notify: NonNull<NotifyFn>, erased: ErasedData) {
         let subscribers = self.subscribers.get();
 
         unsafe {
@@ -116,21 +105,21 @@ impl Broadcast {
             });
         }
 
-        match self.state() {
+        match erased.state.get() {
             State::Idling => unsafe {
-                self.state.set(State::Subscribing);
-                notify.as_mut()(value);
-                self.state.set(State::Idling);
+                erased.state.set(State::Subscribing);
+                notify.as_mut()(erased.value);
+                erased.state.set(State::Idling);
                 self.retain();
             },
             State::Subscribing => unsafe {
-                notify.as_mut()(value);
+                notify.as_mut()(erased.value);
             },
             _ => (),
         }
     }
 
-    fn unsubscribe(&self, id: SubscriberId) -> Option<()> {
+    unsafe fn unsubscribe(&self, id: SubscriberId, state: State) -> Option<()> {
         let subscribers = self.subscribers.get();
 
         let index = unsafe {
@@ -139,8 +128,8 @@ impl Broadcast {
                 .ok()?
         };
 
-        match self.state() {
-            State::Mutating | State::Subscribing => unsafe {
+        match state {
+            State::Notifying | State::Subscribing => unsafe {
                 let subscriber = &(*subscribers)[index];
                 subscriber.active.set(false);
                 self.needs_retain.set(true);
@@ -153,7 +142,9 @@ impl Broadcast {
         Some(())
     }
 
-    unsafe fn notify(&self, value: Erased) {
+    unsafe fn notify(&self, data: ErasedData) {
+        data.state.set(State::Notifying);
+
         let subscribers = self.subscribers.get();
         let mut i = 0;
 
@@ -162,64 +153,127 @@ impl Broadcast {
                 let subscriber = (*subscribers).as_mut_ptr().add(i);
                 if (*subscriber).active() {
                     let mut notify = (*subscriber).notify;
-                    (notify.as_mut())(value);
+                    (notify.as_mut())(data.value);
                 }
                 i += 1;
             }
 
             self.retain();
         }
+
+        data.state.set(State::Idling);
     }
 
-    unsafe fn mutate<F>(&self, make_value: F) 
-    where
-        F: FnOnce() -> Erased,
-    {
-        self.state.set(State::Mutating);
-        let value = make_value();
-        self.notify(value);
-        self.state.set(State::Idling);
+    // unsafe fn mutate<F>(&self, make_value: F) 
+    // where
+    //     F: FnOnce() -> Erased,
+    // {
+    //     self.state.set(State::Mutating);
+    //     let value = make_value();
+    //     self.notify(value);
+    //     self.state.set(State::Idling);
+    // }
+}
+
+struct SignalData<T> {
+    state: Cell<State>,
+    value: UnsafeCell<MaybeUninit<T>>,
+}
+
+impl<T> SignalData<T> {
+    #[inline]
+    fn new(initial_value: T) -> Self {
+        Self {
+            state: Cell::new(State::Idling),
+            value: UnsafeCell::new(MaybeUninit::new(initial_value)),
+        }
     }
-}
 
-struct InnerSignal<T> {
-    broadcast: Broadcast,
-    value: UnsafeCell<MaybeUninit<Rc<UnsafeCell<T>>>>,
-}
+    #[inline]
+    fn uninit() -> Self {
+        Self {
+            state: Cell::new(State::Uninit),
+            value: UnsafeCell::new(MaybeUninit::uninit()),
+        }
+    }
 
-impl<T> InnerSignal<T> {
     #[inline]
     fn value(&self) -> Erased {
-        // let rc = self.value.get();
-        // NonNull::new().unwrap().cast()
-        todo!()
+        NonNull::new(self.value.get()).unwrap().cast()
     }
 
     #[inline]
-    fn state(&self) -> State {
-        self.broadcast.state()
+    fn erased(&self) -> ErasedData {
+        ErasedData {
+            state: &self.state,
+            value: self.value(),
+        }
+    }
+}
+
+// data state:
+// * idling
+// * uninit
+// * mutating
+// * borrowed
+
+struct ErasedData<'a> {
+    state: &'a Cell<State>,
+    value: Erased,
+}
+
+struct RawSignal<T> {
+    broadcast: Broadcast,
+    data: Rc<SignalData<T>>,
+}
+
+impl<T> RawSignal<T> {
+    fn new_with_data(data: Rc<SignalData<T>>) -> Self {
+        Self {
+            broadcast: Broadcast::default(),
+            data,
+        }
     }
 
     #[inline]
-    fn set_state(&self, state: State) {
-        self.broadcast.state.set(state);
+    fn new(initial_value: T) -> Self {
+        let data = Rc::new(SignalData::new(initial_value));
+        Self::new_with_data(data)
     }
 
     #[inline]
-    fn is_initialized(&self) -> bool {
-        self.broadcast.state() != State::Uninit
+    fn uninit() -> Self {
+        let data = Rc::new(SignalData::uninit());
+        Self::new_with_data(data)
+    }
+
+    #[inline]
+    fn new_derived(&self) -> Self {
+        Self::new_with_data(self.data.clone())
+    }
+
+    #[inline]
+    fn value(&self) -> Erased {
+        self.data.value()
+    }
+
+    #[inline]
+    fn state(&self) -> &Cell<State> {
+        &self.data.state
     }
 
     #[inline]
     fn unsubscribe(&self, id: SubscriberId) {
-        self.broadcast.unsubscribe(id);
+        unsafe {
+            self.broadcast.unsubscribe(id, self.state().get());
+        }
     }
 
     fn try_get(&self) -> Result<T>
     where
         T: Clone,
     {
-        if matches!(self.state(), State::Mutating | State::Uninit) {
+        if matches!(self.state().get(), State::Notifying | State::Uninit) {
             return Err(SignalError);
         }
 
@@ -242,48 +296,61 @@ impl<T> InnerSignal<T> {
             NonNull::new(Box::into_raw(boxed)).unwrap()
         };
 
-        self.broadcast.push_subscriber(id, notify, self.value());
+        unsafe {
+            self.broadcast.push_subscriber(id, notify, self.data.erased());
+        }
 
         id
     }
 
-    fn try_set(&self, new_value: T) -> Result<()> {
-        let value = self.value.get();
+    fn try_notify(&self) -> Result<()> {
+        todo!()
+    }
 
-        match self.state() {
+    fn try_set(&self, new_value: T) -> Result<()> {
+        let value = self.data.value.get();
+
+        match self.state().get() {
             State::Idling => unsafe {
-                *(*value).assume_init_mut().get() = new_value;
+                *(*value).assume_init_mut() = new_value;
             },
             State::Uninit => unsafe {
-                let rc = Rc::new(UnsafeCell::new(new_value));
-                *value = MaybeUninit::new(rc);
+                (*value).write(new_value);
             },
             _ => return Err(SignalError),
         }
 
         unsafe {
-            let value = self.value();
-            self.broadcast.mutate(|| value);
+            self.broadcast.notify(self.data.erased());
         }
 
         Ok(())
     }
+
+    fn try_mutate<F>(&self, mutate: F) -> Result<()> 
+    where
+        F: FnOnce(&mut T),
+    {
+        todo!()
+    }
 }
 
 #[repr(transparent)]
-pub struct Signal<T: 'static>(Rc<InnerSignal<T>>);
+pub struct Signal<T: 'static>(Rc<RawSignal<T>>);
 
 impl<T> Signal<T> {
-    fn new(value: Rc<UnsafeCell<MaybeUninit<T>>>, state: State) -> Self {
-        // Self(Rc::new(InnerSignal {
-        //     broadcast: Broadcast::new(state),
-        //     value,
-        // }))
-        todo!()
+    #[inline]
+    fn new_from_raw(raw: RawSignal<T>) -> Self {
+        Self(Rc::new(raw))
     }
 
     #[inline]
-    fn inner(&self) -> &Rc<InnerSignal<T>> {
+    fn new_derived(&self) -> Self {
+        Self::new_from_raw(RawSignal::new_derived(&self.0))
+    }
+
+    #[inline]
+    fn inner(&self) -> &Rc<RawSignal<T>> {
         &self.0
     }
 
@@ -321,6 +388,20 @@ impl<T> Signal<T> {
     {
         self.inner().raw_for_each(|_| notify);
     }
+
+    pub fn map<B, F>(&self, map: F) -> Signal<B>
+    where
+        F: FnMut(&T) -> B + 'static
+    {
+        todo!()
+    }
+
+    pub fn filter<P>(&self, predicate: P) -> Signal<T>
+    where
+        P: FnMut(&T) -> bool
+    {
+        todo!()
+    }
 }
 
 impl<T> Clone for Signal<T> {
@@ -335,18 +416,26 @@ pub struct Mutable<T: 'static>(Signal<T>);
 
 impl<T> Mutable<T> {
     #[inline]
-    fn new_with_state(value: MaybeUninit<T>, state: State) -> Self {
-        Self(Signal::new(Rc::new(UnsafeCell::new(value)), state))
-    }
-
-    #[inline]
     pub fn new(initial_value: T) -> Self {
-        Self::new_with_state(MaybeUninit::new(initial_value), State::Idling)
+        Self(Signal::new_from_raw(RawSignal::new(initial_value)))
     }
 
     #[inline]
     pub fn uninit() -> Self {
-        Self::new_with_state(MaybeUninit::uninit(), State::Uninit)
+        Self(Signal::new_from_raw(RawSignal::uninit()))
+    }
+
+    #[inline]
+    pub fn try_set(&self, new_value: T) -> Result<()> {
+        self.inner().try_set(new_value)
+    }
+
+    #[inline]
+    pub fn try_mutate<F>(&self, mutate: F) -> Result<()>
+    where
+        F: FnOnce(&mut T),
+    {
+        self.inner().try_mutate(mutate)
     }
 
     // #[inline]
@@ -495,11 +584,11 @@ impl<T> Deref for Mutable<T> {
 // }
 
 #[repr(transparent)]
-pub struct Unsubscriber<T>(Option<(Weak<InnerSignal<T>>, SubscriberId)>);
+pub struct Unsubscriber<T>(Option<(Weak<RawSignal<T>>, SubscriberId)>);
 
 impl<T> Unsubscriber<T> {
     #[inline]
-    fn new(weak: Weak<InnerSignal<T>>, id: SubscriberId) -> Self {
+    fn new(weak: Weak<RawSignal<T>>, id: SubscriberId) -> Self {
         Self(Some((weak, id)))
     }
 
