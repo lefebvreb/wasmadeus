@@ -1,7 +1,7 @@
 use core::cell::{Cell, UnsafeCell};
 use core::mem::MaybeUninit;
 
-use crate::signal::{SignalError, Result};
+use crate::signal::{Result, SignalError};
 
 /// The state of a signal's data.
 #[derive(Copy, Clone, PartialEq, Eq)]
@@ -57,7 +57,7 @@ impl<T> SignalData<T> {
         Ok(())
     }
 
-    pub fn try_get(&self) -> Result<T> 
+    pub fn try_get(&self) -> Result<T>
     where
         T: Clone,
     {

@@ -67,9 +67,7 @@ impl<T> RawSignal<T> {
             NonNull::new(Box::into_raw(boxed)).unwrap()
         };
 
-        self.data.borrow_then(|data| {
-            todo!()
-        }).ok();
+        self.data.borrow_then(|data| todo!()).ok();
 
         // unsafe {
         //     self.broadcast

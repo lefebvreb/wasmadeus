@@ -1,3 +1,8 @@
+//! A [`Broadcast`] is used to register subscribers (closures to be invoked on state change),
+//! and notify them, whilst allowing subscription/unsubscription at any time safely.
+
+// todo: erase typings of broadcast to save wasm binary size.
+
 use core::cell::{Cell, UnsafeCell};
 use core::ptr::NonNull;
 
@@ -6,9 +11,7 @@ use alloc::vec::Vec;
 
 use super::SubscriberId;
 
-/// A dynamic closure that reacts to a new value, passed by reference.
-///
-/// Must not mutate the reference.
+/// A closure that reacts to a new value, passed by reference.
 type NotifyFn<T> = dyn FnMut(&T);
 
 /// A subscriber to a signal, with it's ID, notify closure
@@ -42,20 +45,38 @@ impl<T> Subscriber<T> {
     }
 }
 
+/// The state of a broadcast.
+#[derive(Copy, Clone, PartialEq, Eq)]
+enum State {
+    Idling,
+    Notifying,
+    Subscribing,
+}
+
+/// A [`Broadcast`] is used to register subscribers (closures to be invoked on state change),
+/// and notify them, whilst allowing subscription/unsubscription at any time safely.
 pub struct Broadcast<T> {
+    state: Cell<State>,
     next_id: Cell<usize>,
-    notifying: Cell<bool>,
     needs_retain: Cell<bool>,
     subscribers: UnsafeCell<Vec<Subscriber<T>>>,
 }
 
 impl<T> Broadcast<T> {
+    /// Returns the next ID to be attributed to a subscriber.
     pub fn next_id(&self) -> SubscriberId {
         let id = self.next_id.get();
         self.next_id.set(id + 1);
         SubscriberId(id)
     }
 
+    /// Retains the subscribers that still want to be notified, the other
+    /// being dropped.
+    ///
+    /// # Safety
+    ///
+    /// The state of the broadcast must be `State::Idling`, so that
+    /// no subscribers is borrowed while ratain takes place.
     unsafe fn retain(&self) {
         if self.needs_retain.replace(false) {
             let subscribers = self.subscribers.get();
@@ -63,18 +84,20 @@ impl<T> Broadcast<T> {
         }
     }
 
-    pub fn push_subscriber(
-        &self,
-        id: SubscriberId,
-        notify: Box<NotifyFn<T>>,
-        value: Option<&T>,
-    ) {
+    /// Push a new subscriber at the end of the subscriber list.
+    ///
+    /// The `id` given must be the last one in the list (e.g. provided by the latest call
+    /// to [`Broadcast::next_id`]). Else, expect funny (but safe) stuff to happen.
+    ///
+    /// if `Some` `value` is provided, the subscriber is immediately
+    /// notified (given the broadcast is not already notifying).
+    pub fn push_subscriber(&self, id: SubscriberId, notify: Box<NotifyFn<T>>, value: Option<&T>) {
         let subscriber = Subscriber {
             id,
             active: Cell::new(true),
             notify,
         };
-        
+
         let mut notify = subscriber.notify();
         let subscribers = self.subscribers.get();
 
@@ -82,62 +105,72 @@ impl<T> Broadcast<T> {
             (*subscribers).push(subscriber);
 
             if let Some(value) = value {
-                if self.notifying.replace(true) {
-                    notify.as_mut()(value);
-                } else {
-                    notify.as_mut()(value);
-                    self.notifying.set(false);
-                    self.retain();
-                }
-            }
-        }
-
-    }
-
-    pub fn unsubscribe(&self, id: SubscriberId) {
-        let subscribers = self.subscribers.get();
-
-        unsafe {
-            if let Some(index) = (*subscribers)
-                .binary_search_by_key(&id, Subscriber::id)
-                .ok()
-            {
-                if self.notifying.get() {
-                    let subscriber = &(*subscribers)[index];
-                    subscriber.active.set(false);
-                    self.needs_retain.set(true);
-                } else {
-                    (*subscribers).remove(index);
+                match self.state.get() {
+                    State::Idling => {
+                        self.state.set(State::Subscribing);
+                        notify.as_mut()(value);
+                        self.state.set(State::Idling);
+                    }
+                    State::Notifying => (),
+                    State::Subscribing => {
+                        notify.as_mut()(value);
+                    }
                 }
             }
         }
     }
 
+    /// Notify all subscribers of a `value` change.
+    ///
+    /// If the state was already notifying (all subscribers or just a single new one), this
+    /// function does nothing.
     pub fn notify(&self, value: &T) {
-        if self.notifying.replace(true) {
+        if self.state.get() != State::Idling {
             return;
         }
 
+        self.state.set(State::Notifying);
         let subscribers = self.subscribers.get();
 
         unsafe {
             let mut i = 0;
+
             while i < (*subscribers).len() {
                 let subscriber = (*subscribers).as_mut_ptr().add(i);
-    
                 if (*subscriber).active() {
                     let mut notify = (*subscriber).notify();
                     notify.as_mut()(value);
                 }
-    
                 i += 1;
             }
+
+            self.retain()
         }
 
-        self.notifying.set(false);
+        self.state.set(State::Idling);
+    }
+
+    /// Unsubscribes the subscriber with the given `id`.
+    ///
+    /// If the subscriber is already unsubscribed, this function does nothing.
+    ///
+    /// The subscriber might not get dropped right away, but won't be called again.
+    pub fn unsubscribe(&self, id: SubscriberId) {
+        let subscribers = self.subscribers.get();
 
         unsafe {
-            self.retain();
+            if let Ok(index) = (*subscribers).binary_search_by_key(&id, Subscriber::id) {
+                match self.state.get() {
+                    State::Idling => {
+                        (*subscribers).remove(index);
+                    }
+                    _ => {
+                        let subscriber = &(*subscribers)[index];
+                        subscriber.active.set(false);
+                        self.needs_retain.set(true);
+                    }
+                }
+            }
         }
     }
 }
@@ -146,10 +179,10 @@ impl<T> Default for Broadcast<T> {
     #[inline]
     fn default() -> Self {
         Self {
+            state: Cell::new(State::Idling),
             next_id: Cell::new(0),
-            notifying: Cell::new(false),
             needs_retain: Cell::new(false),
             subscribers: UnsafeCell::new(Vec::new()),
-        }    
+        }
     }
 }
