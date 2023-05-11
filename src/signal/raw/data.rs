@@ -34,28 +34,28 @@ impl<T> SignalData<T> {
         }
     }
 
-    #[inline]
-    pub fn borrow_then<F>(&self, action: F) -> Result<()>
-    where
-        F: FnOnce(&T),
-    {
-        let value = self.value.get();
+    // #[inline]
+    // pub fn borrow_then<F>(&self, action: F) -> Result<()>
+    // where
+    //     F: FnOnce(&T),
+    // {
+    //     let value = self.value.get();
 
-        match self.state.get() {
-            State::Idling => unsafe {
-                self.state.set(State::Borrowed);
-                action((*value).assume_init_ref());
-                self.state.set(State::Mutating);
-            },
-            State::Borrowed => unsafe {
-                action((*value).assume_init_ref());
-            },
-            State::Mutating => return Err(SignalError),
-            _ => (),
-        }
+    //     match self.state.get() {
+    //         State::Idling => unsafe {
+    //             self.state.set(State::Borrowed);
+    //             action((*value).assume_init_ref());
+    //             self.state.set(State::Mutating);
+    //         },
+    //         State::Borrowed => unsafe {
+    //             action((*value).assume_init_ref());
+    //         },
+    //         State::Mutating => return Err(SignalError),
+    //         _ => (),
+    //     }
 
-        Ok(())
-    }
+    //     Ok(())
+    // }
 
     pub fn try_get(&self) -> Result<T>
     where
@@ -103,3 +103,15 @@ impl<T> SignalData<T> {
         Ok(())
     }
 }
+
+pub struct SignalDataBorrow<'a, T> {
+    data: &'a SignalData<T>,
+    prev_state: State,
+}
+
+// impl<T> Drop for SignalDataBorrow<'_, T> {
+//     #[inline]
+//     fn drop(&mut self) {
+//         self.data.
+//     }
+// }

@@ -1,15 +1,17 @@
 mod broadcast;
-mod data;
+//mod data;
 
+use core::cell::RefCell;
 use core::ptr::NonNull;
 
 use alloc::boxed::Box;
 use alloc::rc::Rc;
 
-use super::Result;
+use super::{Result, SignalError};
 
 use self::broadcast::Broadcast;
-use self::data::SignalData;
+
+type Data<T> = Rc<Option<RefCell<T>>>;
 
 /// The ID of a subscription to a signal, can be used to unsubscribe from
 /// this signal.
@@ -19,11 +21,11 @@ pub struct SubscriberId(usize);
 
 pub struct RawSignal<T> {
     broadcast: Broadcast<T>,
-    data: Rc<SignalData<T>>,
+    data: Rc<Option<RefCell<T>>>,
 }
 
 impl<T> RawSignal<T> {
-    fn new_with_data(data: Rc<SignalData<T>>) -> Self {
+    fn new_with_data(data: Data<T>) -> Self {
         Self {
             broadcast: Broadcast::default(),
             data,
@@ -32,13 +34,13 @@ impl<T> RawSignal<T> {
 
     #[inline]
     pub fn new(initial_value: T) -> Self {
-        let data = Rc::new(SignalData::new(initial_value));
+        let data = Rc::new(Some(RefCell::new(initial_value)));
         Self::new_with_data(data)
     }
 
     #[inline]
     pub fn uninit() -> Self {
-        let data = Rc::new(SignalData::uninit());
+        let data = Rc::new(None);
         Self::new_with_data(data)
     }
 
@@ -52,7 +54,13 @@ impl<T> RawSignal<T> {
     where
         T: Clone,
     {
-        self.data.try_get()
+        if let Some(refcell) = self.data.as_ref() {
+            if let Ok(value) = refcell.try_borrow() {
+                return Ok(value.clone());
+            }
+        }
+
+        Err(SignalError)
     }
 
     pub fn raw_for_each<F, G>(&self, make_notify: G) -> SubscriberId
@@ -67,8 +75,6 @@ impl<T> RawSignal<T> {
             NonNull::new(Box::into_raw(boxed)).unwrap()
         };
 
-        self.data.borrow_then(|data| todo!()).ok();
-
         // unsafe {
         //     self.broadcast
         //         .push_subscriber(id, notify, Some(self.value()));
@@ -78,7 +84,6 @@ impl<T> RawSignal<T> {
     }
 
     pub fn try_set(&self, new_value: T) -> Result<()> {
-        //self.data.try_set(new_value);
         todo!()
     }
 
