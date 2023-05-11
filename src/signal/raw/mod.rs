@@ -1,6 +1,6 @@
 mod broadcast;
 
-use core::cell::{RefCell, Ref};
+use core::cell::{Ref, RefCell, OnceCell};
 use core::ptr::NonNull;
 
 use alloc::boxed::Box;
@@ -10,7 +10,7 @@ use super::{Result, SignalError};
 
 use self::broadcast::Broadcast;
 
-type Data<T> = Rc<Option<RefCell<T>>>;
+type Data<T> = Rc<OnceCell<RefCell<T>>>;
 
 /// The ID of a subscription to a signal, can be used to unsubscribe from
 /// this signal.
@@ -20,7 +20,7 @@ pub struct SubscriberId(usize);
 
 pub struct RawSignal<T> {
     broadcast: Broadcast<T>,
-    data: Rc<Option<RefCell<T>>>,
+    data: Data<T>,
 }
 
 impl<T> RawSignal<T> {
@@ -33,25 +33,21 @@ impl<T> RawSignal<T> {
 
     #[inline]
     pub fn new(initial_value: T) -> Self {
-        let data = Rc::new(Some(RefCell::new(initial_value)));
+        let data = Rc::new(OnceCell::from(RefCell::new(initial_value)));
         Self::new_with_data(data)
     }
 
     #[inline]
     pub fn uninit() -> Self {
-        let data = Rc::new(None);
+        let data = Rc::new(OnceCell::new());
         Self::new_with_data(data)
     }
 
     #[inline]
     fn try_borrow(&self) -> Result<Ref<T>> {
-        if let Some(refcell) = self.data.as_ref() {
-            if let Ok(borrow) = refcell.try_borrow() {
-                return Ok(borrow);
-            }
-        }
-
-        Err(SignalError)
+        self.data.get()
+            .and_then(|refcell| refcell.try_borrow().ok())
+            .ok_or(SignalError)
     }
 
     pub fn raw_for_each<F, G>(&self, make_notify: G) -> SubscriberId
@@ -70,6 +66,8 @@ impl<T> RawSignal<T> {
     }
 
     pub fn try_set(&self, new_value: T) -> Result<()> {
+        self.data.set(RefCell::new(new_value)).map_err(|_| SignalError)?;
+        let value = self.try_borrow().unwrap();
         todo!()
     }
 
@@ -90,6 +88,6 @@ impl<T> RawSignal<T> {
     where
         T: Clone,
     {
-        self.try_borrow().map(|borrow| borrow.clone())
+        todo!()
     }
 }

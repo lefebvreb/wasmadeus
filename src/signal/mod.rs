@@ -129,6 +129,13 @@ impl<T> Deref for Mutable<T> {
     }
 }
 
+impl<T> From<T> for Mutable<T> {
+    #[inline]
+    fn from(initial_value: T) -> Self {
+        Self::new(initial_value)
+    }
+}
+
 #[repr(transparent)]
 pub struct Unsubscriber<T>(Option<(Weak<RawSignal<T>>, SubscriberId)>);
 
