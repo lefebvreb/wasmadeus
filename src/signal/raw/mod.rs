@@ -1,7 +1,6 @@
 mod broadcast;
-//mod data;
 
-use core::cell::RefCell;
+use core::cell::{RefCell, Ref};
 use core::ptr::NonNull;
 
 use alloc::boxed::Box;
@@ -45,18 +44,10 @@ impl<T> RawSignal<T> {
     }
 
     #[inline]
-    pub fn unsubscribe(&self, id: SubscriberId) {
-        self.broadcast.unsubscribe(id);
-    }
-
-    #[inline]
-    pub fn try_get(&self) -> Result<T>
-    where
-        T: Clone,
-    {
+    fn try_borrow(&self) -> Result<Ref<T>> {
         if let Some(refcell) = self.data.as_ref() {
-            if let Ok(value) = refcell.try_borrow() {
-                return Ok(value.clone());
+            if let Ok(borrow) = refcell.try_borrow() {
+                return Ok(borrow);
             }
         }
 
@@ -75,12 +66,7 @@ impl<T> RawSignal<T> {
             NonNull::new(Box::into_raw(boxed)).unwrap()
         };
 
-        // unsafe {
-        //     self.broadcast
-        //         .push_subscriber(id, notify, Some(self.value()));
-        // }
-
-        id
+        todo!()
     }
 
     pub fn try_set(&self, new_value: T) -> Result<()> {
@@ -92,5 +78,18 @@ impl<T> RawSignal<T> {
         F: FnOnce(&mut T),
     {
         todo!()
+    }
+
+    #[inline]
+    pub fn unsubscribe(&self, id: SubscriberId) {
+        self.broadcast.unsubscribe(id);
+    }
+
+    #[inline]
+    pub fn try_get(&self) -> Result<T>
+    where
+        T: Clone,
+    {
+        self.try_borrow().map(|borrow| borrow.clone())
     }
 }

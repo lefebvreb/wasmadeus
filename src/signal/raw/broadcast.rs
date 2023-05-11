@@ -63,13 +63,6 @@ pub struct Broadcast<T> {
 }
 
 impl<T> Broadcast<T> {
-    /// Returns the next ID to be attributed to a subscriber.
-    pub fn next_id(&self) -> SubscriberId {
-        let id = self.next_id.get();
-        self.next_id.set(id + 1);
-        SubscriberId(id)
-    }
-
     /// Retains the subscribers that still want to be notified, the other
     /// being dropped.
     ///
@@ -82,6 +75,13 @@ impl<T> Broadcast<T> {
             let subscribers = self.subscribers.get();
             (*subscribers).retain(Subscriber::active)
         }
+    }
+
+    /// Returns the next ID to be attributed to a subscriber.
+    pub fn next_id(&self) -> SubscriberId {
+        let id = self.next_id.get();
+        self.next_id.set(id + 1);
+        SubscriberId(id)
     }
 
     /// Push a new subscriber at the end of the subscriber list.

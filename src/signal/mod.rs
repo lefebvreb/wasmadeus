@@ -158,4 +158,3 @@ impl<T> Clone for Unsubscriber<T> {
         Self(self.0.clone())
     }
 }
-
