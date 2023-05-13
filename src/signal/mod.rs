@@ -2,7 +2,6 @@ mod error;
 mod raw;
 mod traits;
 
-use core::mem;
 use core::ops::{Deref, DerefMut};
 
 use alloc::rc::{Rc, Weak};
@@ -202,6 +201,7 @@ impl<T> From<T> for Mutable<T> {
     }
 }
 
+#[must_use]
 #[repr(transparent)]
 pub struct Unsubscriber<T>(Option<(Weak<RawSignal<T>>, SubscriberId)>);
 
@@ -223,6 +223,11 @@ impl<T> Unsubscriber<T> {
     pub fn has_effect(&self) -> bool {
         self.0.is_some()
     }
+
+    #[inline]
+    pub fn droppable(self) -> DropUnsubscriber<T> {
+        DropUnsubscriber(self)
+    }
 }
 
 impl<T> Clone for Unsubscriber<T> {
@@ -238,11 +243,8 @@ pub struct DropUnsubscriber<T>(pub Unsubscriber<T>);
 
 impl<T> DropUnsubscriber<T> {
     #[inline]
-    pub fn take(self) -> Unsubscriber<T> {
-        // SAFETY: `Self` and `Unsubscriber<T>` have the same `repr`.
-        let inner = unsafe { mem::transmute_copy::<Self, Unsubscriber<T>>(&self) };
-        mem::forget(self);
-        inner
+    pub fn take(mut self) -> Unsubscriber<T> {
+        Unsubscriber(self.0 .0.take())
     }
 }
 
