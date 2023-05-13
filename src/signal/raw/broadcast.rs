@@ -9,8 +9,6 @@ use core::ptr::NonNull;
 use alloc::boxed::Box;
 use alloc::vec::Vec;
 
-use crate::signal::Unsubscriber;
-
 use super::SubscriberId;
 
 /// A closure that reacts to a new value, passed by reference.

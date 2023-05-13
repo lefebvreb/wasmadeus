@@ -245,4 +245,3 @@ impl<T> Drop for DropUnsubscriber<T> {
         self.unsubscribe()
     }
 }
-

@@ -1,4 +1,4 @@
-use super::{Unsubscriber, Signal, Mutable};
+use super::{Mutable, Signal, Unsubscriber};
 
 pub trait Value<T>: Sized {
     type Unsubscriber;
