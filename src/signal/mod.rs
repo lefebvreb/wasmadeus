@@ -22,11 +22,6 @@ impl<T> Signal<T> {
     }
 
     #[inline]
-    fn uninit() -> Self {
-        Self::new_from_raw(RawSignal::uninit())
-    }
-
-    #[inline]
     fn inner(&self) -> &Rc<RawSignal<T>> {
         &self.0
     }
@@ -47,26 +42,41 @@ impl<T> Signal<T> {
         self.try_get().unwrap()
     }
 
-    pub fn map<U, F>(&self, mut map: F) -> Signal<U>
+    fn compose<U, F>(&self, raw: RawSignal<U>, mut notify: F) -> Signal<U>
     where
-        F: FnMut(&T) -> U + 'static,
+        F: FnMut(&RawSignal<U>, &T) + 'static,
     {
-        let signal = Signal::uninit();
+        let signal = Signal::new_from_raw(raw);
         let weak = Rc::downgrade(signal.inner());
 
         self.for_each_inner(move |value, unsub| match weak.upgrade() {
-            Some(raw) => raw.try_set(map(value)).unwrap(),
+            Some(raw) => notify(&raw, value),
             _ => unsub.unsubscribe(),
         });
 
         signal
     }
 
-    pub fn filter<P>(&self, predicate: P) -> Signal<T>
+    #[inline]
+    pub fn map<U, F>(&self, mut map: F) -> Signal<U>
     where
-        P: FnMut(&T) -> bool,
+        F: FnMut(&T) -> U + 'static,
     {
-        todo!()
+        self.compose(RawSignal::uninit(), move |raw, value| {
+            raw.try_set(map(value)).unwrap()
+        })
+    }
+
+    #[inline]
+    pub fn filter<P>(&self, mut predicate: P) -> Signal<T>
+    where
+        P: FnMut(&T) -> bool + 'static,
+    {
+        self.compose(self.inner().shared(), move |raw, value| {
+            if predicate(value) {
+                raw.notify_all();
+            }
+        })
     }
 
     pub fn for_each<F>(&self, notify: F) -> Unsubscriber<T>
@@ -115,7 +125,7 @@ impl<T> Mutable<T> {
 
     #[inline]
     pub fn uninit() -> Self {
-        Self(Signal::uninit())
+        Self(Signal::new_from_raw(RawSignal::uninit()))
     }
 
     #[inline]
