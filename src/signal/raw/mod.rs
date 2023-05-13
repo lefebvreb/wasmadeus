@@ -40,6 +40,14 @@ impl<T> RawSignal<T> {
         Self::new_from_value(None)
     }
 
+    #[inline]
+    pub fn shared(&self) -> Self {
+        Self {
+            broadcast: Broadcast::default(),
+            data: self.data.clone(),
+        }
+    }
+
     pub fn raw_for_each<F, G>(&self, make_notify: G) -> SubscriberId
     where
         F: FnMut(&T) + 'static,
@@ -54,7 +62,7 @@ impl<T> RawSignal<T> {
     }
 
     #[inline]
-    fn notify_all(&self) {
+    pub fn notify_all(&self) {
         let data = self.data.borrow();
         self.broadcast.notify(data.as_ref().unwrap());
     }

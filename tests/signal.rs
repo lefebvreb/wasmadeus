@@ -47,9 +47,9 @@ fn get_in_mutate() {
     });
 }
 
-// #[test]
-// fn map() {
-//     let half = Mutable::new(21);
-//     let double = half.map(|i| i * 2);
-//     assert_eq!(double.get(), 42);
-// }
+#[test]
+fn map() {
+    let half = Mutable::new(21);
+    let double = half.map(|i| i * 2);
+    assert_eq!(double.get(), 42);
+}

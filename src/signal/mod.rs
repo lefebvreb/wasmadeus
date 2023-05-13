@@ -22,6 +22,11 @@ impl<T> Signal<T> {
     }
 
     #[inline]
+    fn uninit() -> Self {
+        Self::new_from_raw(RawSignal::uninit())
+    }
+
+    #[inline]
     fn inner(&self) -> &Rc<RawSignal<T>> {
         &self.0
     }
@@ -40,6 +45,28 @@ impl<T> Signal<T> {
         T: Clone,
     {
         self.try_get().unwrap()
+    }
+
+    pub fn map<U, F>(&self, mut map: F) -> Signal<U>
+    where
+        F: FnMut(&T) -> U + 'static,
+    {
+        let signal = Signal::uninit();
+        let weak = Rc::downgrade(signal.inner());
+
+        self.for_each_inner(move |value, unsub| match weak.upgrade() {
+            Some(raw) => raw.try_set(map(value)).unwrap(),
+            _ => unsub.unsubscribe(),
+        });
+
+        signal
+    }
+
+    pub fn filter<P>(&self, predicate: P) -> Signal<T>
+    where
+        P: FnMut(&T) -> bool,
+    {
+        todo!()
     }
 
     pub fn for_each<F>(&self, notify: F) -> Unsubscriber<T>
@@ -68,20 +95,6 @@ impl<T> Signal<T> {
     {
         self.inner().raw_for_each(|_| notify);
     }
-
-    pub fn map<B, F>(&self, map: F) -> Signal<B>
-    where
-        F: FnMut(&T) -> B + 'static,
-    {
-        todo!()
-    }
-
-    pub fn filter<P>(&self, predicate: P) -> Signal<T>
-    where
-        P: FnMut(&T) -> bool,
-    {
-        todo!()
-    }
 }
 
 impl<T> Clone for Signal<T> {
@@ -102,7 +115,7 @@ impl<T> Mutable<T> {
 
     #[inline]
     pub fn uninit() -> Self {
-        Self(Signal::new_from_raw(RawSignal::uninit()))
+        Self(Signal::uninit())
     }
 
     #[inline]
