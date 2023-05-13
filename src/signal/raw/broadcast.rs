@@ -9,6 +9,8 @@ use core::ptr::NonNull;
 use alloc::boxed::Box;
 use alloc::vec::Vec;
 
+use crate::signal::Unsubscriber;
+
 use super::SubscriberId;
 
 /// A closure that reacts to a new value, passed by reference.
@@ -19,7 +21,7 @@ type NotifyFn<T> = dyn FnMut(&T);
 struct Subscriber<T> {
     id: SubscriberId,
     active: Cell<bool>,
-    notify: Box<NotifyFn<T>>,
+    notify: NonNull<NotifyFn<T>>,
 }
 
 impl<T> Subscriber<T> {
@@ -41,7 +43,15 @@ impl<T> Subscriber<T> {
     /// subscriber.
     #[inline]
     fn notify(&self) -> NonNull<NotifyFn<T>> {
-        NonNull::from(&*self.notify)
+        self.notify
+    }
+}
+
+impl<T> Drop for Subscriber<T> {
+    fn drop(&mut self) {
+        unsafe {
+            let _ = Box::from_raw(self.notify.as_mut());
+        }
     }
 }
 
@@ -95,7 +105,7 @@ impl<T> Broadcast<T> {
         let subscriber = Subscriber {
             id,
             active: Cell::new(true),
-            notify,
+            notify: NonNull::new(Box::into_raw(notify)).unwrap(),
         };
 
         let mut notify = subscriber.notify();

@@ -31,7 +31,15 @@ impl<T> Signal<T> {
     where
         T: Clone,
     {
-        self.0.try_get()
+        self.inner().try_get()
+    }
+
+    #[inline]
+    pub fn get(&self) -> T
+    where
+        T: Clone,
+    {
+        self.try_get().unwrap()
     }
 
     pub fn for_each<F>(&self, notify: F) -> Unsubscriber<T>
@@ -103,11 +111,48 @@ impl<T> Mutable<T> {
     }
 
     #[inline]
+    pub fn set(&self, new_value: T) {
+        self.try_set(new_value).unwrap();
+    }
+
+    #[inline]
     pub fn try_mutate<F>(&self, mutate: F) -> Result<()>
     where
         F: FnOnce(&mut T),
     {
         self.inner().try_mutate(mutate)
+    }
+
+    #[inline]
+    pub fn mutate<F>(&self, mutate: F)
+    where
+        F: FnOnce(&mut T),
+    {
+        self.try_mutate(mutate).unwrap();
+    }
+
+    #[inline]
+    pub fn for_each<F>(&self, notify: F) -> Unsubscriber<T>
+    where
+        F: FnMut(&T) + 'static,
+    {
+        self.0.for_each(notify)
+    }
+
+    #[inline]
+    pub fn for_each_inner<F>(&self, notify: F)
+    where
+        F: FnMut(&T, &mut Unsubscriber<T>) + 'static,
+    {
+        self.0.for_each_inner(notify);
+    }
+
+    #[inline]
+    pub fn for_each_forever<F>(&self, notify: F)
+    where
+        F: FnMut(&T) + 'static,
+    {
+        self.0.for_each_forever(notify);
     }
 }
 
