@@ -1,3 +1,4 @@
+mod error;
 mod raw;
 mod traits;
 
@@ -7,12 +8,8 @@ use alloc::rc::{Rc, Weak};
 
 use self::raw::{RawSignal, SubscriberId};
 
+pub use error::*;
 pub use traits::*;
-
-#[derive(Copy, Clone, PartialEq, Eq, Debug)]
-pub struct SignalError;
-
-pub type Result<T> = core::result::Result<T, SignalError>;
 
 #[repr(transparent)]
 pub struct Signal<T: 'static>(Rc<RawSignal<T>>);
