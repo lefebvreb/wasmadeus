@@ -21,7 +21,7 @@ impl<T> Signal<T> {
     }
 
     #[inline]
-    fn inner(&self) -> &Rc<RawSignal<T>> {
+    fn raw(&self) -> &Rc<RawSignal<T>> {
         &self.0
     }
 
@@ -30,7 +30,7 @@ impl<T> Signal<T> {
     where
         T: Clone,
     {
-        self.inner().try_get()
+        self.raw().try_get()
     }
 
     #[inline]
@@ -46,7 +46,7 @@ impl<T> Signal<T> {
         F: FnMut(&RawSignal<U>, &T) + 'static,
     {
         let signal = Signal::new_from_raw(raw);
-        let weak = Rc::downgrade(signal.inner());
+        let weak = Rc::downgrade(signal.raw());
 
         self.for_each_inner(move |value, unsub| match weak.upgrade() {
             Some(raw) => notify(&raw, value),
@@ -71,7 +71,7 @@ impl<T> Signal<T> {
     where
         P: FnMut(&T) -> bool + 'static,
     {
-        self.compose(self.inner().shared(), move |raw, value| {
+        self.compose(self.raw().shared(), move |raw, value| {
             if predicate(value) {
                 raw.notify_all();
             }
@@ -82,16 +82,16 @@ impl<T> Signal<T> {
     where
         F: FnMut(&T) + 'static,
     {
-        let id = self.inner().raw_for_each(|_| notify);
-        Unsubscriber::new(Rc::downgrade(self.inner()), id)
+        let id = self.raw().raw_for_each(|_| notify);
+        Unsubscriber::new(Rc::downgrade(self.raw()), id)
     }
 
     pub fn for_each_inner<F>(&self, mut notify: F)
     where
         F: FnMut(&T, &mut Unsubscriber<T>) + 'static,
     {
-        let weak = Rc::downgrade(self.inner());
-        self.inner().raw_for_each(|id| {
+        let weak = Rc::downgrade(self.raw());
+        self.raw().raw_for_each(|id| {
             let mut unsub = Unsubscriber::new(weak, id);
             move |data| notify(data, &mut unsub)
         });
@@ -102,7 +102,7 @@ impl<T> Signal<T> {
     where
         F: FnMut(&T) + 'static,
     {
-        self.inner().raw_for_each(|_| notify);
+        self.raw().raw_for_each(|_| notify);
     }
 }
 
@@ -129,7 +129,7 @@ impl<T> Mutable<T> {
 
     #[inline]
     pub fn try_set(&self, new_value: T) -> Result<()> {
-        self.inner().try_set(new_value)
+        self.raw().try_set(new_value)
     }
 
     #[inline]
@@ -142,7 +142,7 @@ impl<T> Mutable<T> {
     where
         F: FnOnce(&mut T),
     {
-        self.inner().try_mutate(mutate)
+        self.raw().try_mutate(mutate)
     }
 
     #[inline]
@@ -237,7 +237,6 @@ impl<T> Clone for Unsubscriber<T> {
     }
 }
 
-#[derive(Clone)]
 #[repr(transparent)]
 pub struct DropUnsubscriber<T>(pub Unsubscriber<T>);
 
@@ -245,6 +244,13 @@ impl<T> DropUnsubscriber<T> {
     #[inline]
     pub fn take(mut self) -> Unsubscriber<T> {
         Unsubscriber(self.0 .0.take())
+    }
+}
+
+impl<T> Clone for DropUnsubscriber<T> {
+    #[inline]
+    fn clone(&self) -> Self {
+        Self(self.0.clone())
     }
 }
 
