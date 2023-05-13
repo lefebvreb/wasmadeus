@@ -1,25 +1,22 @@
-use core::mem;
-use core::ops::{Deref, DerefMut};
-
-use super::Unsubscriber;
+use super::{Unsubscriber, Signal, Mutable};
 
 pub trait Value<T>: Sized {
     type Unsubscriber;
 
-    fn for_each<F>(self, f: F) -> Self::Unsubscriber
+    fn for_each<F>(self, notify: F) -> Self::Unsubscriber
     where
         F: FnMut(&T) + 'static;
 
-    fn for_each_inner<F>(self, f: F)
+    fn for_each_inner<F>(self, notify: F)
     where
         F: FnMut(&T, &mut Self::Unsubscriber) + 'static;
 
     #[inline]
-    fn for_each_forever<F>(self, f: F)
+    fn for_each_forever<F>(self, notify: F)
     where
         F: FnMut(&T) + 'static,
     {
-        let _ = self.for_each(f);
+        let _ = self.for_each(notify);
     }
 }
 
@@ -27,27 +24,27 @@ impl<T> Value<T> for &T {
     type Unsubscriber = ();
 
     #[inline]
-    fn for_each<F>(self, f: F) -> Self::Unsubscriber
+    fn for_each<F>(self, notify: F) -> Self::Unsubscriber
     where
         F: FnOnce(&T),
     {
-        f(self);
+        notify(self);
     }
 
     #[inline]
-    fn for_each_inner<F>(self, f: F)
+    fn for_each_inner<F>(self, notify: F)
     where
         F: FnOnce(&T, &mut Self::Unsubscriber),
     {
-        f(self, &mut ());
+        notify(self, &mut ());
     }
 
     #[inline]
-    fn for_each_forever<F>(self, f: F)
+    fn for_each_forever<F>(self, notify: F)
     where
         F: FnOnce(&T),
     {
-        f(self);
+        notify(self);
     }
 }
 
@@ -55,27 +52,83 @@ impl<T: Copy> Value<T> for T {
     type Unsubscriber = ();
 
     #[inline]
-    fn for_each<F>(self, f: F) -> Self::Unsubscriber
+    fn for_each<F>(self, notify: F) -> Self::Unsubscriber
     where
         F: FnOnce(&T),
     {
-        f(&self)
+        notify(&self)
     }
 
     #[inline]
-    fn for_each_inner<F>(self, f: F)
+    fn for_each_inner<F>(self, notify: F)
     where
         F: FnOnce(&T, &mut Self::Unsubscriber),
     {
-        f(&self, &mut ())
+        notify(&self, &mut ())
     }
 
     #[inline]
-    fn for_each_forever<F>(self, f: F)
+    fn for_each_forever<F>(self, notify: F)
     where
         F: FnOnce(&T),
     {
-        f(&self);
+        notify(&self);
+    }
+}
+
+impl<T> Value<T> for &Signal<T> {
+    type Unsubscriber = Unsubscriber<T>;
+
+    #[inline]
+    fn for_each<F>(self, notify: F) -> Self::Unsubscriber
+    where
+        F: FnMut(&T) + 'static,
+    {
+        self.for_each(notify)
+    }
+
+    #[inline]
+    fn for_each_inner<F>(self, notify: F)
+    where
+        F: FnMut(&T, &mut Self::Unsubscriber) + 'static,
+    {
+        self.for_each_inner(notify);
+    }
+
+    #[inline]
+    fn for_each_forever<F>(self, notify: F)
+    where
+        F: FnMut(&T) + 'static,
+    {
+        self.for_each_forever(notify);
+    }
+}
+
+impl<T> Value<T> for &Mutable<T> {
+    type Unsubscriber = Unsubscriber<T>;
+
+    #[inline]
+    fn for_each<F>(self, notify: F) -> Self::Unsubscriber
+    where
+        F: FnMut(&T) + 'static,
+    {
+        self.0.for_each(notify)
+    }
+
+    #[inline]
+    fn for_each_inner<F>(self, notify: F)
+    where
+        F: FnMut(&T, &mut Self::Unsubscriber) + 'static,
+    {
+        self.0.for_each_inner(notify);
+    }
+
+    #[inline]
+    fn for_each_forever<F>(self, notify: F)
+    where
+        F: FnMut(&T) + 'static,
+    {
+        self.0.for_each_forever(notify);
     }
 }
 
@@ -97,7 +150,7 @@ impl<T: Copy> Value<T> for T {
 //         self.try_get().unwrap()
 //     }
 
-//     // fn map<B, F>(&self, f: F) -> Map<B>
+//     // fn map<B, F>(&self, notify: F) -> Map<B>
 //     // where
 //     //     F: FnMut(&Self::Item) -> B + 'static;
 
@@ -105,11 +158,11 @@ impl<T: Copy> Value<T> for T {
 //     // where
 //     //     P: FnMut(&Self::Item) -> bool;
 
-//     // fn filter_map<B, F>(&self, f: F) -> Computed<B>
+//     // fn filter_map<B, F>(&self, notify: F) -> Computed<B>
 //     // where
 //     //     F: FnMut(&Self::Item) -> Option<B>;
 
-//     // fn fold<B, F>(&self, init: B, f: F) -> Computed<B>
+//     // fn fold<B, F>(&self, init: B, notify: F) -> Computed<B>
 //     // where
 //     //     F: FnMut(&mut B, &Self::Item);
 
@@ -132,14 +185,6 @@ pub trait Unsubscribe {
     fn has_effect(&self) -> bool {
         false
     }
-
-    #[inline]
-    fn droppable(self) -> DropUnsubscriber<Self>
-    where
-        Self: Sized,
-    {
-        DropUnsubscriber(self)
-    }
 }
 
 impl Unsubscribe for () {}
@@ -153,42 +198,5 @@ impl<T> Unsubscribe for Unsubscriber<T> {
     #[inline]
     fn has_effect(&self) -> bool {
         self.has_effect()
-    }
-}
-
-#[derive(Clone)]
-#[repr(transparent)]
-pub struct DropUnsubscriber<U: Unsubscribe>(pub U);
-
-impl<U: Unsubscribe> DropUnsubscriber<U> {
-    #[inline]
-    pub fn take(self) -> U {
-        // SAFETY: `Self` and `U` have the same `repr`.
-        let inner = unsafe { mem::transmute_copy::<Self, U>(&self) };
-        mem::forget(self);
-        inner
-    }
-}
-
-impl<U: Unsubscribe> Deref for DropUnsubscriber<U> {
-    type Target = U;
-
-    #[inline]
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl<U: Unsubscribe> DerefMut for DropUnsubscriber<U> {
-    #[inline]
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
-
-impl<U: Unsubscribe> Drop for DropUnsubscriber<U> {
-    #[inline]
-    fn drop(&mut self) {
-        self.unsubscribe()
     }
 }

@@ -1,27 +1,27 @@
 //! Run these with [miri](https://github.com/rust-lang/miri).
 
-// use wasmadeus::signal::{Mutable, Signal, Value};
+use wasmadeus::signal::{Mutable, Value};
 
-// #[test]
-// fn ergonomic_polymorphism() {
-//     fn do_something(v: impl Value<i32>) {
-//         v.for_each(|i| println!("{i}"));
-//     }
+#[test]
+fn ergonomic_polymorphism() {
+    fn do_something(v: impl Value<i32>) {
+        v.for_each(|i| println!("{i}"));
+    }
 
-//     let mutable = Mutable::new(777);
+    let mutable = Mutable::new(777);
 
-//     do_something(42);
-//     do_something(&mutable);
-// }
+    do_something(42);
+    do_something(&mutable);
+}
 
-// #[test]
-// fn unsubscribe_in_notify() {
-//     let signal = Mutable::new("hello");
+#[test]
+fn unsubscribe_in_notify() {
+    let signal = Mutable::new("hello");
 
-//     signal.for_each_inner(move |_, unsub| {
-//         unsub.unsubscribe();
-//     });
-// }
+    signal.for_each_inner(move |_, unsub| {
+        unsub.unsubscribe();
+    });
+}
 
 // #[test]
 // fn unsubscribe_in_second_notify() {

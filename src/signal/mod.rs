@@ -2,7 +2,8 @@ mod error;
 mod raw;
 mod traits;
 
-use core::ops::Deref;
+use core::mem;
+use core::ops::{Deref, DerefMut};
 
 use alloc::rc::{Rc, Weak};
 
@@ -162,3 +163,41 @@ impl<T> Clone for Unsubscriber<T> {
         Self(self.0.clone())
     }
 }
+
+#[derive(Clone)]
+#[repr(transparent)]
+pub struct DropUnsubscriber<T>(pub Unsubscriber<T>);
+
+impl<T> DropUnsubscriber<T> {
+    #[inline]
+    pub fn take(self) -> Unsubscriber<T> {
+        // SAFETY: `Self` and `Unsubscriber<T>` have the same `repr`.
+        let inner = unsafe { mem::transmute_copy::<Self, Unsubscriber<T>>(&self) };
+        mem::forget(self);
+        inner
+    }
+}
+
+impl<T> Deref for DropUnsubscriber<T> {
+    type Target = Unsubscriber<T>;
+
+    #[inline]
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl<T> DerefMut for DropUnsubscriber<T> {
+    #[inline]
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+impl<T> Drop for DropUnsubscriber<T> {
+    #[inline]
+    fn drop(&mut self) {
+        self.unsubscribe()
+    }
+}
+
