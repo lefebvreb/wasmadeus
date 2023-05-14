@@ -43,13 +43,13 @@ impl<T> Signal<T> {
 
     fn compose<U, F>(&self, raw: RawSignal<U>, mut notify: F) -> Signal<U>
     where
-        F: FnMut(&RawSignal<U>, &T) + 'static,
+        F: FnMut(&RawSignal<U>, &T, &mut Unsubscriber<T>) + 'static,
     {
         let signal = Signal::new_from_raw(raw);
         let weak = Rc::downgrade(signal.raw());
 
         self.for_each_inner(move |value, unsub| match weak.upgrade() {
-            Some(raw) => notify(&raw, value),
+            Some(raw) => notify(&raw, value, unsub),
             _ => unsub.unsubscribe(),
         });
 
@@ -61,8 +61,8 @@ impl<T> Signal<T> {
     where
         F: FnMut(&T) -> U + 'static,
     {
-        self.compose(RawSignal::uninit(), move |raw, value| {
-            raw.try_set(map(value)).unwrap()
+        self.compose(RawSignal::uninit(), move |raw, value, _| {
+            raw.try_set(map(value)).unwrap();
         })
     }
 
@@ -71,10 +71,76 @@ impl<T> Signal<T> {
     where
         P: FnMut(&T) -> bool + 'static,
     {
-        self.compose(self.raw().shared(), move |raw, value| {
+        self.compose(self.raw().shared(), move |raw, value, _| {
             if predicate(value) {
                 raw.notify_all();
             }
+        })
+    }
+
+    #[inline]
+    pub fn filter_map<U, F>(&self, mut filter_map: F) -> Signal<U>
+    where
+        F: FnMut(&T) -> Option<U> + 'static,
+    {
+        self.compose(RawSignal::uninit(), move |raw, value, _| {
+            if let Some(value) = filter_map(value) {
+                raw.try_set(value).unwrap();
+            }
+        })
+    }
+
+    #[inline]
+    pub fn fold<U, F>(&self, initial_value: U, mut fold: F) -> Signal<U>
+    where
+        F: FnMut(&mut U, &T) + 'static,
+    {
+        self.compose(RawSignal::new(initial_value), move |raw, value, _| {
+            raw.try_mutate(|acc| fold(acc, value)).unwrap();
+        })
+    }
+
+    #[inline]
+    pub fn map_while<U, F>(&self, mut map_while: F) -> Signal<U>
+    where
+        F: FnMut(&T) -> Option<U> + 'static,
+    {
+        self.compose(
+            RawSignal::uninit(),
+            move |raw, value, unsub| match map_while(value) {
+                Some(value) => raw.try_set(value).unwrap(),
+                _ => unsub.unsubscribe(),
+            },
+        )
+    }
+
+    #[inline]
+    pub fn skip(&self, n: usize) -> Signal<T> {
+        let mut counter = 0;
+        self.compose(self.raw().shared(), move |raw, _, _| {
+            if counter < n {
+                counter += 1;
+            } else {
+                raw.notify_all();
+            }
+        })
+    }
+
+    #[inline]
+    pub fn skip_while<P>(&self, predicate: P) -> Signal<T>
+    where
+        P: FnMut(&T) -> bool + 'static,
+    {
+        let mut option = Some(predicate);
+        self.compose(self.raw().shared(), move |raw, value, _| {
+            if let Some(predicate) = &mut option {
+                if predicate(value) {
+                    return;
+                } else {
+                    option.take();
+                }
+            }
+            raw.notify_all();
         })
     }
 

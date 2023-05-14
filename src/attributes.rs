@@ -24,5 +24,3 @@ macro_rules! impl_attribute {
 }
 
 all_tuples!(impl_attribute);
-
-//pub struct Class<V: Value<impl AsRef<str>>>(pub V);

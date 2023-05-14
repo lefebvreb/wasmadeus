@@ -132,51 +132,6 @@ impl<T> Value<T> for &Mutable<T> {
     }
 }
 
-// pub trait Signal
-// where
-//     for<'x> &'x Self: Value<Self::Item>,
-// {
-//     type Item;
-
-//     fn try_get(&self) -> Result<Self::Item>
-//     where
-//         Self::Item: Clone;
-
-//     #[inline]
-//     fn get(&self) -> Self::Item
-//     where
-//         Self::Item: Clone,
-//     {
-//         self.try_get().unwrap()
-//     }
-
-//     // fn map<B, F>(&self, notify: F) -> Map<B>
-//     // where
-//     //     F: FnMut(&Self::Item) -> B + 'static;
-
-//     // fn filter<P>(&self, predicate: P) -> Computed<Self::Item>
-//     // where
-//     //     P: FnMut(&Self::Item) -> bool;
-
-//     // fn filter_map<B, F>(&self, notify: F) -> Computed<B>
-//     // where
-//     //     F: FnMut(&Self::Item) -> Option<B>;
-
-//     // fn fold<B, F>(&self, init: B, notify: F) -> Computed<B>
-//     // where
-//     //     F: FnMut(&mut B, &Self::Item);
-
-//     // fn map_while<B, P>(&self, predicate: P) -> Computed<B>
-//     // where
-//     //     P: FnMut(&Self::Item) -> Option<B>;
-
-//     // fn skip(&self, n: usize) -> Computed<Self::Item>;
-
-//     // fn skip_while<P>(&self, predicate: P) -> Computed<Self::Item>
-//     // where
-//     //     P: FnMut(&Self::Item) -> bool;
-// }
-
 pub trait Unsubscribe {
     #[inline]
     fn unsubscribe(&mut self) {}
