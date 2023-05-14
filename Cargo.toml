@@ -9,3 +9,9 @@ keywords = ["framework", "frontend", "frp", "wasm"]
 license = "MIT OR Apache-2.0"
 readme = "README.md"
 repository = "https://github.com/L-Benjamin/wasmadeus"
+
+[dependencies.web-sys]
+version = "0.3.62"
+features = [
+    "HtmlElement",
+]
