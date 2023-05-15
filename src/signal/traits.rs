@@ -112,7 +112,7 @@ impl<T> Value<T> for &Mutable<T> {
     where
         F: FnMut(&T) + 'static,
     {
-        self.0.for_each(notify)
+        self.for_each(notify)
     }
 
     #[inline]
@@ -120,7 +120,7 @@ impl<T> Value<T> for &Mutable<T> {
     where
         F: FnMut(&T, &mut Self::Unsubscriber) + 'static,
     {
-        self.0.for_each_inner(notify);
+        self.for_each_inner(notify);
     }
 
     #[inline]
@@ -128,7 +128,7 @@ impl<T> Value<T> for &Mutable<T> {
     where
         F: FnMut(&T) + 'static,
     {
-        self.0.for_each_forever(notify);
+        self.for_each_forever(notify);
     }
 }
 
