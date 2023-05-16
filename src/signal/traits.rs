@@ -38,14 +38,6 @@ impl<T> Value<T> for &T {
     {
         notify(self, &mut ());
     }
-
-    #[inline]
-    fn for_each_forever<F>(self, notify: F)
-    where
-        F: FnOnce(&T),
-    {
-        notify(self);
-    }
 }
 
 impl<T: Copy> Value<T> for T {
@@ -65,14 +57,6 @@ impl<T: Copy> Value<T> for T {
         F: FnOnce(&T, &mut Self::Unsubscriber),
     {
         notify(&self, &mut ())
-    }
-
-    #[inline]
-    fn for_each_forever<F>(self, notify: F)
-    where
-        F: FnOnce(&T),
-    {
-        notify(&self);
     }
 }
 
