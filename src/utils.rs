@@ -1,4 +1,4 @@
-macro_rules! all_tuples {
+macro_rules! for_all_tuples {
     ($mac: ident) => {
         $mac! { A }
         $mac! { A B }
@@ -18,4 +18,4 @@ macro_rules! all_tuples {
     };
 }
 
-pub(crate) use all_tuples;
+pub(crate) use for_all_tuples;

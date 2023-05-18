@@ -139,14 +139,14 @@ mod impls {
 
     use super::{Mutable, Signal, Unsubscriber, Value};
 
-    auto trait SignalValue {}
+    auto trait NonSignal {}
 
-    impl<T> !SignalValue for &Signal<T> {}
-    impl<T> !SignalValue for &Mutable<T> {}
+    impl<T> !NonSignal for &Signal<T> {}
+    impl<T> !NonSignal for &Mutable<T> {}
 
-    impl<T: Deref> Value for T
+    impl<T> Value for T
     where
-        T: SignalValue,
+        T: Deref + NonSignal,
         T::Target: Sized,
     {
         type Item = T::Target;

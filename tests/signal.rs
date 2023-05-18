@@ -2,18 +2,6 @@
 
 use wasmadeus::signal::Mutable;
 
-// #[test]
-// fn ergonomic_polymorphism() {
-//     fn do_something(v: impl Value<i32>) {
-//         v.for_each(|i| println!("{i}"));
-//     }
-
-//     let mutable = Mutable::new(777);
-
-//     do_something(42);
-//     do_something(&mutable);
-// }
-
 #[test]
 fn unsubscribe_in_notify() {
     let signal = Mutable::new("hello");
