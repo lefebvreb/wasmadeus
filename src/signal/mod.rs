@@ -224,7 +224,7 @@ impl<T> Mutable<T> {
     where
         F: FnMut(&T) + 'static,
     {
-        self.0.for_each(notify)
+        Signal::for_each(self, notify)
     }
 
     #[inline]
@@ -232,7 +232,7 @@ impl<T> Mutable<T> {
     where
         F: FnMut(&T, &mut Unsubscriber<T>) + 'static,
     {
-        self.0.for_each_inner(notify);
+        Signal::for_each_inner(self, notify);
     }
 
     #[inline]
@@ -240,7 +240,7 @@ impl<T> Mutable<T> {
     where
         F: FnMut(&T) + 'static,
     {
-        self.0.for_each_forever(notify);
+        Signal::for_each_forever(self, notify);
     }
 }
 
