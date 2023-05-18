@@ -31,9 +31,9 @@ pub struct Class<T: Value>(pub T)
 where
     T::Item: AsRef<str>;
 
-impl<T: Value> Attribute for Class<T> 
+impl<T: Value> Attribute for Class<T>
 where
-    T::Item: AsRef<str>
+    T::Item: AsRef<str>,
 {
     #[inline]
     fn apply(self, element: &HtmlElement) {

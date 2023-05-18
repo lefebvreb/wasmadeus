@@ -50,7 +50,10 @@ impl<T> Unsubscribe for Unsubscriber<T> {
 mod impls {
     use super::{Mutable, Signal, Unsubscriber, Value};
 
-    impl<T> Value for &T {
+    impl<T> Value for T
+    where
+        T: Copy,
+    {
         type Item = T;
 
         type Unsubscriber = ();
@@ -60,7 +63,7 @@ mod impls {
         where
             F: FnOnce(&Self::Item),
         {
-            notify(self);
+            notify(&self);
         }
 
         #[inline]
@@ -68,7 +71,7 @@ mod impls {
         where
             F: FnOnce(&Self::Item, &mut Self::Unsubscriber),
         {
-            notify(self, &mut ());
+            notify(&self, &mut ());
         }
     }
 
@@ -135,21 +138,18 @@ mod impls {
 
 #[cfg(feature = "nightly")]
 mod impls {
-    use core::ops::Deref;
-
     use super::{Mutable, Signal, Unsubscriber, Value};
 
     auto trait NonSignal {}
 
-    impl<T> !NonSignal for &Signal<T> {}
-    impl<T> !NonSignal for &Mutable<T> {}
+    impl<T> !NonSignal for Signal<T> {}
+    impl<T> !NonSignal for Mutable<T> {}
 
     impl<T> Value for T
     where
-        T: Deref + NonSignal,
-        T::Target: Sized,
+        T: Copy + NonSignal,
     {
-        type Item = T::Target;
+        type Item = T;
 
         type Unsubscriber = ();
 
