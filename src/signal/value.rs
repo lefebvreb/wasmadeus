@@ -1,4 +1,4 @@
-use super::{SignalMut, Signal, Unsubscriber};
+use super::{Signal, SignalMut, Unsubscriber};
 
 pub trait Value: Sized {
     type Item;
@@ -22,33 +22,9 @@ pub trait Value: Sized {
     }
 }
 
-pub trait Unsubscribe {
-    #[inline]
-    fn unsubscribe(&mut self) {}
-
-    #[inline]
-    fn has_effect(&self) -> bool {
-        false
-    }
-}
-
-impl Unsubscribe for () {}
-
-impl<T> Unsubscribe for Unsubscriber<T> {
-    #[inline]
-    fn unsubscribe(&mut self) {
-        self.unsubscribe();
-    }
-
-    #[inline]
-    fn has_effect(&self) -> bool {
-        self.has_effect()
-    }
-}
-
 #[cfg(not(feature = "nightly"))]
 mod impls {
-    use super::{SignalMut, Signal, Unsubscriber, Value};
+    use super::{Signal, SignalMut, Unsubscriber, Value};
 
     impl<T> Value for T
     where
@@ -138,7 +114,7 @@ mod impls {
 
 #[cfg(feature = "nightly")]
 mod impls {
-    use super::{SignalMut, Signal, Unsubscriber, Value};
+    use super::{Signal, SignalMut, Unsubscriber, Value};
 
     auto trait NonSignal {}
 
