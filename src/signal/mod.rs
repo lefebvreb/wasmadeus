@@ -180,9 +180,9 @@ impl<T> Clone for Signal<T> {
 }
 
 #[repr(transparent)]
-pub struct Mutable<T: 'static>(Signal<T>);
+pub struct SignalMut<T: 'static>(Signal<T>);
 
-impl<T> Mutable<T> {
+impl<T> SignalMut<T> {
     #[inline]
     pub fn new(initial_value: T) -> Self {
         Self(Signal::new_from_raw(RawSignal::new(initial_value)))
@@ -244,14 +244,14 @@ impl<T> Mutable<T> {
     }
 }
 
-impl<T> Clone for Mutable<T> {
+impl<T> Clone for SignalMut<T> {
     #[inline]
     fn clone(&self) -> Self {
         Self(self.0.clone())
     }
 }
 
-impl<T> Deref for Mutable<T> {
+impl<T> Deref for SignalMut<T> {
     type Target = Signal<T>;
 
     #[inline]
@@ -260,7 +260,7 @@ impl<T> Deref for Mutable<T> {
     }
 }
 
-impl<T> From<T> for Mutable<T> {
+impl<T> From<T> for SignalMut<T> {
     #[inline]
     fn from(initial_value: T) -> Self {
         Self::new(initial_value)

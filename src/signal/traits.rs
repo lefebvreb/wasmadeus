@@ -1,4 +1,4 @@
-use super::{Mutable, Signal, Unsubscriber};
+use super::{SignalMut, Signal, Unsubscriber};
 
 pub trait Value: Sized {
     type Item;
@@ -48,7 +48,7 @@ impl<T> Unsubscribe for Unsubscriber<T> {
 
 #[cfg(not(feature = "nightly"))]
 mod impls {
-    use super::{Mutable, Signal, Unsubscriber, Value};
+    use super::{SignalMut, Signal, Unsubscriber, Value};
 
     impl<T> Value for T
     where
@@ -105,7 +105,7 @@ mod impls {
         }
     }
 
-    impl<T> Value for Mutable<T> {
+    impl<T> Value for SignalMut<T> {
         type Item = T;
 
         type Unsubscriber = Unsubscriber<T>;
@@ -138,12 +138,12 @@ mod impls {
 
 #[cfg(feature = "nightly")]
 mod impls {
-    use super::{Mutable, Signal, Unsubscriber, Value};
+    use super::{SignalMut, Signal, Unsubscriber, Value};
 
     auto trait NonSignal {}
 
     impl<T> !NonSignal for Signal<T> {}
-    impl<T> !NonSignal for Mutable<T> {}
+    impl<T> !NonSignal for SignalMut<T> {}
 
     impl<T> Value for T
     where
@@ -200,7 +200,7 @@ mod impls {
         }
     }
 
-    impl<T> Value for &Mutable<T> {
+    impl<T> Value for &SignalMut<T> {
         type Item = T;
 
         type Unsubscriber = Unsubscriber<T>;

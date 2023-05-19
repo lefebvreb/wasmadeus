@@ -1,10 +1,10 @@
 //! Run these with [miri](https://github.com/rust-lang/miri).
 
-use wasmadeus::signal::Mutable;
+use wasmadeus::signal::SignalMut;
 
 #[test]
 fn unsubscribe_in_notify() {
-    let signal = Mutable::new("hello");
+    let signal = SignalMut::new("hello");
 
     signal.for_each_inner(move |_, unsub| {
         unsub.unsubscribe();
@@ -13,7 +13,7 @@ fn unsubscribe_in_notify() {
 
 #[test]
 fn unsubscribe_in_second_notify() {
-    let signal = Mutable::new("hello");
+    let signal = SignalMut::new("hello");
 
     let mut count = 0;
     signal.for_each_inner(move |_, unsub| match count {
@@ -27,7 +27,7 @@ fn unsubscribe_in_second_notify() {
 #[test]
 #[should_panic]
 fn get_in_mutate() {
-    let signal = Mutable::new("hello");
+    let signal = SignalMut::new("hello");
 
     signal.mutate(|txt| {
         signal.get();
@@ -37,7 +37,7 @@ fn get_in_mutate() {
 
 #[test]
 fn map() {
-    let half = Mutable::new(21);
+    let half = SignalMut::new(21);
     let double = half.map(|i| i * 2);
     assert_eq!(double.get(), 42);
 }

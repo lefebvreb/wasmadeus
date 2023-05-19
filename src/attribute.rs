@@ -4,27 +4,27 @@ use crate::signal::Value;
 use crate::utils::for_all_tuples;
 
 pub trait Attribute {
-    fn apply(self, element: &HtmlElement);
+    fn apply_to(self, element: &HtmlElement);
 }
 
 impl Attribute for () {
     #[inline]
-    fn apply(self, _: &HtmlElement) {}
+    fn apply_to(self, _: &HtmlElement) {}
 }
 
-macro_rules! impl_attribute {
+macro_rules! impl_tuple_attribute {
     ($($name: ident)*) => {
         impl<$($name: Attribute,)*> Attribute for ($($name,)*) {
             #[allow(non_snake_case)]
-            fn apply(self, element: &HtmlElement) {
+            fn apply_to(self, element: &HtmlElement) {
                 let ($($name,)*) = self;
-                $($name.apply(element);)*
+                $($name.apply_to(element);)*
             }
         }
     };
 }
 
-for_all_tuples!(impl_attribute);
+for_all_tuples!(impl_tuple_attribute);
 
 #[derive(Clone)]
 pub struct Class<T: Value>(pub T)
@@ -36,7 +36,7 @@ where
     T::Item: AsRef<str>,
 {
     #[inline]
-    fn apply(self, element: &HtmlElement) {
+    fn apply_to(self, element: &HtmlElement) {
         let element = element.clone();
         self.0.for_each_forever(move |value| {
             element.set_class_name(value.as_ref());
