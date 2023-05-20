@@ -46,6 +46,7 @@ impl<T> Subscriber<T> {
 }
 
 impl<T> Drop for Subscriber<T> {
+    #[inline]
     fn drop(&mut self) {
         unsafe {
             let _ = Box::from_raw(self.notify.as_mut());
@@ -62,7 +63,7 @@ enum State {
 }
 
 /// A [`Broadcast`] is used to register subscribers (closures to be invoked on state change),
-/// and notify them, whilst allowing subscription/unsubscription at any time safely.
+/// and notify them, whilst allowing safe subscription/unsubscription at any time.
 pub struct Broadcast<T> {
     state: Cell<State>,
     next_id: Cell<usize>,
