@@ -16,5 +16,5 @@ nightly = []
 [dependencies.web-sys]
 version = "0.3.62"
 features = [
-    "HtmlElement",
+    "Element",
 ]
