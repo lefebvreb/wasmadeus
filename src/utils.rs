@@ -1,5 +1,6 @@
 macro_rules! for_all_tuples {
     ($mac: ident) => {
+        $mac! {}
         $mac! { A }
         $mac! { A B }
         $mac! { A B C }
