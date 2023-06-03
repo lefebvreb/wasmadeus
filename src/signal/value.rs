@@ -5,16 +5,16 @@ pub trait Value: Sized {
 
     type Unsubscriber;
 
-    fn for_each<F>(self, notify: F) -> Self::Unsubscriber
+    fn for_each<F>(&self, notify: F) -> Self::Unsubscriber
     where
         F: FnMut(&Self::Item) + 'static;
 
-    fn for_each_inner<F>(self, notify: F)
+    fn for_each_inner<F>(&self, notify: F)
     where
         F: FnMut(&Self::Item, &mut Self::Unsubscriber) + 'static;
 
     #[inline]
-    fn for_each_forever<F>(self, notify: F)
+    fn for_each_forever<F>(&self, notify: F)
     where
         F: FnMut(&Self::Item) + 'static,
     {
@@ -35,19 +35,19 @@ mod impls {
         type Unsubscriber = ();
 
         #[inline]
-        fn for_each<F>(self, notify: F) -> Self::Unsubscriber
+        fn for_each<F>(&self, notify: F) -> Self::Unsubscriber
         where
             F: FnOnce(&Self::Item),
         {
-            notify(&self);
+            notify(self);
         }
 
         #[inline]
-        fn for_each_inner<F>(self, notify: F)
+        fn for_each_inner<F>(&self, notify: F)
         where
             F: FnOnce(&Self::Item, &mut Self::Unsubscriber),
         {
-            notify(&self, &mut ());
+            notify(self, &mut ());
         }
     }
 
@@ -57,27 +57,27 @@ mod impls {
         type Unsubscriber = Unsubscriber<T>;
 
         #[inline]
-        fn for_each<F>(self, notify: F) -> Self::Unsubscriber
+        fn for_each<F>(&self, notify: F) -> Self::Unsubscriber
         where
             F: FnMut(&Self::Item) + 'static,
         {
-            Self::for_each(&self, notify)
+            self.for_each(notify)
         }
 
         #[inline]
-        fn for_each_inner<F>(self, notify: F)
+        fn for_each_inner<F>(&self, notify: F)
         where
             F: FnMut(&Self::Item, &mut Self::Unsubscriber) + 'static,
         {
-            Self::for_each_inner(&self, notify);
+            self.for_each_inner(notify);
         }
 
         #[inline]
-        fn for_each_forever<F>(self, notify: F)
+        fn for_each_forever<F>(&self, notify: F)
         where
             F: FnMut(&Self::Item) + 'static,
         {
-            Self::for_each_forever(&self, notify);
+            self.for_each_forever(notify);
         }
     }
 
@@ -87,27 +87,27 @@ mod impls {
         type Unsubscriber = Unsubscriber<T>;
 
         #[inline]
-        fn for_each<F>(self, notify: F) -> Self::Unsubscriber
+        fn for_each<F>(&self, notify: F) -> Self::Unsubscriber
         where
             F: FnMut(&Self::Item) + 'static,
         {
-            Self::for_each(&self, notify)
+            self.for_each(notify)
         }
 
         #[inline]
-        fn for_each_inner<F>(self, notify: F)
+        fn for_each_inner<F>(&self, notify: F)
         where
             F: FnMut(&Self::Item, &mut Self::Unsubscriber) + 'static,
         {
-            Self::for_each_inner(&self, notify);
+            self.for_each_inner(notify);
         }
 
         #[inline]
-        fn for_each_forever<F>(self, notify: F)
+        fn for_each_forever<F>(&self, notify: F)
         where
             F: FnMut(&Self::Item) + 'static,
         {
-            Self::for_each_forever(&self, notify);
+            self.for_each_forever(notify);
         }
     }
 }
@@ -130,7 +130,7 @@ mod impls {
         type Unsubscriber = ();
 
         #[inline]
-        fn for_each<F>(self, notify: F) -> Self::Unsubscriber
+        fn for_each<F>(&self, notify: F) -> Self::Unsubscriber
         where
             F: FnOnce(&Self::Item),
         {
@@ -138,7 +138,7 @@ mod impls {
         }
 
         #[inline]
-        fn for_each_inner<F>(self, notify: F)
+        fn for_each_inner<F>(&self, notify: F)
         where
             F: FnOnce(&Self::Item, &mut Self::Unsubscriber),
         {
@@ -152,27 +152,27 @@ mod impls {
         type Unsubscriber = Unsubscriber<T>;
 
         #[inline]
-        fn for_each<F>(self, notify: F) -> Self::Unsubscriber
+        fn for_each<F>(&self, notify: F) -> Self::Unsubscriber
         where
             F: FnMut(&Self::Item) + 'static,
         {
-            self.for_each(notify)
+            Signal::for_each(self, notify)
         }
 
         #[inline]
-        fn for_each_inner<F>(self, notify: F)
+        fn for_each_inner<F>(&self, notify: F)
         where
             F: FnMut(&Self::Item, &mut Self::Unsubscriber) + 'static,
         {
-            self.for_each_inner(notify);
+            Signal::for_each_inner(self, notify);
         }
 
         #[inline]
-        fn for_each_forever<F>(self, notify: F)
+        fn for_each_forever<F>(&self, notify: F)
         where
             F: FnMut(&Self::Item) + 'static,
         {
-            self.for_each_forever(notify);
+            Signal::for_each_forever(self, notify);
         }
     }
 
@@ -182,27 +182,27 @@ mod impls {
         type Unsubscriber = Unsubscriber<T>;
 
         #[inline]
-        fn for_each<F>(self, notify: F) -> Self::Unsubscriber
+        fn for_each<F>(&self, notify: F) -> Self::Unsubscriber
         where
             F: FnMut(&Self::Item) + 'static,
         {
-            self.for_each(notify)
+            SignalMut::for_each(self, notify)
         }
 
         #[inline]
-        fn for_each_inner<F>(self, notify: F)
+        fn for_each_inner<F>(&self, notify: F)
         where
             F: FnMut(&Self::Item, &mut Self::Unsubscriber) + 'static,
         {
-            self.for_each_inner(notify);
+            SignalMut::for_each_inner(self, notify);
         }
 
         #[inline]
-        fn for_each_forever<F>(self, notify: F)
+        fn for_each_forever<F>(&self, notify: F)
         where
             F: FnMut(&Self::Item) + 'static,
         {
-            self.for_each_forever(notify);
+            SignalMut::for_each_forever(self, notify);
         }
     }
 }
