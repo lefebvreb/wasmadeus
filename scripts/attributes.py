@@ -67,7 +67,7 @@ def make_attribute(row):
     if doc[0] == "":
         doc[0] = "*Missing MDN description*"
 
-    if len(warnings) > 0:
+    if warnings != "":
         doc.append("")
         doc.append(f"{warnings}.")
 

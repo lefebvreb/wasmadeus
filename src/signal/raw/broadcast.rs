@@ -49,7 +49,7 @@ impl<T> Drop for Subscriber<T> {
     #[inline]
     fn drop(&mut self) {
         unsafe {
-            let _ = Box::from_raw(self.notify.as_mut());
+            _ = Box::from_raw(self.notify.as_mut());
         }
     }
 }

@@ -18,7 +18,7 @@ pub trait Value: Sized {
     where
         F: FnMut(&Self::Item) + 'static,
     {
-        let _ = self.for_each(notify);
+        _ = self.for_each(notify);
     }
 }
 
