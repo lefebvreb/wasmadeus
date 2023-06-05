@@ -8,13 +8,13 @@ pub trait Attribute: Sized {
     fn apply_to(&self, element: &Element);
 }
 
-pub trait ElementAttributes: Sized {
+pub trait Attributes: Sized {
     fn apply_to(&self, element: &Element);
 }
 
 macro_rules! impl_element_attributes {
     ($($name: ident)*) => {
-        impl<$($name: Attribute,)*> ElementAttributes for ($($name,)*) {
+        impl<$($name: Attribute,)*> Attributes for ($($name,)*) {
             #[allow(non_snake_case, unused_variables)]
             fn apply_to(&self, element: &Element) {
                 let ($($name,)*) = self;
