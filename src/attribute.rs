@@ -75,6 +75,7 @@ where
         });
     }
 }
+
 // Programmatically gathered from https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes.
 attributes! {
     /// List of types the server accepts, typically a file type.
@@ -485,7 +486,7 @@ attributes! {
     /// Can be applied to the following HTML elements: `<img>`.
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/img#intrinsicsize)
-    IntrinSicsize => "intrinsicsize",
+    IntrinSicSize => "intrinsicsize",
     /// Provides a hint as to the type of data that might be entered by the user
     /// while editing the element or its contents. The attribute can be used
     /// with form controls (such as the value of
