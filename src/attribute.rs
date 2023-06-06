@@ -486,7 +486,7 @@ attributes! {
     /// Can be applied to the following HTML elements: `<img>`.
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/img#intrinsicsize)
-    IntrinSicSize => "intrinsicsize",
+    IntrinsicSize => "intrinsicsize",
     /// Provides a hint as to the type of data that might be entered by the user
     /// while editing the element or its contents. The attribute can be used
     /// with form controls (such as the value of

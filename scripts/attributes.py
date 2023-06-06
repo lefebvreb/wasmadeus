@@ -26,7 +26,7 @@ RENAME_OVERRIDE = {
     "formtarget": "FormTarget",
     "hreflang": "HrefLang",
     "http-equiv": "HttpEquiv",
-    "intrinsicsize": "IntrinSicSize",
+    "intrinsicsize": "IntrinsicSize",
     "inputmode": "InputMode",
     "ismap": "IsMap",
     "itemprop": "ItemProp",
