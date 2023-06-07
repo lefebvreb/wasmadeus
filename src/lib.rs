@@ -6,6 +6,7 @@ extern crate alloc;
 
 pub mod attribute;
 pub mod component;
+pub mod html;
 pub mod signal;
 mod utils;
 
