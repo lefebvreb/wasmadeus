@@ -17,6 +17,7 @@ use web_sys::Element;
 use crate::attribute::{attributes, Attribute, Attributes};
 use crate::component::{elements, Component};
 use crate::signal::Value;
+use crate::util::TryAsRef;
 
 attributes! {
     /// List of types the server accepts, typically a file type.

@@ -59,7 +59,7 @@ impl TryAsRef<str> for Option<String> {
     }
 }
 
-impl<T, U> TryAsRef<U> for &T 
+impl<T, U> TryAsRef<U> for &T
 where
     T: TryAsRef<U> + ?Sized,
     U: ?Sized,
@@ -70,7 +70,7 @@ where
     }
 }
 
-impl<T, U> TryAsRef<U> for &mut T 
+impl<T, U> TryAsRef<U> for &mut T
 where
     T: TryAsRef<U> + ?Sized,
     U: ?Sized,
@@ -87,7 +87,7 @@ where
 {
     #[inline]
     fn try_as_ref(&self) -> Option<&T> {
-        Some(&self)
+        Some(self)
     }
 }
 
@@ -97,7 +97,7 @@ where
 {
     #[inline]
     fn try_as_ref(&self) -> Option<&T> {
-        Some(&self)
+        Some(self)
     }
 }
 
@@ -107,7 +107,7 @@ where
 {
     #[inline]
     fn try_as_ref(&self) -> Option<&T> {
-        Some(&self)
+        Some(self)
     }
 }
 
@@ -117,6 +117,6 @@ where
 {
     #[inline]
     fn try_as_ref(&self) -> Option<&T> {
-        Some(&self)
+        Some(self)
     }
 }

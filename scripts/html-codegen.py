@@ -36,6 +36,7 @@ use web_sys::Element;
 use crate::attribute::{{attributes, Attribute, Attributes}};
 use crate::component::{{elements, Component}};
 use crate::signal::Value;
+use crate::util::TryAsRef;
 """
 
 # Attributes are renamed from their HTML names by simply making the first

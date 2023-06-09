@@ -46,19 +46,23 @@ macro_rules! attributes {
             #[derive(Clone)]
             pub struct $rust_name<T: Value>(pub T)
             where
-                T::Item: AsRef<str>;
+                T::Item: TryAsRef<str>;
 
             #[allow(deprecated)]
             impl<T: Value> Attribute for $rust_name<T>
             where
-                T::Item: AsRef<str>,
+                T::Item: TryAsRef<str>,
             {
                 #[inline]
                 fn apply_to(&self, element: &Element) {
                     let element = element.clone();
                     self.0.for_each_forever(move |value| {
-                        // It is safe to unwrap, provided the $html_name is valid.
-                        element.set_attribute($html_name, value.as_ref()).unwrap();
+                        // In both cases, it is safe to unwrap, provided the $html_name
+                        // is a valid attribute name.
+                        match value.try_as_ref() {
+                            Some(value) => element.set_attribute($html_name, value).unwrap(),
+                            None => element.remove_attribute($html_name).unwrap(),
+                        }
                     });
                 }
             }
