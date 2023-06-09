@@ -2,7 +2,7 @@ use alloc::format;
 use web_sys::Element;
 
 use crate::signal::Value;
-use crate::util::for_all_tuples;
+use crate::util::{for_all_tuples, TryAsRef};
 
 pub trait Attribute: Sized {
     fn apply_to(&self, element: &Element);
@@ -75,18 +75,20 @@ pub(crate) use attributes;
 #[derive(Clone)]
 pub struct CustomData<N: AsRef<str>, T: Value>(pub N, pub T)
 where
-    T::Item: AsRef<str>;
+    T::Item: TryAsRef<str>;
 
 impl<N: AsRef<str>, T: Value> Attribute for CustomData<N, T>
 where
-    T::Item: AsRef<str>,
+    T::Item: TryAsRef<str>,
 {
     #[inline]
     fn apply_to(&self, element: &Element) {
         let name = format!("data-{}", self.0.as_ref());
         let element = element.clone();
-        self.1.for_each_forever(move |value| {
-            element.set_attribute(&name, value.as_ref()).ok();
-        });
+        self.1
+            .for_each_forever(move |value| match value.try_as_ref() {
+                Some(value) => element.set_attribute(&name, value).unwrap(),
+                None => element.remove_attribute(&name).unwrap(),
+            });
     }
 }

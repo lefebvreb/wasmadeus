@@ -22,9 +22,69 @@ pub trait Value: Sized {
     }
 }
 
+impl<T> Value for Signal<T> {
+    type Item = T;
+
+    type Unsubscriber = Unsubscriber<T>;
+
+    #[inline]
+    fn for_each<F>(&self, notify: F) -> Self::Unsubscriber
+    where
+        F: FnMut(&Self::Item) + 'static,
+    {
+        self.for_each(notify)
+    }
+
+    #[inline]
+    fn for_each_inner<F>(&self, notify: F)
+    where
+        F: FnMut(&Self::Item, &mut Self::Unsubscriber) + 'static,
+    {
+        self.for_each_inner(notify);
+    }
+
+    #[inline]
+    fn for_each_forever<F>(&self, notify: F)
+    where
+        F: FnMut(&Self::Item) + 'static,
+    {
+        self.for_each_forever(notify);
+    }
+}
+
+impl<T> Value for SignalMut<T> {
+    type Item = T;
+
+    type Unsubscriber = Unsubscriber<T>;
+
+    #[inline]
+    fn for_each<F>(&self, notify: F) -> Self::Unsubscriber
+    where
+        F: FnMut(&Self::Item) + 'static,
+    {
+        self.for_each(notify)
+    }
+
+    #[inline]
+    fn for_each_inner<F>(&self, notify: F)
+    where
+        F: FnMut(&Self::Item, &mut Self::Unsubscriber) + 'static,
+    {
+        self.for_each_inner(notify);
+    }
+
+    #[inline]
+    fn for_each_forever<F>(&self, notify: F)
+    where
+        F: FnMut(&Self::Item) + 'static,
+    {
+        self.for_each_forever(notify);
+    }
+}
+
 #[cfg(not(feature = "nightly"))]
 mod impls {
-    use super::{Signal, SignalMut, Unsubscriber, Value};
+    use super::Value;
 
     impl<T> Value for T
     where
@@ -48,66 +108,6 @@ mod impls {
             F: FnOnce(&Self::Item, &mut Self::Unsubscriber),
         {
             notify(self, &mut ());
-        }
-    }
-
-    impl<T> Value for Signal<T> {
-        type Item = T;
-
-        type Unsubscriber = Unsubscriber<T>;
-
-        #[inline]
-        fn for_each<F>(&self, notify: F) -> Self::Unsubscriber
-        where
-            F: FnMut(&Self::Item) + 'static,
-        {
-            self.for_each(notify)
-        }
-
-        #[inline]
-        fn for_each_inner<F>(&self, notify: F)
-        where
-            F: FnMut(&Self::Item, &mut Self::Unsubscriber) + 'static,
-        {
-            self.for_each_inner(notify);
-        }
-
-        #[inline]
-        fn for_each_forever<F>(&self, notify: F)
-        where
-            F: FnMut(&Self::Item) + 'static,
-        {
-            self.for_each_forever(notify);
-        }
-    }
-
-    impl<T> Value for SignalMut<T> {
-        type Item = T;
-
-        type Unsubscriber = Unsubscriber<T>;
-
-        #[inline]
-        fn for_each<F>(&self, notify: F) -> Self::Unsubscriber
-        where
-            F: FnMut(&Self::Item) + 'static,
-        {
-            self.for_each(notify)
-        }
-
-        #[inline]
-        fn for_each_inner<F>(&self, notify: F)
-        where
-            F: FnMut(&Self::Item, &mut Self::Unsubscriber) + 'static,
-        {
-            self.for_each_inner(notify);
-        }
-
-        #[inline]
-        fn for_each_forever<F>(&self, notify: F)
-        where
-            F: FnMut(&Self::Item) + 'static,
-        {
-            self.for_each_forever(notify);
         }
     }
 }
