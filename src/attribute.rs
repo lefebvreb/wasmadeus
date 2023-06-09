@@ -2,7 +2,7 @@ use alloc::format;
 use web_sys::Element;
 
 use crate::signal::Value;
-use crate::utils::for_all_tuples;
+use crate::util::for_all_tuples;
 
 pub trait Attribute: Sized {
     fn apply_to(&self, element: &Element);

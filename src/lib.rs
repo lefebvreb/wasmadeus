@@ -8,7 +8,7 @@ pub mod attribute;
 pub mod component;
 pub mod html;
 pub mod signal;
-mod utils;
+pub mod util;
 
 pub mod prelude {
     // TODO
