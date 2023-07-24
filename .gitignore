@@ -1,3 +1,5 @@
 /Cargo.lock
-/examples/*/dist
 /target
+/examples/Cargo.lock
+/examples/target
+/examples/*/dist

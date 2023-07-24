@@ -11,5 +11,6 @@ pub mod signal;
 pub mod util;
 
 pub mod prelude {
-    // TODO
+    pub use super::signal::SignalMut;
+    pub use super::html;
 }
