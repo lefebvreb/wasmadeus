@@ -1,4 +1,5 @@
 [workspace]
 members = [
     "counter",
+    "hello_world",
 ]

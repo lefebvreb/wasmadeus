@@ -41,8 +41,9 @@ impl Component {
         Ok(())
     }
 
-    pub fn with(&self, component: Component) {
+    pub fn with(self, component: Component) -> Self {
         self.element.append_child(&component.element).unwrap();
+        self
     }
 }
 

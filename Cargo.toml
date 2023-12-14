@@ -11,10 +11,17 @@ readme = "README.md"
 repository = "https://github.com/L-Benjamin/wasmadeus"
 
 [features]
+default = ["logger"]
+logger = ["dep:log", "web-sys/console"]
 nightly = []
 
+[dependencies.log]
+version = "0.4.20"
+default-features = false
+optional = true
+
 [dependencies.web-sys]
-version = "0.3.62"
+version = "0.3.66"
 features = [
     "Document",
     "Element",

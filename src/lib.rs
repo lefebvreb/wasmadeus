@@ -7,10 +7,14 @@ extern crate alloc;
 pub mod attribute;
 pub mod component;
 pub mod html;
+#[cfg(feature = "logger")]
+pub mod logger;
 pub mod signal;
 pub mod util;
 
 pub mod prelude {
     pub use super::signal::SignalMut;
     pub use super::html;
+    #[cfg(feature = "logger")]
+    pub use super::logger::ConsoleLogger;
 }

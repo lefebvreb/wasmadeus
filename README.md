@@ -13,7 +13,7 @@ An experimental frontend web framework in pure rust.
 Wasmadeus is focused on simplicity, ease of use and performance.
 
 ```rust
-TODO
+TODO: cool counter example
 ```
 
 ## Features
