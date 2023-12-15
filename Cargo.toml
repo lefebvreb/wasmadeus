@@ -22,6 +22,7 @@ optional = true
 
 [dependencies.web-sys]
 version = "0.3.66"
+default-features = false
 features = [
     "Document",
     "Element",

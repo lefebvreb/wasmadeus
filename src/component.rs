@@ -28,12 +28,14 @@ impl Component {
         &self.element
     }
 
-    pub fn attach_to_root(self, element_id: &str) -> Result<(), ElementNotFoundError> {
+    pub fn attach_to(self, selectors: &str) -> Result<(), ElementNotFoundError> {
         web_sys::window()
             .unwrap()
             .document()
             .unwrap()
-            .get_element_by_id(element_id)
+            .query_selector(selectors)
+            .ok()
+            .flatten()
             .ok_or_else(|| ElementNotFoundError)?
             .append_child(&self.as_element())
             .unwrap();

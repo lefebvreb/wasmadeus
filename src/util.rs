@@ -27,7 +27,10 @@ macro_rules! for_all_tuples {
 
 pub(crate) use for_all_tuples;
 
-pub trait TryAsRef<T: ?Sized> {
+pub trait TryAsRef<T> 
+where
+    T: ?Sized,
+{
     fn try_as_ref(&self) -> Option<&T>;
 }
 
@@ -56,6 +59,12 @@ impl TryAsRef<str> for Option<String> {
     #[inline]
     fn try_as_ref(&self) -> Option<&str> {
         self.as_ref().map(String::as_ref)
+    }
+}
+
+impl<T, E> TryAsRef<T> for Result<T, E> {
+    fn try_as_ref(&self) -> Option<&T> {
+        self.as_ref().ok()
     }
 }
 
