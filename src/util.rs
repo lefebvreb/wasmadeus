@@ -62,6 +62,12 @@ impl TryAsRef<str> for Option<String> {
     }
 }
 
+impl<T> TryAsRef<T> for Option<T> {
+    fn try_as_ref(&self) -> Option<&T> {
+        self.as_ref()
+    }
+}
+
 impl<T, E> TryAsRef<T> for Result<T, E> {
     fn try_as_ref(&self) -> Option<&T> {
         self.as_ref().ok()
