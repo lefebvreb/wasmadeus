@@ -10,13 +10,8 @@ license = "MIT OR Apache-2.0"
 readme = "README.md"
 repository = "https://github.com/L-Benjamin/wasmadeus"
 
-[features]
-nightly = []
+[workspace]
+members = ["macros"]
 
-[dependencies.web-sys]
-version = "0.3.62"
-features = [
-    "Document",
-    "Element",
-    "Window",
-]
+[dependencies]
+macros = { path = "macros" }
