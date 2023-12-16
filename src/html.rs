@@ -19,6 +19,8 @@ use crate::component::{elements, Component};
 use crate::signal::Value;
 use crate::util::TryAsRef;
 
+pub use crate::attribute::CustomData;
+
 attributes! {
     /// List of types the server accepts, typically a file type.
     ///
@@ -50,7 +52,7 @@ attributes! {
     ///
     /// Can be applied to the following elements: [`form`].
     ///
-    /// *Missing MDN documentation.*
+    /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/form#action)
     Action => "action",
     /// Specifies the horizontal alignment of the element.
     ///
@@ -59,6 +61,7 @@ attributes! {
     /// Can be applied to the following elements: [`caption`], [`col`], [`colgroup`], [`hr`], [`iframe`], [`img`], [`table`], [`tbody`], [`td`], [`tfoot`], [`th`], [`thead`], [`tr`].
     ///
     /// *Missing MDN documentation.*
+    #[deprecated = "This HTML attribute is deprecated in the latest standard."]
     Align => "align",
     /// Specifies a feature-policy for the iframe.
     ///
@@ -100,14 +103,6 @@ attributes! {
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete)
     AutoComplete => "autocomplete",
-    /// The element should be automatically focused after the page loaded.
-    ///
-    /// Corresponds to the HTML attribute: `autofocus`.
-    ///
-    /// Can be applied to the following elements: [`button`], [`input`], [`select`], [`textarea`].
-    ///
-    /// *Missing MDN documentation.*
-    AutoFocus => "autofocus",
     /// The audio or video should play as soon as possible.
     ///
     /// Corresponds to the HTML attribute: `autoplay`.
@@ -160,9 +155,9 @@ attributes! {
     ///
     /// Corresponds to the HTML attribute: `charset`.
     ///
-    /// Can be applied to the following elements: [`meta`], [`script`].
+    /// Can be applied to the following elements: [`meta`].
     ///
-    /// *Missing MDN documentation.*
+    /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meta#charset)
     Charset => "charset",
     /// Indicates whether the element should be checked on page load.
     ///
@@ -234,7 +229,8 @@ attributes! {
     ///
     /// Global attribute: can be applied to any HTML element.
     ///
-    /// *Missing MDN documentation.*
+    /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/contextmenu)
+    #[deprecated = "This HTML attribute is deprecated in the latest standard."]
     ContextMenu => "contextmenu",
     /// Indicates whether the browser should show playback controls to the user.
     ///
@@ -330,7 +326,7 @@ attributes! {
     ///
     /// Can be applied to the following elements: [`input`], [`textarea`].
     ///
-    /// *Missing MDN documentation.*
+    /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/dirname)
     DirName => "dirname",
     /// Indicates whether the user can interact with the element.
     ///
@@ -725,7 +721,7 @@ attributes! {
     ///
     /// Can be applied to the following elements: [`input`], [`textarea`].
     ///
-    /// *Missing MDN documentation.*
+    /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/placeholder)
     PlaceHolder => "placeholder",
     /// A Boolean attribute indicating that the video is to be played "inline"; that is, within the element's playback area. Note that the absence of this attribute does not imply that the video will always be played in fullscreen.
     ///
@@ -1028,7 +1024,7 @@ attributes! {
 }
 
 elements! {
-    /// Together with its href attribute, creates a hyperlink to web pages, files, email addresses, locations in the same page, or anything else a URL can address.
+    /// Together with its href attribute, creates a hyperlink to web pages, files, email addresses, locations within the current page, or anything else a URL can address.
     ///
     /// Corresponds to the HTML element: `<a>`.
     ///
@@ -1069,7 +1065,7 @@ elements! {
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/area)
     area => "area",
-    /// Represents a self-contained composition in a document, page, application, or site, which is intended to be independently distributable or reusable (e.g., in syndication). Examples include: a forum post, a magazine or newspaper article, or a blog entry, a product card, a user-submitted comment, an interactive widget or gadget, or any other independent item of content.
+    /// Represents a self-contained composition in a document, page, application, or site, which is intended to be independently distributable or reusable (e.g., in syndication). Examples include a forum post, a magazine or newspaper article, a blog entry, a product card, a user-submitted comment, an interactive widget or gadget, or any other independent item of content.
     ///
     /// Corresponds to the HTML element: `<article>`.
     ///
@@ -1158,11 +1154,11 @@ elements! {
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/br)
     br => "br",
-    /// An interactive element activated by a user with a mouse, keyboard, finger, voice command, or other assistive technology. Once activated, it then performs an action, such as submitting a form or opening a dialog.
+    /// An interactive element activated by a user with a mouse, keyboard, finger, voice command, or other assistive technology. Once activated, it performs an action, such as submitting a form or opening a dialog.
     ///
     /// Corresponds to the HTML element: `<button>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`AutoFocus`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`DefaultValue`], [`Dir`], [`Disabled`], [`Draggable`], [`FormAction`], [`FormEnctype`], [`FormMethod`], [`FormNoValidate`], [`FormTarget`], [`Form`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Name`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`], [`Type`]
+    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`DefaultValue`], [`Dir`], [`Disabled`], [`Draggable`], [`FormAction`], [`FormEnctype`], [`FormMethod`], [`FormNoValidate`], [`FormTarget`], [`Form`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Name`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`], [`Type`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/button)
     button => "button",
@@ -1199,7 +1195,7 @@ elements! {
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/cite)
     cite => "cite",
-    /// Displays its contents styled in a fashion intended to indicate that the text is a short fragment of computer code. By default, the content text is displayed using the user agent default monospace font.
+    /// Displays its contents styled in a fashion intended to indicate that the text is a short fragment of computer code. By default, the content text is displayed using the user agent's default monospace font.
     ///
     /// Corresponds to the HTML element: `<code>`.
     ///
@@ -1232,7 +1228,7 @@ elements! {
     /// *Missing MDN documentation.*
     #[deprecated = "This HTML element is deprecated in the latest standard."]
     content => "content",
-    /// Links a given piece of content with a machine-readable translation. If the content is time- or date-related, the time element must be used.
+    /// Links a given piece of content with a machine-readable translation. If the content is time- or date-related, the[`time`] element must be used.
     ///
     /// Corresponds to the HTML element: `<data>`.
     ///
@@ -1321,7 +1317,7 @@ elements! {
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/dt)
     dt => "dt",
-    /// Marks text that has stress emphasis. The [`em`] element can be nested, with each level of nesting indicating a greater degree of emphasis.
+    /// Marks text that has stress emphasis. The [`em`] element can be nested, with each nesting level indicating a greater degree of emphasis.
     ///
     /// Corresponds to the HTML element: `<em>`.
     ///
@@ -1370,7 +1366,7 @@ elements! {
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/font)
     #[deprecated = "This HTML element is deprecated in the latest standard."]
     font => "font",
-    /// Represents a footer for its nearest ancestor sectioning content or sectioning root element. A [`footer`] typically contains information about the author of the section, copyright data or links to related documents.
+    /// Represents a footer for its nearest ancestor sectioning content or sectioning root element. A [`footer`] typically contains information about the author of the section, copyright data, or links to related documents.
     ///
     /// Corresponds to the HTML element: `<footer>`.
     ///
@@ -1492,7 +1488,7 @@ elements! {
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/html)
     html => "html",
-    /// Represents a range of text that is set off from the normal text for some reason, such as idiomatic text, technical terms, taxonomical designations, among others. Historically, these have been presented using italicized type, which is the original source of the [`i`] naming of this element.
+    /// Represents a range of text that is set off from the normal text for some reason, such as idiomatic text, technical terms, and taxonomical designations, among others. Historically, these have been presented using italicized type, which is the original source of the [`i`] naming of this element.
     ///
     /// Corresponds to the HTML element: `<i>`.
     ///
@@ -1525,11 +1521,11 @@ elements! {
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/img)
     img => "img",
-    /// Used to create interactive controls for web-based forms in order to accept data from the user; a wide variety of types of input data and control widgets are available, depending on the device and user agent. The [`input`] element is one of the most powerful and complex in all of HTML due to the sheer number of combinations of input types and attributes.
+    /// Used to create interactive controls for web-based forms to accept data from the user; a wide variety of types of input data and control widgets are available, depending on the device and user agent. The [`input`] element is one of the most powerful and complex in all of HTML due to the sheer number of combinations of input types and attributes.
     ///
     /// Corresponds to the HTML element: `<input>`.
     ///
-    /// Supports the following attributes: [`Accept`], [`AccessKey`], [`Alt`], [`AutoCapitalize`], [`AutoComplete`], [`AutoFocus`], [`Capture`], [`Checked`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`DefaultValue`], [`DirName`], [`Dir`], [`Disabled`], [`Draggable`], [`FormAction`], [`FormEnctype`], [`FormMethod`], [`FormNoValidate`], [`FormTarget`], [`Form`], [`Height`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`List`], [`MaxLength`], [`Max`], [`MinLength`], [`Min`], [`Multiple`], [`Name`], [`Pattern`], [`PlaceHolder`], [`ReadOnly`], [`Required`], [`Role`], [`Size`], [`Slot`], [`SpellCheck`], [`Src`], [`Step`], [`Style`], [`TabIndex`], [`Title`], [`Translate`], [`Type`], [`UseMap`], [`Width`]
+    /// Supports the following attributes: [`Accept`], [`AccessKey`], [`Alt`], [`AutoCapitalize`], [`AutoComplete`], [`Capture`], [`Checked`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`DefaultValue`], [`DirName`], [`Dir`], [`Disabled`], [`Draggable`], [`FormAction`], [`FormEnctype`], [`FormMethod`], [`FormNoValidate`], [`FormTarget`], [`Form`], [`Height`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`List`], [`MaxLength`], [`Max`], [`MinLength`], [`Min`], [`Multiple`], [`Name`], [`Pattern`], [`PlaceHolder`], [`ReadOnly`], [`Required`], [`Role`], [`Size`], [`Slot`], [`SpellCheck`], [`Src`], [`Step`], [`Style`], [`TabIndex`], [`Title`], [`Translate`], [`Type`], [`UseMap`], [`Width`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input)
     input => "input",
@@ -1573,7 +1569,7 @@ elements! {
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/li)
     li => "li",
-    /// Specifies relationships between the current document and an external resource. This element is most commonly used to link to CSS, but is also used to establish site icons (both "favicon" style icons and icons for the home screen and apps on mobile devices) among other things.
+    /// Specifies relationships between the current document and an external resource. This element is most commonly used to link to CSS but is also used to establish site icons (both "favicon" style icons and icons for the home screen and apps on mobile devices) among other things.
     ///
     /// Corresponds to the HTML element: `<link>`.
     ///
@@ -1614,7 +1610,7 @@ elements! {
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/marquee)
     #[deprecated = "This HTML element is deprecated in the latest standard."]
     marquee => "marquee",
-    /// The top-level element in MathML. Every valid MathML instance must be wrapped in it. In addition you must not nest a second [`math`] element in another, but you can have an arbitrary number of other child elements in it.
+    /// The top-level element in MathML. Every valid MathML instance must be wrapped in it. In addition, you must not nest a second [`math`] element in another, but you can have an arbitrary number of other child elements in it.
     ///
     /// Corresponds to the HTML element: `<math>`.
     ///
@@ -1772,7 +1768,7 @@ elements! {
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/plaintext)
     #[deprecated = "This HTML element is deprecated in the latest standard."]
     plaintext => "plaintext",
-    /// Enables the embedding of another HTML page into the current one for the purposes of allowing smoother navigation into new pages.
+    /// Enables the embedding of another HTML page into the current one to enable smoother navigation into new pages.
     ///
     /// Corresponds to the HTML element: `<portal>`.
     ///
@@ -1813,7 +1809,7 @@ elements! {
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/rb)
     #[deprecated = "This HTML element is deprecated in the latest standard."]
     rb => "rb",
-    /// Used to provide fall-back parentheses for browsers that do not support display of ruby annotations using the [`ruby`] element. One [`rp`] element should enclose each of the opening and closing parentheses that wrap the [`rt`] element that contains the annotation's text.
+    /// Used to provide fall-back parentheses for browsers that do not support the display of ruby annotations using the [`ruby`] element. One [`rp`] element should enclose each of the opening and closing parentheses that wrap the [`rt`] element that contains the annotation's text.
     ///
     /// Corresponds to the HTML element: `<rp>`.
     ///
@@ -1866,10 +1862,18 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<script>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`Async`], [`AutoCapitalize`], [`Charset`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`CrossOrigin`], [`Defer`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`Integrity`], [`ItemProp`], [`Lang`], [`Language`], [`ReferrerPolicy`], [`Role`], [`Slot`], [`SpellCheck`], [`Src`], [`Style`], [`TabIndex`], [`Title`], [`Translate`], [`Type`]
+    /// Supports the following attributes: [`AccessKey`], [`Async`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`CrossOrigin`], [`Defer`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`Integrity`], [`ItemProp`], [`Lang`], [`Language`], [`ReferrerPolicy`], [`Role`], [`Slot`], [`SpellCheck`], [`Src`], [`Style`], [`TabIndex`], [`Title`], [`Translate`], [`Type`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/script)
     script => "script",
+    /// Represents a part that contains a set of form controls or other content related to performing a search or filtering operation.
+    ///
+    /// Corresponds to the HTML element: `<search>`.
+    ///
+    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    ///
+    /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/search)
+    search => "search",
     /// Represents a generic standalone section of a document, which doesn't have a more specific semantic element to represent it. Sections should always have a heading, with very few exceptions.
     ///
     /// Corresponds to the HTML element: `<section>`.
@@ -1882,7 +1886,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<select>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`AutoComplete`], [`AutoFocus`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Disabled`], [`Draggable`], [`Form`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Multiple`], [`Name`], [`Required`], [`Role`], [`Size`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`AutoComplete`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Disabled`], [`Draggable`], [`Form`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Multiple`], [`Name`], [`Required`], [`Role`], [`Size`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/select)
     select => "select",
@@ -1903,7 +1907,7 @@ elements! {
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot)
     slot => "slot",
-    /// Represents side-comments and small print, like copyright and legal text, independent of its styled presentation. By default, it renders text within it one font-size smaller, such as from small to x-small.
+    /// Represents side-comments and small print, like copyright and legal text, independent of its styled presentation. By default, it renders text within it one font size smaller, such as from small to x-small.
     ///
     /// Corresponds to the HTML element: `<small>`.
     ///
@@ -1944,7 +1948,7 @@ elements! {
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/strong)
     strong => "strong",
-    /// Contains style information for a document, or part of a document. It contains CSS, which is applied to the contents of the document containing this element.
+    /// Contains style information for a document or part of a document. It contains CSS, which is applied to the contents of the document containing this element.
     ///
     /// Corresponds to the HTML element: `<style>`.
     ///
@@ -2016,11 +2020,11 @@ elements! {
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template)
     template => "template",
-    /// Represents a multi-line plain-text editing control, useful when you want to allow users to enter a sizeable amount of free-form text, for example a comment on a review or feedback form.
+    /// Represents a multi-line plain-text editing control, useful when you want to allow users to enter a sizeable amount of free-form text, for example, a comment on a review or feedback form.
     ///
     /// Corresponds to the HTML element: `<textarea>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`AutoComplete`], [`AutoFocus`], [`Class`], [`Cols`], [`ContentEditable`], [`ContextMenu`], [`DirName`], [`Dir`], [`Disabled`], [`Draggable`], [`EnterKeyHint`], [`Form`], [`Hidden`], [`Id`], [`InputMode`], [`ItemProp`], [`Lang`], [`MaxLength`], [`MinLength`], [`Name`], [`PlaceHolder`], [`ReadOnly`], [`Required`], [`Role`], [`Rows`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`], [`Wrap`]
+    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`AutoComplete`], [`Class`], [`Cols`], [`ContentEditable`], [`ContextMenu`], [`DirName`], [`Dir`], [`Disabled`], [`Draggable`], [`EnterKeyHint`], [`Form`], [`Hidden`], [`Id`], [`InputMode`], [`ItemProp`], [`Lang`], [`MaxLength`], [`MinLength`], [`Name`], [`PlaceHolder`], [`ReadOnly`], [`Required`], [`Role`], [`Rows`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`], [`Wrap`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/textarea)
     textarea => "textarea",
@@ -2032,7 +2036,7 @@ elements! {
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/tfoot)
     tfoot => "tfoot",
-    /// Defines a cell as header of a group of table cells. The exact nature of this group is defined by the scope and headers attributes.
+    /// Defines a cell as a header of a group of table cells. The exact nature of this group is defined by the scope and headers attributes.
     ///
     /// Corresponds to the HTML element: `<th>`.
     ///
@@ -2089,7 +2093,7 @@ elements! {
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/tt)
     #[deprecated = "This HTML element is deprecated in the latest standard."]
     tt => "tt",
-    /// Represents a span of inline text which should be rendered in a way that indicates that it has a non-textual annotation. This is rendered by default as a simple solid underline, but may be altered using CSS.
+    /// Represents a span of inline text which should be rendered in a way that indicates that it has a non-textual annotation. This is rendered by default as a simple solid underline but may be altered using CSS.
     ///
     /// Corresponds to the HTML element: `<u>`.
     ///
@@ -2113,7 +2117,7 @@ elements! {
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/var)
     var => "var",
-    /// Embeds a media player which supports video playback into the document. You can use [`video`] for audio content as well, but the audio element may provide a more appropriate user experience.
+    /// Embeds a media player which supports video playback into the document. You can also use [`video`] for audio content, but the audio element may provide a more appropriate user experience.
     ///
     /// Corresponds to the HTML element: `<video>`.
     ///

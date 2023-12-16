@@ -36,8 +36,8 @@ impl Component {
             .query_selector(selectors)
             .ok()
             .flatten()
-            .ok_or_else(|| ElementNotFoundError)?
-            .append_child(&self.as_element())
+            .ok_or(ElementNotFoundError)?
+            .append_child(self.as_element())
             .unwrap();
 
         Ok(())

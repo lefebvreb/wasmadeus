@@ -134,7 +134,7 @@ mod impls {
         where
             F: FnOnce(&Self::Item),
         {
-            notify(&self);
+            notify(self);
         }
 
         #[inline]
@@ -142,7 +142,7 @@ mod impls {
         where
             F: FnOnce(&Self::Item, &mut Self::Unsubscriber),
         {
-            notify(&self, &mut ());
+            notify(self, &mut ());
         }
     }
 

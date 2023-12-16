@@ -27,7 +27,7 @@ macro_rules! for_all_tuples {
 
 pub(crate) use for_all_tuples;
 
-pub trait TryAsRef<T> 
+pub trait TryAsRef<T>
 where
     T: ?Sized,
 {

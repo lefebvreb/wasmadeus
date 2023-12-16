@@ -8,32 +8,6 @@ pub trait Attribute: Sized {
     fn apply_to(&self, element: &Element);
 }
 
-pub trait Attributes: Sized {
-    fn apply_to(&self, element: &Element);
-}
-
-impl<T: Attribute> Attributes for T {
-    #[inline]
-    fn apply_to(&self, element: &Element) {
-        self.apply_to(element);
-    }
-}
-
-macro_rules! impl_element_attributes {
-    ($($name: ident)*) => {
-        impl<$($name: Attribute,)*> Attributes for ($($name,)*) {
-            #[inline]
-            #[allow(non_snake_case, unused_variables)]
-            fn apply_to(&self, element: &Element) {
-                let ($($name,)*) = self;
-                $($name.apply_to(element);)*
-            }
-        }
-    };
-}
-
-for_all_tuples!(impl_element_attributes);
-
 macro_rules! attributes {
     {
         $(
@@ -70,8 +44,6 @@ macro_rules! attributes {
     };
 }
 
-pub(crate) use attributes;
-
 #[derive(Clone)]
 pub struct CustomData<N: AsRef<str>, T: Value>(pub N, pub T)
 where
@@ -92,3 +64,31 @@ where
             });
     }
 }
+
+pub trait Attributes: Sized {
+    fn apply_to(&self, element: &Element);
+}
+
+impl<T: Attribute> Attributes for T {
+    #[inline]
+    fn apply_to(&self, element: &Element) {
+        self.apply_to(element);
+    }
+}
+
+macro_rules! impl_element_attributes {
+    ($($name: ident)*) => {
+        impl<$($name: Attribute,)*> Attributes for ($($name,)*) {
+            #[inline]
+            #[allow(non_snake_case, unused_variables)]
+            fn apply_to(&self, element: &Element) {
+                let ($($name,)*) = self;
+                $($name.apply_to(element);)*
+            }
+        }
+    };
+}
+
+for_all_tuples!(impl_element_attributes);
+
+pub(crate) use attributes;

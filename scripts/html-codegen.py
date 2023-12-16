@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+# python --version
+# Python 3.11.6
+
 from contextlib import contextmanager
 from dataclasses import dataclass
 from re import sub
@@ -37,6 +40,8 @@ use crate::attribute::{{attributes, Attribute, Attributes}};
 use crate::component::{{elements, Component}};
 use crate::signal::Value;
 use crate::util::TryAsRef;
+
+pub use crate::attribute::CustomData;
 """
 
 # Attributes are renamed from their HTML names by simply making the first

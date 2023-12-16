@@ -1,8 +1,8 @@
 use alloc::boxed::Box;
 use alloc::string::ToString;
-use log::{Log, Metadata, Record, SetLoggerError, LevelFilter, Level};
-use web_sys::wasm_bindgen::JsValue;
+use log::{Level, LevelFilter, Log, Metadata, Record, SetLoggerError};
 use web_sys::console;
+use web_sys::wasm_bindgen::JsValue;
 
 #[derive(Debug)]
 pub struct ConsoleLogger {
@@ -27,7 +27,7 @@ impl ConsoleLogger {
     }
 
     /// # Memory leak
-    /// 
+    ///
     /// Calling this function leaks the logger. Please avoid calling it repeateadly.
     #[inline]
     pub fn init(self) -> Result<(), SetLoggerError> {
