@@ -45,7 +45,7 @@ impl<T> Signal<T> {
 
     fn compose<U, F>(&self, raw: RawSignal<U>, mut notify: F) -> Signal<U>
     where
-        F: FnMut(&RawSignal<U>, &T, &mut Unsubscriber<T>) + 'static,
+        F: FnMut(&RawSignal<U>, &T, &mut SignalUnsubscriber<T>) + 'static,
     {
         let signal = Signal::new_from_raw(raw);
         let weak = Rc::downgrade(signal.raw());
@@ -174,21 +174,21 @@ impl<T> Signal<T> {
         })
     }
 
-    pub fn for_each<F>(&self, notify: F) -> Unsubscriber<T>
+    pub fn for_each<F>(&self, notify: F) -> SignalUnsubscriber<T>
     where
         F: FnMut(&T) + 'static,
     {
         let id = self.raw().raw_for_each(|_| notify);
-        Unsubscriber::new(Rc::downgrade(self.raw()), id)
+        SignalUnsubscriber::new(Rc::downgrade(self.raw()), id)
     }
 
     pub fn for_each_inner<F>(&self, mut notify: F)
     where
-        F: FnMut(&T, &mut Unsubscriber<T>) + 'static,
+        F: FnMut(&T, &mut SignalUnsubscriber<T>) + 'static,
     {
         let weak = Rc::downgrade(self.raw());
         self.raw().raw_for_each(|id| {
-            let mut unsub = Unsubscriber::new(weak, id);
+            let mut unsub = SignalUnsubscriber::new(weak, id);
             move |data| notify(data, &mut unsub)
         });
     }
@@ -250,7 +250,7 @@ impl<T> SignalMut<T> {
     }
 
     #[inline]
-    pub fn for_each<F>(&self, notify: F) -> Unsubscriber<T>
+    pub fn for_each<F>(&self, notify: F) -> SignalUnsubscriber<T>
     where
         F: FnMut(&T) + 'static,
     {
@@ -260,7 +260,7 @@ impl<T> SignalMut<T> {
     #[inline]
     pub fn for_each_inner<F>(&self, notify: F)
     where
-        F: FnMut(&T, &mut Unsubscriber<T>) + 'static,
+        F: FnMut(&T, &mut SignalUnsubscriber<T>) + 'static,
     {
         Signal::for_each_inner(self, notify);
     }

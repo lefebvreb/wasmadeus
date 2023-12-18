@@ -1,9 +1,9 @@
-use super::{Signal, SignalMut, Unsubscriber};
+use super::{Signal, SignalMut, SignalUnsubscriber, Unsubscribe};
 
 pub trait Value: Sized {
     type Item;
 
-    type Unsubscriber;
+    type Unsubscriber: Unsubscribe;
 
     fn for_each<F>(&self, notify: F) -> Self::Unsubscriber
     where
@@ -25,7 +25,7 @@ pub trait Value: Sized {
 impl<T> Value for Signal<T> {
     type Item = T;
 
-    type Unsubscriber = Unsubscriber<T>;
+    type Unsubscriber = SignalUnsubscriber<T>;
 
     #[inline]
     fn for_each<F>(&self, notify: F) -> Self::Unsubscriber
@@ -55,7 +55,7 @@ impl<T> Value for Signal<T> {
 impl<T> Value for SignalMut<T> {
     type Item = T;
 
-    type Unsubscriber = Unsubscriber<T>;
+    type Unsubscriber = SignalUnsubscriber<T>;
 
     #[inline]
     fn for_each<F>(&self, notify: F) -> Self::Unsubscriber
@@ -114,7 +114,7 @@ mod impls {
 
 #[cfg(feature = "nightly")]
 mod impls {
-    use super::{Signal, SignalMut, Unsubscriber, Value};
+    use super::{Signal, SignalMut, SignalUnsubscriber, Value};
 
     auto trait NonSignal {}
 
@@ -149,7 +149,7 @@ mod impls {
     impl<T> Value for &Signal<T> {
         type Item = T;
 
-        type Unsubscriber = Unsubscriber<T>;
+        type Unsubscriber = SignalUnsubscriber<T>;
 
         #[inline]
         fn for_each<F>(&self, notify: F) -> Self::Unsubscriber
@@ -179,7 +179,7 @@ mod impls {
     impl<T> Value for &SignalMut<T> {
         type Item = T;
 
-        type Unsubscriber = Unsubscriber<T>;
+        type Unsubscriber = SignalUnsubscriber<T>;
 
         #[inline]
         fn for_each<F>(&self, notify: F) -> Self::Unsubscriber

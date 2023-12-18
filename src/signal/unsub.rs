@@ -1,3 +1,4 @@
+use core::mem;
 use core::ops::{Deref, DerefMut};
 
 use alloc::rc::Weak;
@@ -6,9 +7,9 @@ use super::raw::{RawSignal, SubscriberId};
 
 #[must_use]
 #[repr(transparent)]
-pub struct Unsubscriber<T>(Option<(Weak<RawSignal<T>>, SubscriberId)>);
+pub struct SignalUnsubscriber<T>(Option<(Weak<RawSignal<T>>, SubscriberId)>);
 
-impl<T> Unsubscriber<T> {
+impl<T> SignalUnsubscriber<T> {
     #[inline]
     pub(super) fn new(weak: Weak<RawSignal<T>>, id: SubscriberId) -> Self {
         Self(Some((weak, id)))
@@ -28,37 +29,34 @@ impl<T> Unsubscriber<T> {
     }
 
     #[inline]
-    pub fn droppable(self) -> DropUnsubscriber<T> {
+    pub fn droppable(self) -> DropUnsubscriber<Self> {
         DropUnsubscriber(self)
     }
 }
 
-impl<T> Clone for Unsubscriber<T> {
+impl<T> Clone for SignalUnsubscriber<T> {
     #[inline]
     fn clone(&self) -> Self {
         Self(self.0.clone())
     }
 }
 
+#[derive(Clone)]
 #[repr(transparent)]
-pub struct DropUnsubscriber<T>(pub Unsubscriber<T>);
+pub struct DropUnsubscriber<U: Unsubscribe>(pub U);
 
-impl<T> DropUnsubscriber<T> {
+impl<U: Unsubscribe> DropUnsubscriber<U> {
     #[inline]
-    pub fn take(mut self) -> Unsubscriber<T> {
-        Unsubscriber(self.0 .0.take())
+    pub fn into_inner(self) -> U {
+        // SAFETY: Self has the same layout as U because it is marked as #[repr(transparent)].
+        let inner = unsafe { mem::transmute_copy(&self) };
+        mem::forget(self);
+        inner
     }
 }
 
-impl<T> Clone for DropUnsubscriber<T> {
-    #[inline]
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
-    }
-}
-
-impl<T> Deref for DropUnsubscriber<T> {
-    type Target = Unsubscriber<T>;
+impl<U: Unsubscribe> Deref for DropUnsubscriber<U> {
+    type Target = U;
 
     #[inline]
     fn deref(&self) -> &Self::Target {
@@ -66,14 +64,14 @@ impl<T> Deref for DropUnsubscriber<T> {
     }
 }
 
-impl<T> DerefMut for DropUnsubscriber<T> {
+impl<U: Unsubscribe> DerefMut for DropUnsubscriber<U> {
     #[inline]
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
     }
 }
 
-impl<T> Drop for DropUnsubscriber<T> {
+impl<U: Unsubscribe> Drop for DropUnsubscriber<U> {
     #[inline]
     fn drop(&mut self) {
         self.unsubscribe()
@@ -88,11 +86,19 @@ pub trait Unsubscribe {
     fn has_effect(&self) -> bool {
         false
     }
+
+    #[inline]
+    fn droppable(self) -> DropUnsubscriber<Self>
+    where
+        Self: Sized,
+    {
+        DropUnsubscriber(self)
+    }
 }
 
 impl Unsubscribe for () {}
 
-impl<T> Unsubscribe for Unsubscriber<T> {
+impl<T> Unsubscribe for SignalUnsubscriber<T> {
     #[inline]
     fn unsubscribe(&mut self) {
         self.unsubscribe();
