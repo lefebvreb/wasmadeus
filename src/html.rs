@@ -3,16 +3,14 @@
 //! HTML elements and attributes definitions.
 //!
 //! In the Wasmadeus framework, [HTML elements](https://developer.mozilla.org/en-US/docs/Web/HTML/Element) are replaced
-//! with simple rust functions taking one or more [`Attributes`]
-//! for input and returning a [`Component`].
+//! with simple rust functions taking one or more [`Attributes`](crate::attribute::Attribute)
+//! for input and returning a [`Component`](crate::component::Component).
 //!
 //! [HTML attributes](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes) are simply rust structs that implement
-//! the [`Attribute`] trait.
+//! the [`Attributes`](crate::attribute::Attribute) trait.
 //!
 //! This module contains the definitions and documentation of all standard HTML
 //! elements and attributes, including the deprecated and experimental ones.
-
-use web_sys::Element;
 
 use crate::attribute::attributes;
 use crate::component::elements;

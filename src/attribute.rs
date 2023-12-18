@@ -1,11 +1,11 @@
 use alloc::format;
-use web_sys::Element;
 
+use crate::component::Component;
 use crate::signal::Value;
 use crate::utils::{for_all_tuples, TryAsRef};
 
 pub trait Attribute: Sized {
-    fn apply_to(&self, element: &Element);
+    fn apply_to(&self, component: &Component);
 }
 
 macro_rules! attributes {
@@ -28,9 +28,9 @@ macro_rules! attributes {
                 T::Item: $crate::utils::TryAsRef<str>,
             {
                 #[inline]
-                fn apply_to(&self, element: &Element) {
+                fn apply_to(&self, component: &$crate::component::Component) {
                     use $crate::utils::TryAsRef;
-                    let element = element.clone();
+                    let element = component.as_element().clone();
                     self.0.for_each_forever(move |value| {
                         // In both cases, it is safe to unwrap, provided the $html_name
                         // is a valid attribute name.
@@ -57,9 +57,9 @@ where
     T::Item: TryAsRef<str>,
 {
     #[inline]
-    fn apply_to(&self, element: &Element) {
+    fn apply_to(&self, component: &Component) {
         let name = format!("data-{}", self.0.as_ref());
-        let element = element.clone();
+        let element = component.as_element().clone();
         self.1
             .for_each_forever(move |value| match value.try_as_ref() {
                 Some(value) => element.set_attribute(&name, value).unwrap(),
@@ -69,24 +69,24 @@ where
 }
 
 pub trait Attributes: Sized {
-    fn apply_to(&self, element: &Element);
+    fn apply_to(&self, component: &Component);
 }
 
 impl<T: Attribute> Attributes for T {
     #[inline]
-    fn apply_to(&self, element: &Element) {
-        self.apply_to(element);
+    fn apply_to(&self, component: &Component) {
+        self.apply_to(component);
     }
 }
 
 macro_rules! impl_attributes {
     ($($name: ident)*) => {
-        impl<$($name: Attribute,)*> Attributes for ($($name,)*) {
+        impl<$($name: Attributes,)*> Attributes for ($($name,)*) {
             #[inline]
             #[allow(non_snake_case, unused_variables)]
-            fn apply_to(&self, element: &Element) {
+            fn apply_to(&self, component: &Component) {
                 let ($($name,)*) = self;
-                $($name.apply_to(element);)*
+                $($name.apply_to(component);)*
             }
         }
     };

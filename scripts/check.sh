@@ -5,7 +5,7 @@
 set -e
 
 function suppress {
-    OUTPUT=`$* --color=always 2>&1` || echo "$OUTPUT"
+    OUTPUT=`$* --color=always 2>&1` || echo $OUTPUT
 }
 
 echo cargo fmt
@@ -13,10 +13,10 @@ cargo fmt
 
 echo cargo clippy
 suppress cargo clippy
-suppress cargo clippy --features nightly
+suppress cargo +nightly clippy --features nightly
 
 echo cargo miri test
-suppress cargo miri test
-suppress cargo miri test --features nightly
+suppress cargo +nightly miri test
+suppress cargo +nightly miri test --features nightly
 
 echo all done!

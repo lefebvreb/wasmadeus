@@ -5,7 +5,8 @@ use core::mem;
 use alloc::boxed::Box;
 use alloc::rc::Rc;
 use alloc::vec::Vec;
-use web_sys::Element;
+use web_sys::wasm_bindgen::JsCast;
+use web_sys::{Element, HtmlElement};
 
 use crate::attribute::Attributes;
 use crate::signal::Value;
@@ -40,12 +41,16 @@ impl Component {
             deps: Default::default(),
         }));
 
-        attributes.apply_to(this.as_element());
+        attributes.apply_to(&this);
         this
     }
 
     pub fn as_element(&self) -> &Element {
         &self.inner().element
+    }
+
+    pub fn as_html_element(&self) -> Option<&HtmlElement> {
+        self.inner().element.dyn_ref::<HtmlElement>()
     }
 
     /// # Memory leak
