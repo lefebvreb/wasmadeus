@@ -7,7 +7,7 @@ use super::raw::{RawSignal, SubscriberId};
 
 #[must_use]
 #[repr(transparent)]
-pub struct SignalUnsubscriber<T>(Option<(Weak<RawSignal<T>>, SubscriberId)>);
+pub struct SignalUnsubscriber<T: 'static>(Option<(Weak<RawSignal<T>>, SubscriberId)>);
 
 impl<T> SignalUnsubscriber<T> {
     #[inline]
@@ -15,6 +15,7 @@ impl<T> SignalUnsubscriber<T> {
         Self(Some((weak, id)))
     }
 
+    #[inline]
     pub fn unsubscribe(&mut self) {
         if let Some((weak, id)) = self.0.take() {
             if let Some(raw) = weak.upgrade() {
@@ -78,7 +79,7 @@ impl<U: Unsubscribe> Drop for DropUnsubscriber<U> {
     }
 }
 
-pub trait Unsubscribe {
+pub trait Unsubscribe: 'static {
     #[inline]
     fn unsubscribe(&mut self) {}
 

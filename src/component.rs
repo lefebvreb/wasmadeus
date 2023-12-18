@@ -53,10 +53,14 @@ impl Component {
         self.inner().element.dyn_ref::<HtmlElement>()
     }
 
-    /// # Memory leak
+    /// Attaches `self` to the result of the JS function [`document.querySelector`](https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelector).
     ///
-    /// Calling this method will [`mem::forget`] `self`, to prevent it and its dependencies from
-    /// being dropped. Coincidentally, this leaks its memory.
+    /// This method should be used as the entry point of your app, linking your components in the rust world to your HTML file.
+    ///
+    /// # Memory leaks
+    ///
+    /// Calling this method will [`forget`](core::mem::forget) `self`, to prevent it and its dependencies from
+    /// being dropped. Coincidentally, this leaks memory.
     pub fn attach_to(self, selectors: &str) -> Result<(), ElementNotFoundError> {
         web_sys::window()
             .unwrap()
@@ -95,6 +99,10 @@ impl Component {
         todo!()
     }
 
+    /// Adds a dependency to this component.
+    ///
+    /// The dependency will be dropped at the same time as the component. You most likely don't
+    /// need to call this method directly.
     pub fn push_dependency<T: Any>(&self, dep: T) {
         if mem::needs_drop::<T>() {
             // SAFETY: deps is never borrowed ans Component is !Send.

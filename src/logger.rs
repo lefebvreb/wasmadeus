@@ -26,7 +26,7 @@ impl ConsoleLogger {
         self
     }
 
-    /// # Memory leak
+    /// # Memory leaks
     ///
     /// Calling this function leaks the logger. Please avoid calling it repeateadly.
     #[inline]
