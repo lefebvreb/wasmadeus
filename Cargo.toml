@@ -26,5 +26,6 @@ default-features = false
 features = [
     "Document",
     "Element",
+    "HtmlElement",
     "Window",
 ]

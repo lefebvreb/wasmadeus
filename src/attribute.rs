@@ -44,6 +44,8 @@ macro_rules! attributes {
     };
 }
 
+pub(crate) use attributes;
+
 #[derive(Clone)]
 pub struct CustomData<N: AsRef<str>, T: Value>(pub N, pub T)
 where
@@ -76,7 +78,7 @@ impl<T: Attribute> Attributes for T {
     }
 }
 
-macro_rules! impl_element_attributes {
+macro_rules! impl_attributes {
     ($($name: ident)*) => {
         impl<$($name: Attribute,)*> Attributes for ($($name,)*) {
             #[inline]
@@ -89,6 +91,4 @@ macro_rules! impl_element_attributes {
     };
 }
 
-for_all_tuples!(impl_element_attributes);
-
-pub(crate) use attributes;
+for_all_tuples!(impl_attributes);

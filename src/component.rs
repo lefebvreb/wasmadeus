@@ -1,13 +1,18 @@
+use core::any::Any;
+
+use alloc::boxed::Box;
+use alloc::vec::Vec;
 use web_sys::Element;
 
 use crate::attribute::Attributes;
+use crate::signal::Value;
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub struct ElementNotFoundError;
 
-#[derive(Clone)]
 pub struct Component {
     element: Element,
+    dependencies: Vec<Box<dyn Any + 'static>>
 }
 
 impl Component {
@@ -19,9 +24,10 @@ impl Component {
             .create_element(tag)
             .unwrap();
 
+        let dependencies = Vec::new();
         attributes.apply_to(&element);
 
-        Component { element }
+        Component { element, dependencies }
     }
 
     pub fn as_element(&self) -> &Element {
