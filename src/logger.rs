@@ -51,6 +51,7 @@ impl Log for ConsoleLogger {
         metadata.level() <= self.level
     }
 
+    #[inline]
     fn log(&self, record: &Record) {
         if !self.enabled(record.metadata()) {
             return;

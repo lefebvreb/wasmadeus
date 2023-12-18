@@ -14,10 +14,8 @@
 
 use web_sys::Element;
 
-use crate::attribute::{attributes, Attribute, Attributes};
-use crate::component::{elements, Component};
-use crate::signal::Value;
-use crate::util::TryAsRef;
+use crate::attribute::attributes;
+use crate::component::elements;
 
 pub use crate::attribute::CustomData;
 

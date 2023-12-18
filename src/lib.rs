@@ -10,7 +10,7 @@ pub mod html;
 #[cfg(feature = "logger")]
 pub mod logger;
 pub mod signal;
-pub mod util;
+pub mod utils;
 
 pub mod prelude {
     pub use super::html;

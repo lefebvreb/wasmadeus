@@ -6,7 +6,7 @@ fn main() {
 
     html::div(())
         // .with(html::h1(()).text(counter))
-        // .with(html::button(OnClick).text("Increment Counter"))
+        // .with(html::button(OnClick).text("Increment Counter"));
         .attach_to("#root")
-        .unwrap_or_else(|_| log::error!("root component not found"));
+        .unwrap_or_else(|_| log::error!("root element not found"));
 }

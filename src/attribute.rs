@@ -2,7 +2,7 @@ use alloc::format;
 use web_sys::Element;
 
 use crate::signal::Value;
-use crate::util::{for_all_tuples, TryAsRef};
+use crate::utils::{for_all_tuples, TryAsRef};
 
 pub trait Attribute: Sized {
     fn apply_to(&self, element: &Element);
@@ -18,17 +18,18 @@ macro_rules! attributes {
         $(
             $(#[$attr])*
             #[derive(Clone)]
-            pub struct $rust_name<T: Value>(pub T)
+            pub struct $rust_name<T: $crate::signal::Value>(pub T)
             where
-                T::Item: TryAsRef<str>;
+                T::Item: $crate::utils::TryAsRef<str>;
 
             #[allow(deprecated)]
-            impl<T: Value> Attribute for $rust_name<T>
+            impl<T: $crate::signal::Value> $crate::attribute::Attribute for $rust_name<T>
             where
-                T::Item: TryAsRef<str>,
+                T::Item: $crate::utils::TryAsRef<str>,
             {
                 #[inline]
                 fn apply_to(&self, element: &Element) {
+                    use $crate::utils::TryAsRef;
                     let element = element.clone();
                     self.0.for_each_forever(move |value| {
                         // In both cases, it is safe to unwrap, provided the $html_name
