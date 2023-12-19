@@ -24,8 +24,11 @@ optional = true
 version = "0.3.66"
 default-features = false
 features = [
+    "CssStyleDeclaration",
     "Document",
     "Element",
     "HtmlElement",
+    "SvgElement",
+    "Text",
     "Window",
 ]
