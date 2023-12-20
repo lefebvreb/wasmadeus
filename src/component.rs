@@ -3,13 +3,14 @@ use core::cell::UnsafeCell;
 use core::mem;
 
 use alloc::boxed::Box;
-use alloc::rc::Rc;
+use alloc::rc::{Rc, Weak};
 use alloc::vec::Vec;
 use web_sys::wasm_bindgen::JsCast;
 use web_sys::{CssStyleDeclaration, Element, HtmlElement, SvgElement};
 
 use crate::attribute::Attributes;
-use crate::signal::Value;
+use crate::signal::{Unsubscribe, Value};
+use crate::utils::TryAsRef;
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub struct ElementNotFoundError;
@@ -41,6 +42,17 @@ impl Component {
     }
 
     #[inline]
+    fn set_display<const B: bool>(&self) {
+        if let Some(style) = self.style() {
+            if B {
+                style.set_property("display", "").ok();
+            } else {
+                style.set_property("display", "none").ok();
+            }
+        }
+    }
+
+    #[inline]
     pub fn new<A: Attributes>(tag: &str, attributes: A) -> Component {
         // Create element from DOM window.
         let element = web_sys::window()
@@ -51,9 +63,8 @@ impl Component {
             .unwrap();
 
         // Get element subclass.
-        let element = element
-            .dyn_into::<HtmlElement>()
-            .map(ElementKind::Html)
+        let element = Err(element)
+            .or_else(|element| element.dyn_into::<HtmlElement>().map(ElementKind::Html))
             .or_else(|element| element.dyn_into::<SvgElement>().map(ElementKind::Svg))
             .unwrap_or_else(ElementKind::Other);
 
@@ -74,6 +85,11 @@ impl Component {
         // Apply attributes and return.
         attributes.apply_to(&this);
         this
+    }
+
+    #[inline]
+    pub fn downgrade(&self) -> WeakComponent {
+        WeakComponent(Rc::downgrade(&self.0))
     }
 
     #[inline]
@@ -128,22 +144,23 @@ impl Component {
         Ok(())
     }
 
-    // #[inline]
-    // pub fn text<T: Value>(self, text: T) -> Self
-    // where
-    //     T::Item: TryAsRef<str>,
-    // {
-    //     let node = web_sys::window()
-    //         .unwrap()
-    //         .document()
-    //         .unwrap()
-    //         .create_text_node("hi");
-
-    //     let unsub = text.for_each(|text| {
-
-    //     });
-    //     self
-    // }
+    #[inline]
+    pub fn text<T: Value>(self, text: T) -> Self
+    where
+        T::Item: TryAsRef<str>,
+    {
+        let node = web_sys::window()
+            .unwrap()
+            .document()
+            .unwrap()
+            .create_text_node("");
+        self.as_element().append_child(&node).unwrap();
+        let unsub = text.for_each(move |text| {
+            node.set_text_content(text.try_as_ref());
+        });
+        self.push_dependency(unsub.droppable());
+        self
+    }
 
     #[inline]
     pub fn with(self, child: Component) -> Self {
@@ -153,31 +170,36 @@ impl Component {
     }
 
     #[inline]
-    pub fn with_if<C, F>(self, _cond: C, _if_true: F) -> Self
+    pub fn with_if<C, F>(self, cond: C, if_true: F) -> Self
     where
         C: Value<Item = bool>,
-        F: FnOnce() -> Component,
+        F: FnOnce() -> Component + 'static,
     {
-        // let mut child = None;
-        // let mut init = Some(_if_true);
-        // let unsub = _cond.for_each(|&cond| {
-        //     if cond {
-        //         if let Some(child) = child {
-        //             child.as_element().
-        //         }
-        //     }
-        // });
-        todo!()
+        let weak = self.downgrade();
+        let mut child = LazyChild::new(if_true);
+        let unsub = cond.for_each(move |&cond| {
+            child.display(cond, &weak);
+        });
+        self.push_dependency(unsub.droppable());
+        self
     }
 
     #[inline]
-    pub fn with_if_else<C, F, G>(self, _cond: C, _if_true: F, _if_false: G) -> Self
+    pub fn with_if_else<C, F, G>(self, cond: C, if_true: F, if_false: G) -> Self
     where
         C: Value<Item = bool>,
-        F: FnOnce() -> Component,
-        G: FnOnce() -> Component,
+        F: FnOnce() -> Component + 'static,
+        G: FnOnce() -> Component + 'static,
     {
-        todo!()
+        let weak = self.downgrade();
+        let mut child1 = LazyChild::new(if_true);
+        let mut child2 = LazyChild::new(if_false);
+        let unsub = cond.for_each(move |&cond| {
+            child1.display(cond, &weak);
+            child2.display(!cond, &weak);
+        });
+        self.push_dependency(unsub.droppable());
+        self
     }
 
     /// Adds a dependency to this component.
@@ -190,6 +212,48 @@ impl Component {
             // SAFETY: deps is never borrowed ans Component is !Send.
             let deps = unsafe { &mut *self.inner().deps.get() };
             deps.push(Box::new(dep));
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct WeakComponent(Weak<ComponentInner>);
+
+impl WeakComponent {
+    #[inline]
+    pub fn upgrade(&self) -> Option<Component> {
+        Weak::upgrade(&self.0).map(Component)
+    }
+}
+
+struct LazyChild<F> {
+    init: Option<F>,
+    child: Option<Component>,
+}
+
+impl<F: FnOnce() -> Component> LazyChild<F> {
+    #[inline]
+    fn new(f: F) -> Self {
+        Self {
+            init: Some(f),
+            child: None,
+        }
+    }
+
+    #[inline]
+    fn display(&mut self, display: bool, parent: &WeakComponent) {
+        if display {
+            match (parent.upgrade(), &self.child) {
+                (Some(_), Some(child)) => child.set_display::<true>(),
+                (Some(parent), _) => {
+                    let new_child = (self.init.take().unwrap())();
+                    parent.with(new_child.clone());
+                    self.child = Some(new_child);
+                }
+                _ => (),
+            }
+        } else if let Some(child) = &self.child {
+            child.set_display::<false>()
         }
     }
 }
