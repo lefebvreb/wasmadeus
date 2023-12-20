@@ -1024,7 +1024,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<a>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Download`], [`Draggable`], [`Hidden`], [`HrefLang`], [`Href`], [`Id`], [`ItemProp`], [`Lang`], [`Media`], [`Ping`], [`ReferrerPolicy`], [`Rel`], [`Role`], [`Shape`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Target`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Download`], [`struct@Draggable`], [`struct@Hidden`], [`struct@HrefLang`], [`struct@Href`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Media`], [`struct@Ping`], [`struct@ReferrerPolicy`], [`struct@Rel`], [`struct@Role`], [`struct@Shape`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Target`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/a)
     a => "a",
@@ -1032,7 +1032,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<abbr>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/abbr)
     abbr => "abbr",
@@ -1040,7 +1040,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<acronym>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/acronym)
     #[deprecated = "This HTML element is deprecated in the latest standard."]
@@ -1049,7 +1049,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<address>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/address)
     address => "address",
@@ -1057,7 +1057,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<area>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`Alt`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Coords`], [`Dir`], [`Download`], [`Draggable`], [`Hidden`], [`Href`], [`Id`], [`ItemProp`], [`Lang`], [`Media`], [`Ping`], [`ReferrerPolicy`], [`Rel`], [`Role`], [`Shape`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Target`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@Alt`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Coords`], [`struct@Dir`], [`struct@Download`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Href`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Media`], [`struct@Ping`], [`struct@ReferrerPolicy`], [`struct@Rel`], [`struct@Role`], [`struct@Shape`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Target`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/area)
     area => "area",
@@ -1065,7 +1065,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<article>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/article)
     article => "article",
@@ -1073,7 +1073,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<aside>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/aside)
     aside => "aside",
@@ -1081,7 +1081,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<audio>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`AutoPlay`], [`Buffered`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Controls`], [`CrossOrigin`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Loop`], [`Muted`], [`Preload`], [`Role`], [`Slot`], [`SpellCheck`], [`Src`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@AutoPlay`], [`struct@Buffered`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Controls`], [`struct@CrossOrigin`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Loop`], [`struct@Muted`], [`struct@Preload`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Src`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/audio)
     audio => "audio",
@@ -1089,7 +1089,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<b>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/b)
     b => "b",
@@ -1097,7 +1097,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<base>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Href`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Target`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Href`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Target`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base)
     base => "base",
@@ -1105,7 +1105,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<bdi>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/bdi)
     bdi => "bdi",
@@ -1113,7 +1113,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<bdo>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/bdo)
     bdo => "bdo",
@@ -1121,7 +1121,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<big>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/big)
     #[deprecated = "This HTML element is deprecated in the latest standard."]
@@ -1130,7 +1130,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<blockquote>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Cite`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Cite`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/blockquote)
     blockquote => "blockquote",
@@ -1138,7 +1138,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<body>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Background`], [`BgColor`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Background`], [`struct@BgColor`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/body)
     body => "body",
@@ -1146,7 +1146,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<br>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/br)
     br => "br",
@@ -1154,7 +1154,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<button>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`DefaultValue`], [`Dir`], [`Disabled`], [`Draggable`], [`FormAction`], [`FormEnctype`], [`FormMethod`], [`FormNoValidate`], [`FormTarget`], [`Form`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Name`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`], [`Type`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@DefaultValue`], [`struct@Dir`], [`struct@Disabled`], [`struct@Draggable`], [`struct@FormAction`], [`struct@FormEnctype`], [`struct@FormMethod`], [`struct@FormNoValidate`], [`struct@FormTarget`], [`struct@Form`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Name`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`], [`struct@Type`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/button)
     button => "button",
@@ -1162,7 +1162,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<canvas>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Height`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`], [`Width`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Height`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`], [`struct@Width`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/canvas)
     canvas => "canvas",
@@ -1170,7 +1170,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<caption>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`Align`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@Align`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/caption)
     caption => "caption",
@@ -1178,7 +1178,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<center>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/center)
     #[deprecated = "This HTML element is deprecated in the latest standard."]
@@ -1187,7 +1187,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<cite>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/cite)
     cite => "cite",
@@ -1195,7 +1195,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<code>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/code)
     code => "code",
@@ -1203,7 +1203,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<col>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`Align`], [`AutoCapitalize`], [`BgColor`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`Span`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@Align`], [`struct@AutoCapitalize`], [`struct@BgColor`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@Span`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/col)
     col => "col",
@@ -1211,7 +1211,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<colgroup>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`Align`], [`AutoCapitalize`], [`BgColor`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`Span`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@Align`], [`struct@AutoCapitalize`], [`struct@BgColor`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@Span`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/colgroup)
     colgroup => "colgroup",
@@ -1219,7 +1219,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<content>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// *Missing MDN documentation.*
     #[deprecated = "This HTML element is deprecated in the latest standard."]
@@ -1228,7 +1228,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<data>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`DefaultValue`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@DefaultValue`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/data)
     data => "data",
@@ -1236,7 +1236,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<datalist>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/datalist)
     datalist => "datalist",
@@ -1244,7 +1244,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<dd>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/dd)
     dd => "dd",
@@ -1252,7 +1252,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<del>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Cite`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`DateTime`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Cite`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@DateTime`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/del)
     del => "del",
@@ -1260,7 +1260,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<details>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Open`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Open`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/details)
     details => "details",
@@ -1268,7 +1268,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<dfn>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/dfn)
     dfn => "dfn",
@@ -1276,7 +1276,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<dialog>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Open`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Open`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/dialog)
     dialog => "dialog",
@@ -1284,7 +1284,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<dir>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/dir)
     #[deprecated = "This HTML element is deprecated in the latest standard."]
@@ -1293,7 +1293,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<div>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/div)
     div => "div",
@@ -1301,7 +1301,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<dl>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/dl)
     dl => "dl",
@@ -1309,7 +1309,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<dt>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/dt)
     dt => "dt",
@@ -1317,7 +1317,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<em>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/em)
     em => "em",
@@ -1325,7 +1325,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<embed>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Height`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Src`], [`Style`], [`TabIndex`], [`Title`], [`Translate`], [`Type`], [`Width`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Height`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Src`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`], [`struct@Type`], [`struct@Width`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/embed)
     embed => "embed",
@@ -1333,7 +1333,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<fieldset>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Disabled`], [`Draggable`], [`Form`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Name`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Disabled`], [`struct@Draggable`], [`struct@Form`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Name`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/fieldset)
     fieldset => "fieldset",
@@ -1341,7 +1341,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<figcaption>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/figcaption)
     figcaption => "figcaption",
@@ -1349,7 +1349,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<figure>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/figure)
     figure => "figure",
@@ -1357,7 +1357,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<font>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`Color`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@Color`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/font)
     #[deprecated = "This HTML element is deprecated in the latest standard."]
@@ -1366,7 +1366,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<footer>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/footer)
     footer => "footer",
@@ -1374,7 +1374,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<form>`.
     ///
-    /// Supports the following attributes: [`AcceptCharset`], [`Accept`], [`AccessKey`], [`Action`], [`AutoCapitalize`], [`AutoComplete`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`EncType`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Method`], [`Name`], [`NoValidate`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Target`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AcceptCharset`], [`struct@Accept`], [`struct@AccessKey`], [`struct@Action`], [`struct@AutoCapitalize`], [`struct@AutoComplete`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@EncType`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Method`], [`struct@Name`], [`struct@NoValidate`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Target`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/form)
     form => "form",
@@ -1382,7 +1382,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<frame>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/frame)
     #[deprecated = "This HTML element is deprecated in the latest standard."]
@@ -1391,7 +1391,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<frameset>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/frameset)
     #[deprecated = "This HTML element is deprecated in the latest standard."]
@@ -1400,7 +1400,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<h1>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Heading_Elements)
     h1 => "h1",
@@ -1408,7 +1408,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<h2>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Heading_Elements)
     h2 => "h2",
@@ -1416,7 +1416,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<h3>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Heading_Elements)
     h3 => "h3",
@@ -1424,7 +1424,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<h4>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Heading_Elements)
     h4 => "h4",
@@ -1432,7 +1432,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<h5>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Heading_Elements)
     h5 => "h5",
@@ -1440,7 +1440,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<h6>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Heading_Elements)
     h6 => "h6",
@@ -1448,7 +1448,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<head>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/head)
     head => "head",
@@ -1456,7 +1456,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<header>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/header)
     header => "header",
@@ -1464,7 +1464,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<hgroup>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/hgroup)
     hgroup => "hgroup",
@@ -1472,7 +1472,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<hr>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`Align`], [`AutoCapitalize`], [`Class`], [`Color`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@Align`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@Color`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/hr)
     hr => "hr",
@@ -1480,7 +1480,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<html>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Manifest`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Manifest`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/html)
     html => "html",
@@ -1488,7 +1488,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<i>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/i)
     i => "i",
@@ -1496,7 +1496,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<iframe>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`Align`], [`Allow`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Csp`], [`Dir`], [`Draggable`], [`Height`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Loading`], [`Name`], [`ReferrerPolicy`], [`Role`], [`SandBox`], [`Slot`], [`SpellCheck`], [`SrcDoc`], [`Src`], [`Style`], [`TabIndex`], [`Title`], [`Translate`], [`Width`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@Align`], [`struct@Allow`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Csp`], [`struct@Dir`], [`struct@Draggable`], [`struct@Height`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Loading`], [`struct@Name`], [`struct@ReferrerPolicy`], [`struct@Role`], [`struct@SandBox`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@SrcDoc`], [`struct@Src`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`], [`struct@Width`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/iframe)
     iframe => "iframe",
@@ -1504,7 +1504,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<image>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/image)
     #[deprecated = "This HTML element is deprecated in the latest standard."]
@@ -1513,7 +1513,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<img>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`Align`], [`Alt`], [`AutoCapitalize`], [`Border`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`CrossOrigin`], [`Decoding`], [`Dir`], [`Draggable`], [`Height`], [`Hidden`], [`Id`], [`IntrinsicSize`], [`IsMap`], [`ItemProp`], [`Lang`], [`Loading`], [`ReferrerPolicy`], [`Role`], [`Sizes`], [`Slot`], [`SpellCheck`], [`SrcSet`], [`Src`], [`Style`], [`TabIndex`], [`Title`], [`Translate`], [`UseMap`], [`Width`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@Align`], [`struct@Alt`], [`struct@AutoCapitalize`], [`struct@Border`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@CrossOrigin`], [`struct@Decoding`], [`struct@Dir`], [`struct@Draggable`], [`struct@Height`], [`struct@Hidden`], [`struct@Id`], [`struct@IntrinsicSize`], [`struct@IsMap`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Loading`], [`struct@ReferrerPolicy`], [`struct@Role`], [`struct@Sizes`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@SrcSet`], [`struct@Src`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`], [`struct@UseMap`], [`struct@Width`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/img)
     img => "img",
@@ -1521,7 +1521,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<input>`.
     ///
-    /// Supports the following attributes: [`Accept`], [`AccessKey`], [`Alt`], [`AutoCapitalize`], [`AutoComplete`], [`Capture`], [`Checked`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`DefaultValue`], [`DirName`], [`Dir`], [`Disabled`], [`Draggable`], [`FormAction`], [`FormEnctype`], [`FormMethod`], [`FormNoValidate`], [`FormTarget`], [`Form`], [`Height`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`List`], [`MaxLength`], [`Max`], [`MinLength`], [`Min`], [`Multiple`], [`Name`], [`Pattern`], [`PlaceHolder`], [`ReadOnly`], [`Required`], [`Role`], [`Size`], [`Slot`], [`SpellCheck`], [`Src`], [`Step`], [`Style`], [`TabIndex`], [`Title`], [`Translate`], [`Type`], [`UseMap`], [`Width`]
+    /// Supports the following attributes: [`struct@Accept`], [`struct@AccessKey`], [`struct@Alt`], [`struct@AutoCapitalize`], [`struct@AutoComplete`], [`struct@Capture`], [`struct@Checked`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@DefaultValue`], [`struct@DirName`], [`struct@Dir`], [`struct@Disabled`], [`struct@Draggable`], [`struct@FormAction`], [`struct@FormEnctype`], [`struct@FormMethod`], [`struct@FormNoValidate`], [`struct@FormTarget`], [`struct@Form`], [`struct@Height`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@List`], [`struct@MaxLength`], [`struct@Max`], [`struct@MinLength`], [`struct@Min`], [`struct@Multiple`], [`struct@Name`], [`struct@Pattern`], [`struct@PlaceHolder`], [`struct@ReadOnly`], [`struct@Required`], [`struct@Role`], [`struct@Size`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Src`], [`struct@Step`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`], [`struct@Type`], [`struct@UseMap`], [`struct@Width`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input)
     input => "input",
@@ -1529,7 +1529,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<ins>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Cite`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`DateTime`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Cite`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@DateTime`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/ins)
     ins => "ins",
@@ -1537,7 +1537,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<kbd>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/kbd)
     kbd => "kbd",
@@ -1545,7 +1545,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<label>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`For`], [`Form`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@For`], [`struct@Form`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/label)
     label => "label",
@@ -1553,7 +1553,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<legend>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/legend)
     legend => "legend",
@@ -1561,7 +1561,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<li>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`DefaultValue`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@DefaultValue`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/li)
     li => "li",
@@ -1569,7 +1569,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<link>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`CrossOrigin`], [`Dir`], [`Draggable`], [`Hidden`], [`HrefLang`], [`Href`], [`Id`], [`Integrity`], [`ItemProp`], [`Lang`], [`Media`], [`ReferrerPolicy`], [`Rel`], [`Role`], [`Sizes`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`], [`Type`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@CrossOrigin`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@HrefLang`], [`struct@Href`], [`struct@Id`], [`struct@Integrity`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Media`], [`struct@ReferrerPolicy`], [`struct@Rel`], [`struct@Role`], [`struct@Sizes`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`], [`struct@Type`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/link)
     link => "link",
@@ -1577,7 +1577,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<main>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/main)
     main => "main",
@@ -1585,7 +1585,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<map>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Name`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Name`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/map)
     map => "map",
@@ -1593,7 +1593,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<mark>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/mark)
     mark => "mark",
@@ -1601,7 +1601,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<marquee>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`BgColor`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Loop`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@BgColor`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Loop`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/marquee)
     #[deprecated = "This HTML element is deprecated in the latest standard."]
@@ -1610,7 +1610,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<math>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/MathML/Element/math)
     math => "math",
@@ -1618,7 +1618,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<menu>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`], [`Type`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`], [`struct@Type`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/menu)
     menu => "menu",
@@ -1626,7 +1626,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<menuitem>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/menuitem)
     #[deprecated = "This HTML element is deprecated in the latest standard."]
@@ -1635,7 +1635,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<meta>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Charset`], [`Class`], [`ContentEditable`], [`Content`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`HttpEquiv`], [`Id`], [`ItemProp`], [`Lang`], [`Name`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Charset`], [`struct@Class`], [`struct@ContentEditable`], [`struct@Content`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@HttpEquiv`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Name`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meta)
     meta => "meta",
@@ -1643,7 +1643,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<meter>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`DefaultValue`], [`Dir`], [`Draggable`], [`Form`], [`Hidden`], [`High`], [`Id`], [`ItemProp`], [`Lang`], [`Low`], [`Max`], [`Min`], [`Optimum`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@DefaultValue`], [`struct@Dir`], [`struct@Draggable`], [`struct@Form`], [`struct@Hidden`], [`struct@High`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Low`], [`struct@Max`], [`struct@Min`], [`struct@Optimum`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meter)
     meter => "meter",
@@ -1651,7 +1651,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<nav>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/nav)
     nav => "nav",
@@ -1659,7 +1659,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<nobr>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/nobr)
     #[deprecated = "This HTML element is deprecated in the latest standard."]
@@ -1668,7 +1668,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<noembed>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/noembed)
     #[deprecated = "This HTML element is deprecated in the latest standard."]
@@ -1677,7 +1677,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<noframes>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/noframes)
     #[deprecated = "This HTML element is deprecated in the latest standard."]
@@ -1686,7 +1686,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<noscript>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/noscript)
     noscript => "noscript",
@@ -1694,7 +1694,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<object>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Border`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Data`], [`Dir`], [`Draggable`], [`Form`], [`Height`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Name`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`], [`Type`], [`UseMap`], [`Width`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Border`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Data`], [`struct@Dir`], [`struct@Draggable`], [`struct@Form`], [`struct@Height`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Name`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`], [`struct@Type`], [`struct@UseMap`], [`struct@Width`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/object)
     object => "object",
@@ -1702,7 +1702,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<ol>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Reversed`], [`Role`], [`Slot`], [`SpellCheck`], [`Start`], [`Style`], [`TabIndex`], [`Title`], [`Translate`], [`Type`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Reversed`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Start`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`], [`struct@Type`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/ol)
     ol => "ol",
@@ -1710,7 +1710,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<optgroup>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Disabled`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Label`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Disabled`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Label`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/optgroup)
     optgroup => "optgroup",
@@ -1718,7 +1718,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<option>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`DefaultValue`], [`Dir`], [`Disabled`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Label`], [`Lang`], [`Role`], [`Selected`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@DefaultValue`], [`struct@Dir`], [`struct@Disabled`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Label`], [`struct@Lang`], [`struct@Role`], [`struct@Selected`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/option)
     option => "option",
@@ -1726,7 +1726,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<output>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`For`], [`Form`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Name`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@For`], [`struct@Form`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Name`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/output)
     output => "output",
@@ -1734,7 +1734,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<p>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/p)
     p => "p",
@@ -1742,7 +1742,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<param>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`DefaultValue`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Name`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@DefaultValue`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Name`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/param)
     #[deprecated = "This HTML element is deprecated in the latest standard."]
@@ -1751,7 +1751,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<picture>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/picture)
     picture => "picture",
@@ -1759,7 +1759,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<plaintext>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/plaintext)
     #[deprecated = "This HTML element is deprecated in the latest standard."]
@@ -1768,7 +1768,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<portal>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/portal)
     portal => "portal",
@@ -1776,7 +1776,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<pre>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/pre)
     pre => "pre",
@@ -1784,7 +1784,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<progress>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`DefaultValue`], [`Dir`], [`Draggable`], [`Form`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Max`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@DefaultValue`], [`struct@Dir`], [`struct@Draggable`], [`struct@Form`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Max`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/progress)
     progress => "progress",
@@ -1792,7 +1792,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<q>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Cite`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Cite`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/q)
     q => "q",
@@ -1800,7 +1800,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<rb>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/rb)
     #[deprecated = "This HTML element is deprecated in the latest standard."]
@@ -1809,7 +1809,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<rp>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/rp)
     rp => "rp",
@@ -1817,7 +1817,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<rt>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/rt)
     rt => "rt",
@@ -1825,7 +1825,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<rtc>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/rtc)
     #[deprecated = "This HTML element is deprecated in the latest standard."]
@@ -1834,7 +1834,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<ruby>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/ruby)
     ruby => "ruby",
@@ -1842,7 +1842,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<s>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/s)
     s => "s",
@@ -1850,7 +1850,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<samp>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/samp)
     samp => "samp",
@@ -1858,7 +1858,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<script>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`Async`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`CrossOrigin`], [`Defer`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`Integrity`], [`ItemProp`], [`Lang`], [`Language`], [`ReferrerPolicy`], [`Role`], [`Slot`], [`SpellCheck`], [`Src`], [`Style`], [`TabIndex`], [`Title`], [`Translate`], [`Type`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@Async`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@CrossOrigin`], [`struct@Defer`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@Integrity`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Language`], [`struct@ReferrerPolicy`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Src`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`], [`struct@Type`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/script)
     script => "script",
@@ -1866,7 +1866,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<search>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/search)
     search => "search",
@@ -1874,7 +1874,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<section>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/section)
     section => "section",
@@ -1882,7 +1882,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<select>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`AutoComplete`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Disabled`], [`Draggable`], [`Form`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Multiple`], [`Name`], [`Required`], [`Role`], [`Size`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@AutoComplete`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Disabled`], [`struct@Draggable`], [`struct@Form`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Multiple`], [`struct@Name`], [`struct@Required`], [`struct@Role`], [`struct@Size`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/select)
     select => "select",
@@ -1890,7 +1890,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<shadow>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// *Missing MDN documentation.*
     #[deprecated = "This HTML element is deprecated in the latest standard."]
@@ -1899,7 +1899,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<slot>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot)
     slot => "slot",
@@ -1907,7 +1907,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<small>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/small)
     small => "small",
@@ -1915,7 +1915,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<source>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Media`], [`Role`], [`Sizes`], [`Slot`], [`SpellCheck`], [`SrcSet`], [`Src`], [`Style`], [`TabIndex`], [`Title`], [`Translate`], [`Type`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Media`], [`struct@Role`], [`struct@Sizes`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@SrcSet`], [`struct@Src`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`], [`struct@Type`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/source)
     source => "source",
@@ -1923,7 +1923,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<span>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/span)
     span => "span",
@@ -1931,7 +1931,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<strike>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/strike)
     #[deprecated = "This HTML element is deprecated in the latest standard."]
@@ -1940,7 +1940,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<strong>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/strong)
     strong => "strong",
@@ -1948,7 +1948,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<style>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Media`], [`Role`], [`Scoped`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`], [`Type`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Media`], [`struct@Role`], [`struct@Scoped`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`], [`struct@Type`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/style)
     style => "style",
@@ -1956,7 +1956,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<sub>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/sub)
     sub => "sub",
@@ -1964,7 +1964,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<summary>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/summary)
     summary => "summary",
@@ -1972,7 +1972,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<sup>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/sup)
     sup => "sup",
@@ -1980,7 +1980,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<svg>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/SVG/Element/svg)
     svg => "svg",
@@ -1988,7 +1988,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<table>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`Align`], [`AutoCapitalize`], [`Background`], [`BgColor`], [`Border`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`Summary`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@Align`], [`struct@AutoCapitalize`], [`struct@Background`], [`struct@BgColor`], [`struct@Border`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@Summary`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/table)
     table => "table",
@@ -1996,7 +1996,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<tbody>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`Align`], [`AutoCapitalize`], [`BgColor`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@Align`], [`struct@AutoCapitalize`], [`struct@BgColor`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/tbody)
     tbody => "tbody",
@@ -2004,7 +2004,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<td>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`Align`], [`AutoCapitalize`], [`Background`], [`BgColor`], [`Class`], [`Colspan`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Headers`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`RowSpan`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@Align`], [`struct@AutoCapitalize`], [`struct@Background`], [`struct@BgColor`], [`struct@Class`], [`struct@Colspan`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Headers`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@RowSpan`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/td)
     td => "td",
@@ -2012,7 +2012,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<template>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template)
     template => "template",
@@ -2020,7 +2020,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<textarea>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`AutoComplete`], [`Class`], [`Cols`], [`ContentEditable`], [`ContextMenu`], [`DirName`], [`Dir`], [`Disabled`], [`Draggable`], [`EnterKeyHint`], [`Form`], [`Hidden`], [`Id`], [`InputMode`], [`ItemProp`], [`Lang`], [`MaxLength`], [`MinLength`], [`Name`], [`PlaceHolder`], [`ReadOnly`], [`Required`], [`Role`], [`Rows`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`], [`Wrap`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@AutoComplete`], [`struct@Class`], [`struct@Cols`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@DirName`], [`struct@Dir`], [`struct@Disabled`], [`struct@Draggable`], [`struct@EnterKeyHint`], [`struct@Form`], [`struct@Hidden`], [`struct@Id`], [`struct@InputMode`], [`struct@ItemProp`], [`struct@Lang`], [`struct@MaxLength`], [`struct@MinLength`], [`struct@Name`], [`struct@PlaceHolder`], [`struct@ReadOnly`], [`struct@Required`], [`struct@Role`], [`struct@Rows`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`], [`struct@Wrap`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/textarea)
     textarea => "textarea",
@@ -2028,7 +2028,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<tfoot>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`Align`], [`AutoCapitalize`], [`BgColor`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@Align`], [`struct@AutoCapitalize`], [`struct@BgColor`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/tfoot)
     tfoot => "tfoot",
@@ -2036,7 +2036,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<th>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`Align`], [`AutoCapitalize`], [`Background`], [`BgColor`], [`Class`], [`Colspan`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Headers`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`RowSpan`], [`Scope`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@Align`], [`struct@AutoCapitalize`], [`struct@Background`], [`struct@BgColor`], [`struct@Class`], [`struct@Colspan`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Headers`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@RowSpan`], [`struct@Scope`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/th)
     th => "th",
@@ -2044,7 +2044,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<thead>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`Align`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@Align`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/thead)
     thead => "thead",
@@ -2052,7 +2052,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<time>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`DateTime`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@DateTime`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/time)
     time => "time",
@@ -2060,7 +2060,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<title>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/title)
     title => "title",
@@ -2068,7 +2068,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<tr>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`Align`], [`AutoCapitalize`], [`BgColor`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@Align`], [`struct@AutoCapitalize`], [`struct@BgColor`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/tr)
     tr => "tr",
@@ -2076,7 +2076,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<track>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Default`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Kind`], [`Label`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`SrcLang`], [`Src`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Default`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Kind`], [`struct@Label`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@SrcLang`], [`struct@Src`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/track)
     track => "track",
@@ -2084,7 +2084,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<tt>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/tt)
     #[deprecated = "This HTML element is deprecated in the latest standard."]
@@ -2093,7 +2093,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<u>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/u)
     u => "u",
@@ -2101,7 +2101,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<ul>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/ul)
     ul => "ul",
@@ -2109,7 +2109,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<var>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/var)
     var => "var",
@@ -2117,7 +2117,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<video>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`AutoPlay`], [`Buffered`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Controls`], [`CrossOrigin`], [`Dir`], [`Draggable`], [`Height`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Loop`], [`Muted`], [`PlaysInline`], [`Poster`], [`Preload`], [`Role`], [`Slot`], [`SpellCheck`], [`Src`], [`Style`], [`TabIndex`], [`Title`], [`Translate`], [`Width`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@AutoPlay`], [`struct@Buffered`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Controls`], [`struct@CrossOrigin`], [`struct@Dir`], [`struct@Draggable`], [`struct@Height`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Loop`], [`struct@Muted`], [`struct@PlaysInline`], [`struct@Poster`], [`struct@Preload`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Src`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`], [`struct@Width`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/video)
     video => "video",
@@ -2125,7 +2125,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<wbr>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/wbr)
     wbr => "wbr",
@@ -2133,7 +2133,7 @@ elements! {
     ///
     /// Corresponds to the HTML element: `<xmp>`.
     ///
-    /// Supports the following attributes: [`AccessKey`], [`AutoCapitalize`], [`Class`], [`ContentEditable`], [`ContextMenu`], [`Dir`], [`Draggable`], [`Hidden`], [`Id`], [`ItemProp`], [`Lang`], [`Role`], [`Slot`], [`SpellCheck`], [`Style`], [`TabIndex`], [`Title`], [`Translate`]
+    /// Supports the following attributes: [`struct@AccessKey`], [`struct@AutoCapitalize`], [`struct@Class`], [`struct@ContentEditable`], [`struct@ContextMenu`], [`struct@Dir`], [`struct@Draggable`], [`struct@Hidden`], [`struct@Id`], [`struct@ItemProp`], [`struct@Lang`], [`struct@Role`], [`struct@Slot`], [`struct@SpellCheck`], [`struct@Style`], [`struct@TabIndex`], [`struct@Title`], [`struct@Translate`]
     ///
     /// [MDN documentation.](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/xmp)
     #[deprecated = "This HTML element is deprecated in the latest standard."]

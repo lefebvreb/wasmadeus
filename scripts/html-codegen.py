@@ -155,7 +155,6 @@ def extract_element(row, deprecated):
     else:
         make_element(name, mdn_route, desc, deprecated)
 
-
 tables = pd.read_html(MDN_ELEMENTS, extract_links="all")
 for table in tables[:-1]:
     table.apply(extract_element, axis="columns", deprecated=False)
@@ -201,7 +200,7 @@ def extract_attribute(row):
     else:
         rust_name = name[0].upper() + name[1:]
 
-    rust_link = f"[`{rust_name}`]"
+    rust_link = f"[`struct@{rust_name}`]"
 
     if desc == "":
         desc = "*Missing MDN description.*"
@@ -279,7 +278,9 @@ def macro_call(macro_name: str):
 
 def print_doc(doc: list[str]):
     for line in doc:
-        print(f"    /// {line}")
+        if line:
+            line = " " + line
+        print(f"    ///{line}")
 
 # =============================================================================
 
