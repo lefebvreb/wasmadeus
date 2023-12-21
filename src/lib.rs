@@ -6,6 +6,7 @@ extern crate alloc;
 
 pub mod attribute;
 pub mod component;
+pub mod fetch;
 pub mod html;
 #[cfg(feature = "logger")]
 pub mod logger;
@@ -13,6 +14,7 @@ pub mod signal;
 pub mod utils;
 
 pub mod prelude {
+    pub use super::fetch::Fetch;
     pub use super::html;
     #[cfg(feature = "logger")]
     pub use super::logger::ConsoleLogger;
