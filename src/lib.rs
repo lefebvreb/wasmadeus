@@ -1,6 +1,7 @@
 #![doc(html_logo_url = "https://raw.githubusercontent.com/lefebvreb/wasmadeus/main/logo.svg")]
-#![no_std]
 #![cfg_attr(feature = "nightly", feature(auto_traits, negative_impls))]
+#![cfg_attr(doc_cfg, feature(doc_cfg))]
+#![no_std]
 
 extern crate alloc;
 
@@ -9,6 +10,7 @@ pub mod component;
 pub mod fetch;
 pub mod html;
 #[cfg(feature = "logger")]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "logger")))]
 pub mod logger;
 pub mod signal;
 pub mod utils;

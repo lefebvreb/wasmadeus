@@ -60,11 +60,10 @@ where
     fn apply_to(&self, component: &Component) {
         let name = format!("data-{}", self.0.as_ref());
         let element = component.as_element().clone();
-        self.1
-            .for_each_forever(move |value| match value.try_as_ref() {
-                Some(value) => element.set_attribute(&name, value).unwrap(),
-                None => element.remove_attribute(&name).unwrap(),
-            });
+        self.1.for_each_forever(move |value| match value.try_as_ref() {
+            Some(value) => element.set_attribute(&name, value).unwrap(),
+            None => element.remove_attribute(&name).unwrap(),
+        });
     }
 }
 

@@ -15,6 +15,9 @@ default = ["logger"]
 logger = ["dep:log", "web-sys/console"]
 nightly = []
 
+[package.metadata.docs.rs]
+rustdoc-args = ["--cfg", "doc_cfg"]
+
 [dependencies.log]
 version = "0.4.20"
 default-features = false
@@ -28,9 +31,12 @@ features = [
     "Document",
     "Element",
     "HtmlElement",
+    "ReferrerPolicy",
     "RequestCache",
-    "RequestMode",
+    "RequestCredentials",
     "RequestInit",
+    "RequestMode",
+    "RequestRedirect",
     "SvgElement",
     "Text",
     "Window",

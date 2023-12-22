@@ -107,13 +107,10 @@ impl<T> Signal<T> {
     where
         F: FnMut(&T) -> Option<U> + 'static,
     {
-        self.compose(
-            RawSignal::uninit(),
-            move |raw, value, unsub| match map_while(value) {
-                Some(value) => raw.try_set(value).unwrap(),
-                _ => unsub.unsubscribe(),
-            },
-        )
+        self.compose(RawSignal::uninit(), move |raw, value, unsub| match map_while(value) {
+            Some(value) => raw.try_set(value).unwrap(),
+            _ => unsub.unsubscribe(),
+        })
     }
 
     #[inline]

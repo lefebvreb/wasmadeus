@@ -149,11 +149,7 @@ impl Component {
     where
         T::Item: TryAsRef<str>,
     {
-        let node = web_sys::window()
-            .unwrap()
-            .document()
-            .unwrap()
-            .create_text_node("");
+        let node = web_sys::window().unwrap().document().unwrap().create_text_node("");
         self.as_element().append_child(&node).unwrap();
         let unsub = text.for_each(move |text| {
             node.set_text_content(text.try_as_ref());
