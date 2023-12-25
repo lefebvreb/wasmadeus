@@ -28,7 +28,7 @@ impl<T> Signal<T> {
     }
 
     #[inline]
-    pub fn try_get(&self) -> Result<T>
+    pub fn try_get(&self) -> Result<T, SignalGetError>
     where
         T: Clone,
     {
@@ -221,7 +221,7 @@ impl<T> SignalMut<T> {
     }
 
     #[inline]
-    pub fn try_set(&self, new_value: T) -> Result<()> {
+    pub fn try_set(&self, new_value: T) -> Result<(), SignalUpdatingError> {
         self.raw().try_set(new_value)
     }
 
@@ -231,7 +231,7 @@ impl<T> SignalMut<T> {
     }
 
     #[inline]
-    pub fn try_mutate<F>(&self, mutate: F) -> Result<()>
+    pub fn try_mutate<F>(&self, mutate: F) -> Result<(), SignalUpdatingError>
     where
         F: FnOnce(&mut T),
     {

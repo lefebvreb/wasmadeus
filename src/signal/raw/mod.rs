@@ -5,7 +5,7 @@ use core::cell::RefCell;
 use alloc::boxed::Box;
 use alloc::rc::Rc;
 
-use super::{Result, SignalError};
+use super::{SignalGetError, SignalUpdatingError};
 
 use self::broadcast::Broadcast;
 
@@ -67,20 +67,20 @@ impl<T> RawSignal<T> {
         self.broadcast.notify(data.as_ref().unwrap());
     }
 
-    pub fn try_set(&self, new_value: T) -> Result<()> {
-        let mut data = self.data.try_borrow_mut()?;
+    pub fn try_set(&self, new_value: T) -> Result<(), SignalUpdatingError> {
+        let mut data = self.data.try_borrow_mut().map_err(|_| SignalUpdatingError)?;
         *data = Some(new_value);
         drop(data);
         self.notify_all();
         Ok(())
     }
 
-    pub fn try_mutate<F>(&self, mutate: F) -> Result<()>
+    pub fn try_mutate<F>(&self, mutate: F) -> Result<(), SignalUpdatingError>
     where
         F: FnOnce(&mut T),
     {
-        let mut data = self.data.try_borrow_mut()?;
-        mutate(data.as_mut().ok_or(SignalError)?);
+        let mut data = self.data.try_borrow_mut().map_err(|_| SignalUpdatingError)?;
+        mutate(data.as_mut().ok_or(SignalUpdatingError)?);
         drop(data);
         self.notify_all();
         Ok(())
@@ -92,11 +92,11 @@ impl<T> RawSignal<T> {
     }
 
     #[inline]
-    pub fn try_get(&self) -> Result<T>
+    pub fn try_get(&self) -> Result<T, SignalGetError>
     where
         T: Clone,
     {
-        let data = self.data.try_borrow().map_err(|_| SignalError)?;
-        data.as_ref().map(T::clone).ok_or(SignalError)
+        let data = self.data.try_borrow().map_err(|_| SignalGetError::Updating)?;
+        data.as_ref().map(T::clone).ok_or(SignalGetError::Uninit)
     }
 }

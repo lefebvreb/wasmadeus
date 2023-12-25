@@ -1,13 +1,25 @@
-use core::cell::BorrowMutError;
+use core::fmt;
 
-#[derive(Copy, Clone, PartialEq, Eq, Debug)]
-pub struct SignalError;
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
+pub struct SignalUpdatingError;
 
-impl From<BorrowMutError> for SignalError {
-    #[inline]
-    fn from(_: BorrowMutError) -> Self {
-        Self
+impl fmt::Display for SignalUpdatingError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "signal is already updating")
     }
 }
 
-pub type Result<T> = core::result::Result<T, SignalError>;
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
+pub enum SignalGetError {
+    Uninit,
+    Updating,
+}
+
+impl fmt::Display for SignalGetError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Uninit => write!(f, "signal is uninitialized"),
+            Self::Updating => write!(f, "signal is currently updating"),
+        }
+    }
+}

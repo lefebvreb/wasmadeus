@@ -7,6 +7,8 @@ extern crate alloc;
 
 pub mod attribute;
 pub mod component;
+#[cfg(feature = "fetch")]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "fetch")))]
 pub mod fetch;
 pub mod html;
 #[cfg(feature = "logger")]

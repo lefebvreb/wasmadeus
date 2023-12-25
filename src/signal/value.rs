@@ -1,6 +1,6 @@
 use super::{Signal, SignalMut, SignalUnsubscriber, Unsubscribe};
 
-pub trait Value: Sized {
+pub trait Value {
     type Item;
 
     type Unsubscriber: Unsubscribe;

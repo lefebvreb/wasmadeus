@@ -19,4 +19,7 @@ echo cargo miri test
 suppress cargo +nightly miri test
 suppress cargo +nightly miri test --features nightly
 
+echo cargo doc
+suppress cargo +nightly doc --no-deps --all-features
+
 echo all done!

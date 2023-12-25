@@ -9,19 +9,22 @@ keywords = ["framework", "frontend", "frp", "wasm"]
 license = "MIT OR Apache-2.0"
 readme = "README.md"
 repository = "https://github.com/L-Benjamin/wasmadeus"
+resolver = "2"
 
 [features]
-default = ["logger"]
+default = ["fetch", "logger"]
+fetch = ["web-sys/Headers", "web-sys/ReferrerPolicy", "web-sys/RequestCache", "web-sys/RequestCredentials", "web-sys/RequestInit", "web-sys/RequestMode", "web-sys/RequestRedirect"]
+json = ["fetch", "dep:serde", "dep:serde_json"]
 logger = ["dep:log", "web-sys/console"]
 nightly = []
 
 [package.metadata.docs.rs]
 rustdoc-args = ["--cfg", "doc_cfg"]
 
-[dependencies.log]
-version = "0.4.20"
-default-features = false
-optional = true
+[dependencies]
+log = { version = "0.4.20", default-features = false, optional = true }
+serde = { version = "1.0.193", default-features = false, optional = true }
+serde_json = { version = "1.0.108", features = ["alloc"], default-features = false, optional = true }
 
 [dependencies.web-sys]
 version = "0.3.66"
@@ -31,12 +34,6 @@ features = [
     "Document",
     "Element",
     "HtmlElement",
-    "ReferrerPolicy",
-    "RequestCache",
-    "RequestCredentials",
-    "RequestInit",
-    "RequestMode",
-    "RequestRedirect",
     "SvgElement",
     "Text",
     "Window",

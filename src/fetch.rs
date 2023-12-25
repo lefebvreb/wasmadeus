@@ -1,21 +1,45 @@
-// https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API
-// https://rustwasm.github.io/wasm-bindgen/examples/fetch.html
-// https://docs.rs/web-sys/latest/web_sys/struct.Request.html#
-// https://docs.rs/web-sys/latest/web_sys/struct.RequestInit.html#
+// Links to resources about the Fetch API, and how to use it with wasm-bindgen:
+// * https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API
+// * https://rustwasm.github.io/wasm-bindgen/examples/fetch.html
+// * https://docs.rs/web-sys/latest/web_sys/struct.Request.html#
+// * https://docs.rs/web-sys/latest/web_sys/struct.RequestInit.html#
 
 use alloc::string::{String, ToString};
 use web_sys::wasm_bindgen::JsValue;
-use web_sys::{RequestCache, RequestCredentials, RequestInit, RequestMode, RequestRedirect};
+use web_sys::{window, Headers, RequestCache, RequestCredentials, RequestInit, RequestMode, RequestRedirect};
 
-pub trait FetchBody {
-    fn content_type(&self) -> &str;
+pub trait IntoBody {
+    type Error;
 
-    fn into_js(self) -> JsValue;
+    fn content_type(&self) -> &'static str;
+
+    fn to_js(&self) -> Result<JsValue, Self::Error>;
+}
+
+#[cfg(feature = "json")]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "json")))]
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Debug)]
+pub struct Json<T: serde::Serialize>(T);
+
+#[cfg(feature = "json")]
+impl<T: serde::Serialize> IntoBody for Json<T> {
+    type Error = serde_json::Error;
+
+    #[inline]
+    fn content_type(&self) -> &'static str {
+        "application/json"
+    }
+
+    #[inline]
+    fn to_js(&self) -> Result<JsValue, Self::Error> {
+        let json = serde_json::to_string(&self.0)?;
+        Ok(JsValue::from_str(&json))
+    }
 }
 
 /// The [`Cache`] setting of a [`Fetch`] request controls how the request will interact with the browser's HTTP cache.
 #[non_exhaustive]
-#[derive(Copy, Clone, PartialEq, Eq, Default, Debug)]
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Debug)]
 pub enum Cache {
     /// The browser looks for a matching request in its HTTP cache:
     /// * if there is a match and it is fresh, it will be returned from the cache.
@@ -44,7 +68,7 @@ pub enum Cache {
 
 /// The [`Credentials`] setting of a [`Fetch`] request indicates whether the user agent should send or receive cookies from the other domain in the case of cross-origin requests.
 #[non_exhaustive]
-#[derive(Copy, Clone, PartialEq, Eq, Default, Debug)]
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Debug)]
 pub enum Credentials {
     /// Never send or receive cookies.
     Omit,
@@ -57,7 +81,7 @@ pub enum Credentials {
 
 /// The [`Method`] setting of a [`Fetch`] request defines the HTTP verb to use.
 #[non_exhaustive]
-#[derive(Copy, Clone, PartialEq, Eq, Default, Debug)]
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Debug)]
 pub enum Method {
     /// The `GET` method requests a representation of the specified resource. Requests using `GET` should only retrieve data.
     #[default]
@@ -84,7 +108,7 @@ pub enum Method {
 
 /// The [`Mode`] setting of a [`Fetch`] request is used to determine if cross-origin requests lead to valid responses, and which properties of the response are readable.
 #[non_exhaustive]
-#[derive(Copy, Clone, PartialEq, Eq, Default, Debug)]
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Debug)]
 pub enum Mode {
     #[default]
     /// If a request is made to another origin with this mode set, the result is an error. You could use this to ensure that a request is always being made to your origin.
@@ -99,7 +123,7 @@ pub enum Mode {
 
 /// The [`Redirect`] setting of a [`Fetch`] request contains the mode for how redirects are handled.
 #[non_exhaustive]
-#[derive(Copy, Clone, PartialEq, Eq, Default, Debug)]
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Debug)]
 pub enum Redirect {
     /// Automatically follow redirects. Unless otherwise stated the redirect mode is set to follow.
     #[default]
@@ -112,7 +136,7 @@ pub enum Redirect {
 
 /// The [`ReferrerPolicy`] setting of a [`Fetch`] request controls how much referrer information (sent with the `Referer` header) should be included with requests. Aside from the HTTP header, you can set this policy in HTML.
 #[non_exhaustive]
-#[derive(Copy, Clone, PartialEq, Eq, Default, Debug)]
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Debug)]
 pub enum ReferrerPolicy {
     /// The `Referer` header will be omitted: sent requests do not include any referrer information.
     NoReferrer,
@@ -136,6 +160,7 @@ pub enum ReferrerPolicy {
 #[derive(Debug)]
 pub struct Fetch {
     input: String,
+    headers: Headers,
     init: RequestInit,
 }
 
@@ -158,6 +183,7 @@ impl Fetch {
 
         Self {
             init: opts,
+            headers: Headers::new().unwrap(),
             input: url.to_string(),
         }
     }
@@ -193,7 +219,29 @@ impl Fetch {
     }
 
     #[inline]
-    pub fn with_cache(mut self, cache: Cache) -> Self {
+    pub fn input(&self) -> &str {
+        &self.input
+    }
+
+    #[inline]
+    pub fn headers(&self) -> &Headers {
+        &self.headers
+    }
+
+    #[inline]
+    pub fn init(&self) -> &RequestInit {
+        &self.init
+    }
+
+    #[inline]
+    pub fn with_body<B: IntoBody>(&mut self, body: B) -> Result<&mut Self, B::Error> {
+        self.headers.set("Content-Type", body.content_type()).unwrap();
+        self.init.body(Some(&body.to_js()?));
+        Ok(self)
+    }
+
+    #[inline]
+    pub fn with_cache(&mut self, cache: Cache) -> &mut Self {
         self.init.cache(match cache {
             Cache::Default => RequestCache::Default,
             Cache::NoStore => RequestCache::NoStore,
@@ -206,7 +254,7 @@ impl Fetch {
     }
 
     #[inline]
-    pub fn with_credentials(mut self, credentials: Credentials) -> Self {
+    pub fn with_credentials(&mut self, credentials: Credentials) -> &mut Self {
         self.init.credentials(match credentials {
             Credentials::Omit => RequestCredentials::Omit,
             Credentials::SameOrigin => RequestCredentials::SameOrigin,
@@ -216,13 +264,13 @@ impl Fetch {
     }
 
     #[inline]
-    pub fn with_integrity<S: AsRef<str>>(mut self, integrity: S) -> Self {
+    pub fn with_integrity<S: AsRef<str>>(&mut self, integrity: S) -> &mut Self {
         self.init.integrity(integrity.as_ref());
         self
     }
 
     #[inline]
-    pub fn with_mode(mut self, mode: Mode) -> Self {
+    pub fn with_mode(&mut self, mode: Mode) -> &mut Self {
         self.init.mode(match mode {
             Mode::SameOrigin => RequestMode::SameOrigin,
             Mode::NoCors => RequestMode::NoCors,
@@ -233,7 +281,7 @@ impl Fetch {
     }
 
     #[inline]
-    pub fn with_redirect(mut self, redirect: Redirect) -> Self {
+    pub fn with_redirect(&mut self, redirect: Redirect) -> &mut Self {
         self.init.redirect(match redirect {
             Redirect::Follow => RequestRedirect::Follow,
             Redirect::Error => RequestRedirect::Error,
@@ -243,13 +291,13 @@ impl Fetch {
     }
 
     #[inline]
-    pub fn with_referrer<S: AsRef<str>>(mut self, referrer: S) -> Self {
+    pub fn with_referrer<S: AsRef<str>>(&mut self, referrer: S) -> &mut Self {
         self.init.referrer(referrer.as_ref());
         self
     }
 
     #[inline]
-    pub fn with_referrer_policy(mut self, referrer_policy: ReferrerPolicy) -> Self {
+    pub fn with_referrer_policy(&mut self, referrer_policy: ReferrerPolicy) -> &mut Self {
         self.init.referrer_policy(match referrer_policy {
             ReferrerPolicy::NoReferrer => web_sys::ReferrerPolicy::NoReferrer,
             ReferrerPolicy::NoReferrerWhenDowngrade => web_sys::ReferrerPolicy::NoReferrerWhenDowngrade,
@@ -264,8 +312,9 @@ impl Fetch {
     }
 
     #[inline]
-    pub fn execute(self) {
-        // window().unwrap().fetch_with_str_and_init(&self.input, &self.init);
+    pub fn execute(&mut self) {
+        self.init.headers(&self.headers);
+        let _res = window().unwrap().fetch_with_str_and_init(&self.input, &self.init);
         todo!()
     }
 }

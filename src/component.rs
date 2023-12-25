@@ -222,6 +222,7 @@ impl WeakComponent {
     }
 }
 
+#[derive(Debug)]
 struct LazyChild<F> {
     init: Option<F>,
     child: Option<Component>,
