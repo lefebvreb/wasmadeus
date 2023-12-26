@@ -9,9 +9,9 @@ keywords = ["framework", "frontend", "frp", "wasm"]
 license = "MIT OR Apache-2.0"
 readme = "README.md"
 repository = "https://github.com/L-Benjamin/wasmadeus"
-resolver = "2"
 
 [features]
+bin = ["fetch"]
 default = ["fetch", "logger"]
 fetch = ["web-sys/Headers", "web-sys/ReferrerPolicy", "web-sys/RequestCache", "web-sys/RequestCredentials", "web-sys/RequestInit", "web-sys/RequestMode", "web-sys/RequestRedirect"]
 json = ["fetch", "dep:serde", "dep:serde_json"]

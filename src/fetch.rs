@@ -4,9 +4,12 @@
 // * https://docs.rs/web-sys/latest/web_sys/struct.Request.html#
 // * https://docs.rs/web-sys/latest/web_sys/struct.RequestInit.html#
 
+use core::convert::Infallible;
+
 use alloc::string::{String, ToString};
+use web_sys::js_sys::Uint8Array;
 use web_sys::wasm_bindgen::JsValue;
-use web_sys::{window, Headers, RequestCache, RequestCredentials, RequestInit, RequestMode, RequestRedirect};
+use web_sys::{Headers, RequestCache, RequestCredentials, RequestInit, RequestMode, RequestRedirect};
 
 pub trait IntoBody {
     type Error;
@@ -18,6 +21,7 @@ pub trait IntoBody {
 
 #[cfg(feature = "json")]
 #[cfg_attr(doc_cfg, doc(cfg(feature = "json")))]
+#[repr(transparent)]
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Debug)]
 pub struct Json<T: serde::Serialize>(T);
 
@@ -34,6 +38,27 @@ impl<T: serde::Serialize> IntoBody for Json<T> {
     fn to_js(&self) -> Result<JsValue, Self::Error> {
         let json = serde_json::to_string(&self.0)?;
         Ok(JsValue::from_str(&json))
+    }
+}
+
+#[cfg(feature = "bin")]
+#[cfg_attr(doc_cfg, doc(cfg(feature = "bin")))]
+#[repr(transparent)]
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Debug)]
+pub struct Bin<T: AsRef<[u8]>>(T);
+
+#[cfg(feature = "bin")]
+impl<T: AsRef<[u8]>> IntoBody for Bin<T> {
+    type Error = Infallible;
+
+    #[inline]
+    fn content_type(&self) -> &'static str {
+        "application/octet-stream"
+    }
+
+    #[inline]
+    fn to_js(&self) -> Result<JsValue, Self::Error> {
+        Ok(Uint8Array::from(self.0.as_ref()).buffer().into())
     }
 }
 
@@ -314,7 +339,9 @@ impl Fetch {
     #[inline]
     pub fn execute(&mut self) {
         self.init.headers(&self.headers);
-        let _res = window().unwrap().fetch_with_str_and_init(&self.input, &self.init);
+        let _res = web_sys::window()
+            .unwrap()
+            .fetch_with_str_and_init(&self.input, &self.init);
         todo!()
     }
 }
