@@ -192,8 +192,8 @@ pub struct Fetch {
 impl Fetch {
     #[inline]
     pub fn new<U: ToString>(method: Method, url: U) -> Self {
-        let mut opts = RequestInit::new();
-        opts.method(match method {
+        let mut init = RequestInit::new();
+        init.method(match method {
             Method::Get => "GET",
             Method::Head => "HEAD",
             Method::Post => "POST",
@@ -206,9 +206,12 @@ impl Fetch {
             Method::Other(other) => other,
         });
 
+        let headers = Headers::new().unwrap();
+        init.headers(&headers);
+
         Self {
-            init: opts,
-            headers: Headers::new().unwrap(),
+            init,
+            headers,
             input: url.to_string(),
         }
     }
@@ -337,8 +340,7 @@ impl Fetch {
     }
 
     #[inline]
-    pub fn execute(&mut self) {
-        self.init.headers(&self.headers);
+    pub async fn execute(&self) {
         let _res = web_sys::window()
             .unwrap()
             .fetch_with_str_and_init(&self.input, &self.init);
