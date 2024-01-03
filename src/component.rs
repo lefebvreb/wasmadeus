@@ -16,6 +16,7 @@ use crate::utils::TryAsRef;
 pub struct ElementNotFoundError;
 
 #[derive(Debug)]
+#[non_exhaustive]
 pub enum ElementKind {
     /// Standard html elements.
     Html(HtmlElement),
@@ -115,6 +116,14 @@ impl Component {
     }
 
     #[inline]
+    pub fn as_svg_element(&self) -> Option<&SvgElement> {
+        match &self.inner().element {
+            ElementKind::Svg(svg) => Some(svg),
+            _ => None,
+        }
+    }
+
+    #[inline]
     pub fn style(&self) -> Option<&CssStyleDeclaration> {
         self.inner().style.as_ref()
     }
@@ -128,7 +137,7 @@ impl Component {
     /// Calling this method will [`forget`](core::mem::forget) `self`, to prevent it and its dependencies from
     /// being dropped. Coincidentally, this leaks memory.
     #[inline]
-    pub fn attach_to(self, selectors: &str) -> Result<(), ElementNotFoundError> {
+    pub fn attach_to(&self, selectors: &str) -> Result<(), ElementNotFoundError> {
         web_sys::window()
             .unwrap()
             .document()
@@ -140,12 +149,12 @@ impl Component {
             .append_child(self.as_element())
             .unwrap();
 
-        mem::forget(self);
+        mem::forget(self.clone());
         Ok(())
     }
 
     #[inline]
-    pub fn text<T: Value>(self, text: T) -> Self
+    pub fn text<T: Value>(&self, text: T) -> &Self
     where
         T::Item: TryAsRef<str>,
     {
@@ -159,14 +168,14 @@ impl Component {
     }
 
     #[inline]
-    pub fn with(self, child: Component) -> Self {
+    pub fn with(&self, child: Component) -> &Self {
         self.as_element().append_child(child.as_element()).unwrap();
         self.push_dependency(child);
         self
     }
 
     #[inline]
-    pub fn with_if<C, F>(self, cond: C, if_true: F) -> Self
+    pub fn with_if<C, F>(&self, cond: C, if_true: F) -> &Self
     where
         C: Value<Item = bool>,
         F: FnOnce() -> Component + 'static,
@@ -181,7 +190,7 @@ impl Component {
     }
 
     #[inline]
-    pub fn with_if_else<C, F, G>(self, cond: C, if_true: F, if_false: G) -> Self
+    pub fn with_if_else<C, F, G>(&self, cond: C, if_true: F, if_false: G) -> &Self
     where
         C: Value<Item = bool>,
         F: FnOnce() -> Component + 'static,

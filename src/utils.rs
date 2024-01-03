@@ -1,3 +1,5 @@
+use core::future::Future;
+
 use alloc::borrow::{Cow, ToOwned};
 use alloc::boxed::Box;
 use alloc::rc::Rc;
@@ -139,4 +141,12 @@ where
     fn try_as_ref(&self) -> Option<&T> {
         Some(self)
     }
+}
+
+#[inline]
+pub fn spawn<F>(future: F)
+where
+    F: Future<Output = ()> + 'static,
+{
+    wasm_bindgen_futures::spawn_local(future);
 }

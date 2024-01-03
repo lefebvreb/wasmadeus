@@ -4,10 +4,10 @@
 // * https://docs.rs/web-sys/latest/web_sys/struct.Request.html#
 // * https://docs.rs/web-sys/latest/web_sys/struct.RequestInit.html#
 
+#[cfg(feature = "bin")]
 use core::convert::Infallible;
 
 use alloc::string::{String, ToString};
-use web_sys::js_sys::Uint8Array;
 use web_sys::wasm_bindgen::JsValue;
 use web_sys::{Headers, RequestCache, RequestCredentials, RequestInit, RequestMode, RequestRedirect};
 
@@ -58,7 +58,7 @@ impl<T: AsRef<[u8]>> IntoBody for Bin<T> {
 
     #[inline]
     fn to_js(&self) -> Result<JsValue, Self::Error> {
-        Ok(Uint8Array::from(self.0.as_ref()).buffer().into())
+        Ok(web_sys::js_sys::Uint8Array::from(self.0.as_ref()).buffer().into())
     }
 }
 

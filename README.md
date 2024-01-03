@@ -10,39 +10,47 @@
 
 An experimental frontend web framework in pure rust.
 
-Wasmadeus is focused on simplicity, ease of use and robustness.
+Wasmadeus is focused on ease of use and robustness.
 
 ```rust
-TODO: cool counter example
+// TODO: cool counter example
 ```
 
 ## Features
 
-Wasmadeus features:
-
-+ Functional reactive programming (FRP) types and concepts.
-+ Modular, customizable and reusable components.
-+ Rustic API featuring no macro magic.
-+ Abstractions for Fetch, Websockets and SSE (Server Sent Events)
-+ Nice integration with HTML, CSS and JavaScript.
-+ Easy bundling with [trunk](https://trunkrs.dev/).
+* Functional reactive programming (FRP) types and concepts.
+* Modular, customizable and reusable components.
+* Rustic API featuring no macro magic.
+* Nice abstractions for Fetch, Websockets and other browser primitives.
+* Easy bundling with [trunk](https://trunkrs.dev/).
 <!-- + `no_std` support, light code size. (this is blocked on `web_sys` not being `no_std`) -->
 
 ## Examples
 
 See the [examples](https://github.com/L-Benjamin/wasmadeus/tree/main/examples) directory for a list of examples built with Wasmadeus.
 
+## FAQ
+
+* **Is it faster than *`popular JS framework`* ?**
+
+Probably not. WebAssembly is still a young technology, and did not receive the optimizations that were given to JS over decades. More importantly, WebAssembly still lacks access to the DOM, any UI operation requires an extra layer of JS to complete.
+
+* **Can I use it with *`favorite NPM package`* ?**
+
+Yes, but you will have to bring your own glue.
+
+* **Can I contribute/give feedback ?**
+
+Yes, Gladly!
+
 #### License
 
 <sup>
-Licensed under either of <a href="LICENSE-APACHE">Apache License, Version
-2.0</a> or <a href="LICENSE-MIT">MIT license</a> at your option.
+Licensed under either of <a href="LICENSE-APACHE">Apache License, Version 2.0</a> or <a href="LICENSE-MIT">MIT license</a> at your option.
 </sup>
 
 <br>
 
 <sub>
-Unless you explicitly state otherwise, any contribution intentionally submitted
-for inclusion in this crate by you, as defined in the Apache-2.0 license, shall
-be dual licensed as above, without any additional terms or conditions.
+Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in this crate by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
 </sub>
