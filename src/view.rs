@@ -4,15 +4,33 @@ use crate::component::Component;
 use crate::signal::Value;
 use crate::utils::{for_all_tuples, TryAsRef};
 
-pub trait View {}
+pub trait View: Sized {
+    fn apply_to(self, parent: &Component);
+}
 
-impl View for Component {}
+impl View for Component {
+    fn apply_to(self, parent: &Component) {
+        todo!()
+    }
+}
 
-impl<F: FnOnce() -> Component> View for F {}
+// impl<T: View, F: FnOnce() -> T> View for F {
+//     #[inline]
+//     fn apply_to(self, parent: &Component) {
+//         self().apply_to(parent);
+//     }
+// }
 
 macro_rules! impl_view {
     ($($name: ident)*) => {
-        impl<$($name: View,)*> View for ($($name,)*) {}
+        impl<$($name: View,)*> View for ($($name,)*) {
+            #[inline]
+            #[allow(non_snake_case, unused_variables)]
+            fn apply_to(self, parent: &Component) {
+                let ($($name,)*) = self;
+                $($name.apply_to(parent);)*
+            }
+        }
     };
 }
 
@@ -23,7 +41,14 @@ pub struct Text<V: Value>(pub V)
 where
     V::Item: TryAsRef<str>;
 
-impl<V: Value> View for Text<V> where V::Item: TryAsRef<str> {}
+impl<V: Value> View for Text<V>
+where
+    V::Item: TryAsRef<str>,
+{
+    fn apply_to(self, parent: &Component) {
+        todo!()
+    }
+}
 
 #[derive(Debug)]
 pub struct Await<F: Future>(pub F)

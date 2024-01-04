@@ -4,14 +4,13 @@
 // * https://docs.rs/web-sys/latest/web_sys/struct.Request.html#
 // * https://docs.rs/web-sys/latest/web_sys/struct.RequestInit.html#
 
-#[cfg(feature = "bin")]
 use core::convert::Infallible;
 
 use alloc::string::{String, ToString};
 use web_sys::wasm_bindgen::JsValue;
 use web_sys::{Headers, RequestCache, RequestCredentials, RequestInit, RequestMode, RequestRedirect};
 
-pub trait IntoBody {
+pub trait Body {
     type Error;
 
     fn content_type(&self) -> &'static str;
@@ -19,14 +18,59 @@ pub trait IntoBody {
     fn to_js(&self) -> Result<JsValue, Self::Error>;
 }
 
+#[derive(Clone, Debug)]
+pub struct GenericBody {
+    pub content_type: &'static str,
+    pub value: JsValue,
+}
+
+impl GenericBody {
+    #[inline]
+    pub fn new(content_type: &'static str, value: JsValue) -> Self {
+        Self { content_type, value }
+    }
+}
+
+impl Body for GenericBody {
+    type Error = Infallible;
+
+    #[inline]
+    fn content_type(&self) -> &'static str {
+        self.content_type
+    }
+
+    #[inline]
+    fn to_js(&self) -> Result<JsValue, Self::Error> {
+        Ok(self.value.clone())
+    }
+}
+
+#[repr(transparent)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Debug)]
+pub struct Text(pub String);
+
+impl Body for Text {
+    type Error = Infallible;
+
+    #[inline]
+    fn content_type(&self) -> &'static str {
+        "text/plain"
+    }
+
+    #[inline]
+    fn to_js(&self) -> Result<JsValue, Self::Error> {
+        Ok(JsValue::from_str(&self.0))
+    }
+}
+
 #[cfg(feature = "json")]
 #[cfg_attr(doc_cfg, doc(cfg(feature = "json")))]
 #[repr(transparent)]
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Debug)]
-pub struct Json<T: serde::Serialize>(T);
+pub struct Json<T: serde::Serialize>(pub T);
 
 #[cfg(feature = "json")]
-impl<T: serde::Serialize> IntoBody for Json<T> {
+impl<T: serde::Serialize> Body for Json<T> {
     type Error = serde_json::Error;
 
     #[inline]
@@ -45,10 +89,10 @@ impl<T: serde::Serialize> IntoBody for Json<T> {
 #[cfg_attr(doc_cfg, doc(cfg(feature = "bin")))]
 #[repr(transparent)]
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Debug)]
-pub struct Bin<T: AsRef<[u8]>>(T);
+pub struct Bin<T: AsRef<[u8]>>(pub T);
 
 #[cfg(feature = "bin")]
-impl<T: AsRef<[u8]>> IntoBody for Bin<T> {
+impl<T: AsRef<[u8]>> Body for Bin<T> {
     type Error = Infallible;
 
     #[inline]
@@ -262,7 +306,7 @@ impl Fetch {
     }
 
     #[inline]
-    pub fn with_body<B: IntoBody>(&mut self, body: B) -> Result<&mut Self, B::Error> {
+    pub fn with_body<B: Body>(&mut self, body: &B) -> Result<&mut Self, B::Error> {
         self.headers.set("Content-Type", body.content_type()).unwrap();
         self.init.body(Some(&body.to_js()?));
         Ok(self)

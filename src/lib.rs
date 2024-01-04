@@ -26,3 +26,7 @@ pub mod prelude {
     pub use super::logger::ConsoleLogger;
     pub use super::signal::SignalMut;
 }
+
+pub use web_sys;
+pub use web_sys::js_sys;
+pub use web_sys::wasm_bindgen;
