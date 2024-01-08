@@ -221,6 +221,14 @@ impl<T> SignalMut<T> {
     }
 
     #[inline]
+    pub fn maybe_uninit(initial_value: Option<T>) -> Self {
+        match initial_value {
+            Some(initial_value) => Self::new(initial_value),
+            None => Self::uninit(),
+        }
+    }
+
+    #[inline]
     pub fn try_set(&self, new_value: T) -> Result<(), SignalUpdatingError> {
         self.raw().try_set(new_value)
     }
