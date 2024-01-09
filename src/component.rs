@@ -1,6 +1,7 @@
 use core::any::Any;
 use core::cell::UnsafeCell;
 use core::fmt;
+use core::future::Future;
 use core::mem;
 
 use alloc::boxed::Box;
@@ -11,7 +12,7 @@ use web_sys::{CssStyleDeclaration, Element, HtmlElement, SvgElement};
 
 use crate::attribute::Attributes;
 use crate::signal::{Unsubscribe, Value};
-use crate::utils::TryAsRef;
+use crate::utils::{self, TryAsRef};
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
 pub struct ElementNotFoundError;
@@ -130,7 +131,7 @@ impl Component {
             let unsub = visible.for_each(move |&visible| {
                 style.set_property("display", if visible { "" } else { "none" }).ok();
             });
-            self.push_dependency(unsub);
+            self.push_dependency(unsub.droppable());
         }
     }
 
@@ -204,6 +205,15 @@ impl Component {
     }
 
     #[inline]
+    pub fn with_async<F, T>(&self, before: T, future: F) -> &Self
+    where
+        F: Future<Output = Component> + 'static,
+        T: Into<Option<Component>>,
+    {
+        todo!()
+    }
+
+    #[inline]
     pub fn with_if<C, F>(&self, cond: C, if_true: F) -> &Self
     where
         C: Value<Item = bool>,
@@ -236,10 +246,23 @@ impl Component {
         self
     }
 
+    #[inline]
+    pub fn with_iter<I>(&self, iter: I) -> &Self
+    where
+        I: Iterator<Item = Component>,
+    {
+        iter.for_each(|child| {
+            self.with(child);
+        });
+        self
+    }
+
     /// Adds a dependency to this component.
     ///
     /// The dependency will be dropped at the same time as the component. You most likely don't
     /// need to call this method directly.
+    ///
+    /// If `T` does not need to be dropped, calling this method is reduced to a noop.
     #[inline]
     pub fn push_dependency<T: Any>(&self, dep: T) {
         if mem::needs_drop::<T>() {
@@ -280,7 +303,7 @@ impl<F: FnOnce() -> Component> LazyChild<F> {
         if display {
             match (parent.upgrade(), &self.child) {
                 (Some(_), Some(child)) => child.set_visible(true),
-                (Some(parent), _) => {
+                (Some(parent), None) => {
                     let new_child = (self.init.take().unwrap())();
                     parent.with(new_child.clone());
                     self.child = Some(new_child);
