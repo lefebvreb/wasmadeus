@@ -9,6 +9,6 @@ fn main() {
     html::div(())
         .with(html::h1(()).text(text))
         .with(html::button(()).text("Increment Counter"))
-        .attach_to("#root")
+        .attach_to_body()
         .unwrap_or_else(|_| log::error!("root element not found"));
 }

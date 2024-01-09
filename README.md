@@ -10,7 +10,7 @@
 
 An experimental frontend web framework in pure rust.
 
-Wasmadeus is focused on ease of use and robustness.
+Wasmadeus is focused on simplicity and robustness.
 
 ```rust
 // TODO: cool counter example
@@ -37,7 +37,7 @@ Probably not. WebAssembly is still a young technology, and did not receive the o
 
 * **Can I use it with *`favorite NPM package`* ?**
 
-Yes, but you will have to bring your own glue.
+Sure, but you will have to bring your own glue.
 
 * **Can I contribute/give feedback ?**
 

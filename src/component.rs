@@ -1,5 +1,6 @@
 use core::any::Any;
 use core::cell::UnsafeCell;
+use core::fmt;
 use core::mem;
 
 use alloc::boxed::Box;
@@ -12,8 +13,14 @@ use crate::attribute::Attributes;
 use crate::signal::{Unsubscribe, Value};
 use crate::utils::TryAsRef;
 
-#[derive(Copy, Clone, PartialEq, Eq, Debug)]
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
 pub struct ElementNotFoundError;
+
+impl fmt::Display for ElementNotFoundError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "element not found")
+    }
+}
 
 #[derive(Debug)]
 #[non_exhaustive]
@@ -40,17 +47,6 @@ impl Component {
     #[inline]
     fn inner(&self) -> &ComponentInner {
         &self.0
-    }
-
-    #[inline]
-    fn set_display<const B: bool>(&self) {
-        if let Some(style) = self.style() {
-            if B {
-                style.set_property("display", "").ok();
-            } else {
-                style.set_property("display", "none").ok();
-            }
-        }
     }
 
     #[inline]
@@ -128,6 +124,16 @@ impl Component {
         self.inner().style.as_ref()
     }
 
+    #[inline]
+    fn set_visible<T: Value<Item = bool>>(&self, visible: T) {
+        if let Some(style) = self.style().cloned() {
+            let unsub = visible.for_each(move |&visible| {
+                style.set_property("display", if visible { "" } else { "none" }).ok();
+            });
+            self.push_dependency(unsub);
+        }
+    }
+
     /// Attaches `self` to the result of the DOM function [`document.querySelector(selectors)`](https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelector).
     ///
     /// This method should be used as the entry point of your app, linking your components in the rust world to your HTML file.
@@ -147,6 +153,29 @@ impl Component {
             .flatten()
             .ok_or(ElementNotFoundError)?
             .append_child(self.as_element())
+            .unwrap();
+
+        mem::forget(self.clone());
+        Ok(())
+    }
+
+    /// Attaches `self` to the [`<body>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/body) of the document.
+    ///
+    /// This method should be used as the entry point of your app, linking your components in the rust world to your HTML file.
+    ///
+    /// # Memory leaks
+    ///
+    /// Calling this method will [`forget`](core::mem::forget) `self`, to prevent it and its dependencies from
+    /// being dropped. Coincidentally, this leaks memory.
+    #[inline]
+    pub fn attach_to_body(&self) -> Result<(), ElementNotFoundError> {
+        web_sys::window()
+            .unwrap()
+            .document()
+            .unwrap()
+            .body()
+            .unwrap()
+            .append_child(&self.as_element())
             .unwrap();
 
         mem::forget(self.clone());
@@ -250,7 +279,7 @@ impl<F: FnOnce() -> Component> LazyChild<F> {
     fn display(&mut self, display: bool, parent: &WeakComponent) {
         if display {
             match (parent.upgrade(), &self.child) {
-                (Some(_), Some(child)) => child.set_display::<true>(),
+                (Some(_), Some(child)) => child.set_visible(true),
                 (Some(parent), _) => {
                     let new_child = (self.init.take().unwrap())();
                     parent.with(new_child.clone());
@@ -259,7 +288,7 @@ impl<F: FnOnce() -> Component> LazyChild<F> {
                 _ => (),
             }
         } else if let Some(child) = &self.child {
-            child.set_display::<false>()
+            child.set_visible(false);
         }
     }
 }

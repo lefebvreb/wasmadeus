@@ -16,7 +16,6 @@ pub mod html;
 pub mod logger;
 pub mod signal;
 pub mod utils;
-pub mod view;
 
 pub mod prelude {
     #[cfg(feature = "fetch")]
