@@ -43,6 +43,7 @@ impl<T> Signal<T> {
         self.try_get().unwrap()
     }
 
+    #[inline]
     fn compose<U, F>(&self, raw: RawSignal<U>, mut notify: F) -> Signal<U>
     where
         F: FnMut(&RawSignal<U>, &T, &mut SignalUnsubscriber<T>) + 'static,
@@ -63,7 +64,7 @@ impl<T> Signal<T> {
     where
         F: FnMut(&T) -> U + 'static,
     {
-        self.compose(RawSignal::uninit(), move |raw, value, _| {
+        self.compose(RawSignal::new(None), move |raw, value, _| {
             raw.try_set(map(value)).unwrap();
         })
     }
@@ -85,7 +86,7 @@ impl<T> Signal<T> {
     where
         F: FnMut(&T) -> Option<U> + 'static,
     {
-        self.compose(RawSignal::uninit(), move |raw, value, _| {
+        self.compose(RawSignal::new(None), move |raw, value, _| {
             if let Some(value) = filter_map(value) {
                 raw.try_set(value).unwrap();
             }
@@ -97,7 +98,7 @@ impl<T> Signal<T> {
     where
         F: FnMut(&mut U, &T) + 'static,
     {
-        self.compose(RawSignal::new(initial_value), move |raw, value, _| {
+        self.compose(RawSignal::new(Some(initial_value)), move |raw, value, _| {
             raw.try_mutate(|acc| fold(acc, value)).unwrap();
         })
     }
@@ -107,7 +108,7 @@ impl<T> Signal<T> {
     where
         F: FnMut(&T) -> Option<U> + 'static,
     {
-        self.compose(RawSignal::uninit(), move |raw, value, unsub| match map_while(value) {
+        self.compose(RawSignal::new(None), move |raw, value, unsub| match map_while(value) {
             Some(value) => raw.try_set(value).unwrap(),
             _ => unsub.unsubscribe(),
         })
@@ -171,6 +172,7 @@ impl<T> Signal<T> {
         })
     }
 
+    #[inline]
     pub fn for_each<F>(&self, notify: F) -> SignalUnsubscriber<T>
     where
         F: FnMut(&T) + 'static,
@@ -179,6 +181,7 @@ impl<T> Signal<T> {
         SignalUnsubscriber::new(Rc::downgrade(self.raw()), id)
     }
 
+    #[inline]
     pub fn for_each_inner<F>(&self, mut notify: F)
     where
         F: FnMut(&T, &mut SignalUnsubscriber<T>) + 'static,
@@ -212,20 +215,17 @@ pub struct SignalMut<T: 'static>(Signal<T>);
 impl<T> SignalMut<T> {
     #[inline]
     pub fn new(initial_value: T) -> Self {
-        Self(Signal::new_from_raw(RawSignal::new(initial_value)))
+        Self(Signal::new_from_raw(RawSignal::new(Some(initial_value))))
     }
 
     #[inline]
     pub fn uninit() -> Self {
-        Self(Signal::new_from_raw(RawSignal::uninit()))
+        Self(Signal::new_from_raw(RawSignal::new(None)))
     }
 
     #[inline]
     pub fn maybe_uninit(initial_value: Option<T>) -> Self {
-        match initial_value {
-            Some(initial_value) => Self::new(initial_value),
-            None => Self::uninit(),
-        }
+        Self(Signal::new_from_raw(RawSignal::new(initial_value)))
     }
 
     #[inline]

@@ -23,21 +23,12 @@ pub struct RawSignal<T> {
 }
 
 impl<T> RawSignal<T> {
-    fn new_from_value(value: Option<T>) -> Self {
+    #[inline]
+    pub fn new(value: Option<T>) -> Self {
         Self {
             broadcast: Broadcast::default(),
             data: Rc::new(RefCell::new(value)),
         }
-    }
-
-    #[inline]
-    pub fn new(initial_value: T) -> Self {
-        Self::new_from_value(Some(initial_value))
-    }
-
-    #[inline]
-    pub fn uninit() -> Self {
-        Self::new_from_value(None)
     }
 
     #[inline]
@@ -48,6 +39,7 @@ impl<T> RawSignal<T> {
         }
     }
 
+    #[inline]
     pub fn raw_for_each<F, G>(&self, make_notify: G) -> SubscriberId
     where
         F: FnMut(&T) + 'static,
@@ -67,6 +59,7 @@ impl<T> RawSignal<T> {
         self.broadcast.notify(data.as_ref().unwrap());
     }
 
+    #[inline]
     pub fn try_set(&self, new_value: T) -> Result<(), SignalUpdatingError> {
         let mut data = self.data.try_borrow_mut().map_err(|_| SignalUpdatingError)?;
         *data = Some(new_value);
@@ -75,6 +68,7 @@ impl<T> RawSignal<T> {
         Ok(())
     }
 
+    #[inline]
     pub fn try_mutate<F>(&self, mutate: F) -> Result<(), SignalUpdatingError>
     where
         F: FnOnce(&mut T),
