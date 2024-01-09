@@ -47,7 +47,7 @@ macro_rules! attributes {
 
 pub(crate) use attributes;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct CustomData<N: AsRef<str>, T: Value>(pub N, pub T)
 where
     T::Item: TryAsRef<str>;

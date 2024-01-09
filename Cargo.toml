@@ -13,7 +13,7 @@ repository = "https://github.com/L-Benjamin/wasmadeus"
 [features]
 bin = ["fetch"]
 default = ["fetch", "logger"]
-fetch = ["web-sys/Headers", "web-sys/ReferrerPolicy", "web-sys/RequestCache", "web-sys/RequestCredentials", "web-sys/RequestInit", "web-sys/RequestMode", "web-sys/RequestRedirect"]
+fetch = ["web-sys/Headers", "web-sys/ReadableStream", "web-sys/ReferrerPolicy", "web-sys/RequestCache", "web-sys/RequestCredentials", "web-sys/RequestInit", "web-sys/RequestMode", "web-sys/RequestRedirect", "web-sys/Response"]
 json = ["fetch", "dep:serde", "dep:serde_json"]
 logger = ["dep:log", "web-sys/console"]
 nightly = []

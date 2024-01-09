@@ -5,12 +5,15 @@
 // * https://docs.rs/web-sys/latest/web_sys/struct.RequestInit.html#
 
 use core::convert::Infallible;
+use core::future::Future;
 
 use alloc::string::{String, ToString};
+use wasm_bindgen_futures::wasm_bindgen::JsCast;
+use wasm_bindgen_futures::JsFuture;
 use web_sys::wasm_bindgen::JsValue;
-use web_sys::{Headers, RequestCache, RequestCredentials, RequestInit, RequestMode, RequestRedirect};
+use web_sys::{Headers, RequestCache, RequestCredentials, RequestInit, RequestMode, RequestRedirect, Response};
 
-pub trait Body {
+pub trait RequestBody {
     type Error;
 
     fn content_type(&self) -> &'static str;
@@ -31,7 +34,7 @@ impl GenericBody {
     }
 }
 
-impl Body for GenericBody {
+impl RequestBody for GenericBody {
     type Error = Infallible;
 
     #[inline]
@@ -49,7 +52,7 @@ impl Body for GenericBody {
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Debug)]
 pub struct Text(pub String);
 
-impl Body for Text {
+impl RequestBody for Text {
     type Error = Infallible;
 
     #[inline]
@@ -70,7 +73,7 @@ impl Body for Text {
 pub struct Json<T: serde::Serialize>(pub T);
 
 #[cfg(feature = "json")]
-impl<T: serde::Serialize> Body for Json<T> {
+impl<T: serde::Serialize> RequestBody for Json<T> {
     type Error = serde_json::Error;
 
     #[inline]
@@ -92,7 +95,7 @@ impl<T: serde::Serialize> Body for Json<T> {
 pub struct Bin<T: AsRef<[u8]>>(pub T);
 
 #[cfg(feature = "bin")]
-impl<T: AsRef<[u8]>> Body for Bin<T> {
+impl<T: AsRef<[u8]>> RequestBody for Bin<T> {
     type Error = Infallible;
 
     #[inline]
@@ -104,6 +107,12 @@ impl<T: AsRef<[u8]>> Body for Bin<T> {
     fn to_js(&self) -> Result<JsValue, Self::Error> {
         Ok(web_sys::js_sys::Uint8Array::from(self.0.as_ref()).buffer().into())
     }
+}
+
+pub trait ResponseBody: Sized {
+    type Error;
+
+    fn from_response(response: &Response) -> impl Future<Output = Result<Self, Self::Error>>;
 }
 
 /// The [`Cache`] setting of a [`Fetch`] request controls how the request will interact with the browser's HTTP cache.
@@ -306,7 +315,7 @@ impl Fetch {
     }
 
     #[inline]
-    pub fn with_body<B: Body>(&mut self, body: &B) -> Result<&mut Self, B::Error> {
+    pub fn with_body<B: RequestBody>(&mut self, body: &B) -> Result<&mut Self, B::Error> {
         self.headers.set("Content-Type", body.content_type()).unwrap();
         self.init.body(Some(&body.to_js()?));
         Ok(self)
@@ -385,9 +394,12 @@ impl Fetch {
 
     #[inline]
     pub async fn execute(&self) {
-        let _res = web_sys::window()
+        let promise = web_sys::window()
             .unwrap()
             .fetch_with_str_and_init(&self.input, &self.init);
+
+        let res = JsFuture::from(promise).await.unwrap().dyn_into::<Response>().unwrap();
+
         todo!()
     }
 }

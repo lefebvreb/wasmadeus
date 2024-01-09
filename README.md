@@ -31,11 +31,11 @@ See the [examples](https://github.com/L-Benjamin/wasmadeus/tree/main/examples) d
 
 ## FAQ
 
-* **Is it faster than *`popular JS framework`* ?**
+* **Is it faster than *`<popular JS framework>`* ?**
 
 Probably not. WebAssembly is still a young technology, and did not receive the optimizations that were given to JS over decades. More importantly, WebAssembly still lacks access to the DOM, any UI operation requires an extra layer of JS to complete.
 
-* **Can I use it with *`favorite NPM package`* ?**
+* **Can I use it with *`<favorite NPM package>`* ?**
 
 Sure, but you will have to bring your own glue.
 

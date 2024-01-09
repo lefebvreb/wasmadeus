@@ -176,7 +176,7 @@ impl Component {
             .unwrap()
             .body()
             .unwrap()
-            .append_child(&self.as_element())
+            .append_child(self.as_element())
             .unwrap();
 
         mem::forget(self.clone());
@@ -205,11 +205,15 @@ impl Component {
     }
 
     #[inline]
-    pub fn with_async<F, T>(&self, before: T, future: F) -> &Self
+    pub fn with_async<T, F>(&self, before: T, future: F) -> &Self
     where
-        F: Future<Output = Component> + 'static,
         T: Into<Option<Component>>,
+        F: Future<Output = Component> + 'static,
     {
+        if let Some(child) = before.into() {}
+        utils::spawn(async {
+            let child = future.await;
+        });
         todo!()
     }
 
