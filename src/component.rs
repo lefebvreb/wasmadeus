@@ -306,7 +306,7 @@ impl<F: FnOnce() -> Component> LazyChild<F> {
     fn display(&mut self, display: bool, parent: &WeakComponent) {
         if display {
             match (parent.upgrade(), &self.child) {
-                (Some(_), Some(child)) => child.set_visible(true),
+                (Some(_), Some(child)) => child.set_visible(&true),
                 (Some(parent), None) => {
                     let new_child = (self.init.take().unwrap())();
                     parent.with(new_child.clone());
@@ -315,7 +315,7 @@ impl<F: FnOnce() -> Component> LazyChild<F> {
                 _ => (),
             }
         } else if let Some(child) = &self.child {
-            child.set_visible(false);
+            child.set_visible(&false);
         }
     }
 }

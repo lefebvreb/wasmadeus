@@ -1,5 +1,4 @@
 #![doc(html_logo_url = "https://raw.githubusercontent.com/lefebvreb/wasmadeus/main/logo.svg")]
-#![cfg_attr(feature = "nightly", feature(auto_traits, negative_impls))]
 #![cfg_attr(doc_cfg, feature(doc_cfg))]
 #![no_std]
 
