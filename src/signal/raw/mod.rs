@@ -91,6 +91,6 @@ impl<T> RawSignal<T> {
         T: Clone,
     {
         let data = self.data.try_borrow().map_err(|_| SignalGetError::Updating)?;
-        data.as_ref().map(T::clone).ok_or(SignalGetError::Uninit)
+        data.as_ref().cloned().ok_or(SignalGetError::Uninit)
     }
 }
