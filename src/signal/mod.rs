@@ -3,9 +3,14 @@ mod raw;
 mod unsub;
 mod value;
 
+use core::future::Future;
 use core::ops::Deref;
 
 use alloc::rc::Rc;
+#[cfg(feature = "stream")]
+use futures::stream::{Stream, StreamExt};
+
+use crate::utils;
 
 use self::raw::RawSignal;
 
@@ -20,6 +25,39 @@ impl<T> Signal<T> {
     #[inline]
     fn new_from_raw(raw: RawSignal<T>) -> Self {
         Self(Rc::new(raw))
+    }
+
+    #[inline]
+    pub fn from_future<B, F>(before: B, future: F) -> Self
+    where
+        B: Into<Option<T>>,
+        F: Future<Output = T> + 'static,
+    {
+        let raw = RawSignal::new(before.into());
+        let this = Self::new_from_raw(raw.shared());
+        utils::spawn(async move {
+            raw.set(future.await);
+        });
+        this
+    }
+
+    #[cfg(feature = "stream")]
+    #[cfg_attr(doc_cfg, doc(cfg(feature = "stream")))]
+    #[inline]
+    pub fn from_stream<I, S>(init: I, stream: S) -> Self
+    where
+        I: Into<Option<T>>,
+        S: Stream<Item = T> + 'static,
+    {
+        let raw = RawSignal::new(init.into());
+        let this = Self::new_from_raw(raw.shared());
+        utils::spawn(async move {
+            let mut stream = core::pin::pin!(stream);
+            while let Some(value) = stream.next().await {
+                raw.set(value);
+            }
+        });
+        this
     }
 
     #[inline]
@@ -65,7 +103,7 @@ impl<T> Signal<T> {
         F: FnMut(&T) -> U + 'static,
     {
         self.compose(RawSignal::new(None), move |raw, value, _| {
-            raw.try_set(map(value)).unwrap();
+            raw.set(map(value));
         })
     }
 
@@ -88,7 +126,7 @@ impl<T> Signal<T> {
     {
         self.compose(RawSignal::new(None), move |raw, value, _| {
             if let Some(value) = filter_map(value) {
-                raw.try_set(value).unwrap();
+                raw.set(value);
             }
         })
     }
@@ -109,7 +147,7 @@ impl<T> Signal<T> {
         F: FnMut(&T) -> Option<U> + 'static,
     {
         self.compose(RawSignal::new(None), move |raw, value, unsub| match map_while(value) {
-            Some(value) => raw.try_set(value).unwrap(),
+            Some(value) => raw.set(value),
             _ => unsub.unsubscribe(),
         })
     }
@@ -215,12 +253,12 @@ pub struct SignalMut<T: 'static>(Signal<T>);
 impl<T> SignalMut<T> {
     #[inline]
     pub fn new(initial_value: T) -> Self {
-        Self(Signal::new_from_raw(RawSignal::new(Some(initial_value))))
+        Self::maybe_uninit(Some(initial_value))
     }
 
     #[inline]
     pub fn uninit() -> Self {
-        Self(Signal::new_from_raw(RawSignal::new(None)))
+        Self::maybe_uninit(None)
     }
 
     #[inline]

@@ -60,6 +60,11 @@ impl<T> RawSignal<T> {
     }
 
     #[inline]
+    pub fn set(&self, new_value: T) {
+        self.try_set(new_value).unwrap()
+    }
+
+    #[inline]
     pub fn try_set(&self, new_value: T) -> Result<(), SignalUpdatingError> {
         let mut data = self.data.try_borrow_mut().map_err(|_| SignalUpdatingError)?;
         *data = Some(new_value);

@@ -21,7 +21,7 @@ Wasmadeus is focused on simplicity and robustness.
 * Functional reactive programming (FRP) types and concepts.
 * Modular, customizable and reusable components.
 * Rustic API featuring no macro magic.
-* Nice abstractions for Fetch, Websockets and other browser primitives.
+* Nice abstractions for fetch and other browser primitives.
 * Easy bundling with [trunk](https://trunkrs.dev/).
 <!-- + `no_std` support, light code size. (this is blocked on `web_sys` not being `no_std`) -->
 

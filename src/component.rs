@@ -12,7 +12,7 @@ use web_sys::{CssStyleDeclaration, Element, HtmlElement, SvgElement};
 
 use crate::attribute::Attributes;
 use crate::signal::{Unsubscribe, Value};
-use crate::utils::{self, TryAsRef};
+use crate::utils::TryAsRef;
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
 pub struct ElementNotFoundError;
@@ -26,11 +26,11 @@ impl fmt::Display for ElementNotFoundError {
 #[derive(Debug)]
 #[non_exhaustive]
 pub enum ElementKind {
-    /// Standard html elements.
+    /// Standard html element.
     Html(HtmlElement),
-    /// Svg elements.
+    /// Svg element.
     Svg(SvgElement),
-    /// MathML elements, future unknown elements.
+    /// MathML element or other future unknown element.
     Other(Element),
 }
 
@@ -210,10 +210,10 @@ impl Component {
         T: Into<Option<Component>>,
         F: Future<Output = Component> + 'static,
     {
-        if let Some(child) = before.into() {}
-        utils::spawn(async {
-            let child = future.await;
-        });
+        // if let Some(child) = before.into() {}
+        // utils::spawn(async {
+        //     let child = future.await;
+        // });
         todo!()
     }
 
@@ -253,12 +253,18 @@ impl Component {
     #[inline]
     pub fn with_iter<I>(&self, iter: I) -> &Self
     where
-        I: Iterator<Item = Component>,
+        I: IntoIterator<Item = Component>,
     {
-        iter.for_each(|child| {
-            self.with(child);
-        });
-        self
+        let iter = iter.into_iter();
+        todo!()
+    }
+
+    #[inline]
+    pub fn with_value<V>(&self, value: V) -> &Self
+    where
+        V: Value<Item = Component>,
+    {
+        todo!()
     }
 
     /// Adds a dependency to this component.

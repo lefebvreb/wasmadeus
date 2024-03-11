@@ -16,7 +16,7 @@ impl ConsoleLogger {
     }
 
     #[inline]
-    pub fn max_level(self) -> LevelFilter {
+    pub fn level(self) -> LevelFilter {
         self.level
     }
 

@@ -22,7 +22,7 @@ pub mod prelude {
     pub use super::html;
     #[cfg(feature = "logger")]
     pub use super::logger::ConsoleLogger;
-    pub use super::signal::SignalMut;
+    pub use super::signal::{Signal, SignalMut};
 }
 
 pub use web_sys;

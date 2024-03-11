@@ -11,9 +11,6 @@ from typing import Optional
 import pandas as pd
 from requests import head
 
-if __name__ != "__main__":
-    exit(0)
-
 # Links to the main MDN resources
 MDN = "https://developer.mozilla.org"
 MDN_ELEMENTS = f"{MDN}/en-US/docs/Web/HTML/Element"
@@ -259,7 +256,7 @@ for dic in [attributes, elements]:
             obj.desc = obj.desc.replace("<link rel=\"manifest\">", "`<link rel=\"manifest\">`")
         else:
             obj.desc = sub(IN_ANGLED_BRACKETS, REPLACE_FN, obj.desc)
-        
+
 # =============================================================================
 
 # Sort attributes and elements by name.
