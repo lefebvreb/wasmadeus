@@ -23,6 +23,15 @@ impl fmt::Display for ElementNotFoundError {
     }
 }
 
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
+pub struct OrphanElementError;
+
+impl fmt::Display for OrphanElementError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "element has no parent")
+    }
+}
+
 #[derive(Debug)]
 #[non_exhaustive]
 pub enum ElementKind {
@@ -30,7 +39,7 @@ pub enum ElementKind {
     Html(HtmlElement),
     /// Svg element.
     Svg(SvgElement),
-    /// MathML element or other future unknown element.
+    /// MathML element or other unknown element.
     Other(Element),
 }
 
@@ -126,13 +135,27 @@ impl Component {
     }
 
     #[inline]
-    fn set_visible<T: Value<Item = bool>>(&self, visible: T) {
+    pub fn set_visible<T: Value<Item = bool>>(&self, visible: T) {
         if let Some(style) = self.style().cloned() {
             let unsub = visible.for_each(move |&visible| {
                 style.set_property("display", if visible { "" } else { "none" }).ok();
             });
             self.push_dependency(unsub.droppable());
         }
+    }
+
+    #[inline]
+    pub fn has_parent(&self) -> bool {
+        self.as_element().parent_node().is_some()
+    }
+
+    #[inline]
+    pub fn swap_with(&self, other: &Self) -> Result<(), OrphanElementError> {
+        let this = self.as_element();
+        let parent = this.parent_node().ok_or(OrphanElementError)?;
+        parent.insert_before(other.as_element(), Some(this)).unwrap();
+        this.remove();
+        Ok(())
     }
 
     /// Attaches `self` to the result of the DOM function [`document.querySelector(selectors)`](https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelector).
@@ -299,7 +322,7 @@ struct LazyChild<F> {
     child: Option<Component>,
 }
 
-impl<F: FnOnce() -> Component> LazyChild<F> {
+impl<F> LazyChild<F> {
     #[inline]
     fn new(f: F) -> Self {
         Self {
@@ -309,7 +332,10 @@ impl<F: FnOnce() -> Component> LazyChild<F> {
     }
 
     #[inline]
-    fn display(&mut self, display: bool, parent: &WeakComponent) {
+    fn display(&mut self, display: bool, parent: &WeakComponent) 
+    where
+        F: FnOnce() -> Component,
+    {
         if display {
             match (parent.upgrade(), &self.child) {
                 (Some(_), Some(child)) => child.set_visible(&true),

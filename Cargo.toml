@@ -10,6 +10,9 @@ license = "MIT OR Apache-2.0"
 readme = "README.md"
 repository = "https://github.com/L-Benjamin/wasmadeus"
 
+[package.metadata.docs.rs]
+rustdoc-args = ["--cfg", "doc_cfg"]
+
 [features]
 bin = ["fetch"]
 default = ["fetch", "logger"]
@@ -17,9 +20,6 @@ fetch = ["web-sys/Headers", "web-sys/ReadableStream", "web-sys/ReferrerPolicy", 
 json = ["fetch", "dep:serde", "dep:serde_json"]
 logger = ["dep:log", "web-sys/console"]
 stream = ["dep:futures"]
-
-[package.metadata.docs.rs]
-rustdoc-args = ["--cfg", "doc_cfg"]
 
 [dependencies]
 futures = { version = "0.3.30", default-features = false, optional = true }
