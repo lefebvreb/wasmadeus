@@ -7,12 +7,14 @@ use core::mem;
 use alloc::boxed::Box;
 use alloc::rc::{Rc, Weak};
 use alloc::vec::Vec;
+use once_cell::unsync::Lazy;
 use web_sys::wasm_bindgen::JsCast;
 use web_sys::{CssStyleDeclaration, Element, HtmlElement, SvgElement};
 
 use crate::attribute::Attributes;
 use crate::signal::{Unsubscribe, Value};
 use crate::utils::TryAsRef;
+use crate::{html, utils};
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
 pub struct ElementNotFoundError;
@@ -57,6 +59,27 @@ impl Component {
     #[inline]
     fn inner(&self) -> &ComponentInner {
         &self.0
+    }
+
+    #[inline]
+    fn swap_with(&self, other: &Self) -> Result<(), OrphanElementError> {
+        let this = self.as_element();
+        let parent = this.parent_node().ok_or(OrphanElementError)?;
+        parent.insert_before(other.as_element(), Some(this)).unwrap();
+        this.remove();
+        Ok(())
+    }
+
+    #[inline]
+    fn placeholder() -> Self {
+        let div = html::div(());
+        div.set_visible(&false);
+        div
+    }
+
+    #[inline]
+    fn append(&self, child: &Self) {
+        self.as_element().append_child(&child.as_element()).unwrap();
     }
 
     #[inline]
@@ -149,15 +172,6 @@ impl Component {
         self.as_element().parent_node().is_some()
     }
 
-    #[inline]
-    pub fn swap_with(&self, other: &Self) -> Result<(), OrphanElementError> {
-        let this = self.as_element();
-        let parent = this.parent_node().ok_or(OrphanElementError)?;
-        parent.insert_before(other.as_element(), Some(this)).unwrap();
-        this.remove();
-        Ok(())
-    }
-
     /// Attaches `self` to the result of the DOM function [`document.querySelector(selectors)`](https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelector).
     ///
     /// This method should be used as the entry point of your app, linking your components in the rust world to your HTML file.
@@ -222,7 +236,7 @@ impl Component {
 
     #[inline]
     pub fn with(&self, child: Component) -> &Self {
-        self.as_element().append_child(child.as_element()).unwrap();
+        self.append(&child);
         self.push_dependency(child);
         self
     }
@@ -233,11 +247,17 @@ impl Component {
         T: Into<Option<Component>>,
         F: Future<Output = Component> + 'static,
     {
-        // if let Some(child) = before.into() {}
-        // utils::spawn(async {
-        //     let child = future.await;
-        // });
-        todo!()
+        let before = before.into().unwrap_or_else(Self::placeholder);
+        self.append(&before);
+        let weak = self.downgrade();
+        utils::spawn(async move {
+            let child = future.await;
+            if let Some(this) = weak.upgrade() {
+                before.swap_with(&child).unwrap();
+                this.push_dependency(child);
+            }
+        });
+        self
     }
 
     #[inline]
@@ -246,10 +266,12 @@ impl Component {
         C: Value<Item = bool>,
         F: FnOnce() -> Component + 'static,
     {
-        let weak = self.downgrade();
-        let mut child = LazyChild::new(if_true);
-        let unsub = cond.for_each(move |&cond| {
-            child.display(cond, &weak);
+        let placeholder = Self::placeholder();
+        self.append(&placeholder);
+        let if_true = Lazy::new(if_true);
+        let unsub = cond.for_each(move |&cond| match cond {
+            true => placeholder.swap_with(&if_true).unwrap(),
+            false => _ = if_true.swap_with(&placeholder),
         });
         self.push_dependency(unsub.droppable());
         self
@@ -262,14 +284,34 @@ impl Component {
         F: FnOnce() -> Component + 'static,
         G: FnOnce() -> Component + 'static,
     {
-        let weak = self.downgrade();
-        let mut child1 = LazyChild::new(if_true);
-        let mut child2 = LazyChild::new(if_false);
-        let unsub = cond.for_each(move |&cond| {
-            child1.display(cond, &weak);
-            child2.display(!cond, &weak);
-        });
-        self.push_dependency(unsub.droppable());
+        // let weak = self.downgrade();
+        // let mut child1 = LazyChild::new(if_true);
+        // let mut child2 = LazyChild::new(if_false);
+        // let unsub = cond.for_each(move |&cond| {
+        //     child1.display(cond, &weak);
+        //     child2.display(!cond, &weak);
+        // });
+        // self.push_dependency(unsub.droppable());
+        // self
+
+        // let placeholder = Self::placeholder();
+        // self.append(&placeholder);
+        // let if_true = Lazy::new(if_true);
+        // let if_false = Lazy::new(if_false);
+        // let current = &placeholder;
+        // let unsub = cond.for_each(move |&cond| {
+        //     match cond {
+        //         true => {
+        //             current.swap_with(&if_true).unwrap();
+        //             current = &if_true;
+        //         },
+        //         false => {
+        //             current.swap_with(&if_false).unwrap();
+        //             current = &if_false;
+        //         },
+        //     }
+        // });
+        // self.push_dependency(unsub.droppable());
         self
     }
 
@@ -278,7 +320,6 @@ impl Component {
     where
         I: IntoIterator<Item = Component>,
     {
-        let iter = iter.into_iter();
         todo!()
     }
 
@@ -316,41 +357,41 @@ impl WeakComponent {
     }
 }
 
-#[derive(Debug)]
-struct LazyChild<F> {
-    init: Option<F>,
-    child: Option<Component>,
-}
+// #[derive(Debug)]
+// struct LazyChild<F> {
+//     init: Option<F>,
+//     child: Option<Component>,
+// }
 
-impl<F> LazyChild<F> {
-    #[inline]
-    fn new(f: F) -> Self {
-        Self {
-            init: Some(f),
-            child: None,
-        }
-    }
+// impl<F> LazyChild<F> {
+//     #[inline]
+//     fn new(f: F) -> Self {
+//         Self {
+//             init: Some(f),
+//             child: None,
+//         }
+//     }
 
-    #[inline]
-    fn display(&mut self, display: bool, parent: &WeakComponent) 
-    where
-        F: FnOnce() -> Component,
-    {
-        if display {
-            match (parent.upgrade(), &self.child) {
-                (Some(_), Some(child)) => child.set_visible(&true),
-                (Some(parent), None) => {
-                    let new_child = (self.init.take().unwrap())();
-                    parent.with(new_child.clone());
-                    self.child = Some(new_child);
-                }
-                _ => (),
-            }
-        } else if let Some(child) = &self.child {
-            child.set_visible(&false);
-        }
-    }
-}
+//     #[inline]
+//     fn display(&mut self, display: bool, parent: &WeakComponent)
+//     where
+//         F: FnOnce() -> Component,
+//     {
+//         if display {
+//             match (parent.upgrade(), &self.child) {
+//                 (Some(_), Some(child)) => child.set_visible(&true),
+//                 (Some(parent), None) => {
+//                     let new_child = (self.init.take().unwrap())();
+//                     parent.with(new_child.clone());
+//                     self.child = Some(new_child);
+//                 }
+//                 _ => (),
+//             }
+//         } else if let Some(child) = &self.child {
+//             child.set_visible(&false);
+//         }
+//     }
+// }
 
 macro_rules! elements {
     {

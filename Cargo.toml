@@ -11,7 +11,9 @@ readme = "README.md"
 repository = "https://github.com/L-Benjamin/wasmadeus"
 
 [package.metadata.docs.rs]
-rustdoc-args = ["--cfg", "doc_cfg"]
+# To test-build documentation, use:
+# cargo +nightly rustdoc --all-features --open -- -Z unstable-options --cfg docsrs --generate-link-to-definition
+rustdoc-args = ["--cfg", "docsrs", "--generate-link-to-definition"]
 
 [features]
 bin = ["fetch"]
@@ -19,17 +21,17 @@ default = ["fetch", "logger"]
 fetch = ["web-sys/Headers", "web-sys/ReadableStream", "web-sys/ReferrerPolicy", "web-sys/RequestCache", "web-sys/RequestCredentials", "web-sys/RequestInit", "web-sys/RequestMode", "web-sys/RequestRedirect", "web-sys/Response"]
 json = ["fetch", "dep:serde", "dep:serde_json"]
 logger = ["dep:log", "web-sys/console"]
-stream = ["dep:futures"]
 
 [dependencies]
-futures = { version = "0.3.30", default-features = false, optional = true }
-log = { version = "0.4.20", default-features = false, optional = true }
-serde = { version = "1.0.193", default-features = false, optional = true }
-serde_json = { version = "1.0.108", features = ["alloc"], default-features = false, optional = true }
-wasm-bindgen-futures = { version = "0.4.39", default-features = false }
+futures = { version = "0.3.30", default-features = false }
+log = { version = "0.4.22", default-features = false, optional = true }
+once_cell = { version = "1.19.0", default-features = false }
+serde = { version = "1.0.204", default-features = false, optional = true }
+serde_json = { version = "1.0.120", features = ["alloc"], default-features = false, optional = true }
+wasm-bindgen-futures = { version = "0.4.42", default-features = false }
 
 [dependencies.web-sys]
-version = "0.3.66"
+version = "0.3.69"
 default-features = false
 features = [
     "CssStyleDeclaration",

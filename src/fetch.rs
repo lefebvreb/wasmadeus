@@ -67,7 +67,7 @@ impl RequestBody for Text {
 }
 
 #[cfg(feature = "json")]
-#[cfg_attr(doc_cfg, doc(cfg(feature = "json")))]
+#[cfg_attr(docsrs, doc(cfg(feature = "fetch")))]
 #[repr(transparent)]
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Debug)]
 pub struct Json<T: serde::Serialize>(pub T);
@@ -89,7 +89,7 @@ impl<T: serde::Serialize> RequestBody for Json<T> {
 }
 
 #[cfg(feature = "bin")]
-#[cfg_attr(doc_cfg, doc(cfg(feature = "bin")))]
+#[cfg_attr(docsrs, doc(cfg(feature = "fetch")))]
 #[repr(transparent)]
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Debug)]
 pub struct Bin<T: AsRef<[u8]>>(pub T);

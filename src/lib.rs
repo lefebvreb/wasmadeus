@@ -1,5 +1,5 @@
 #![doc(html_logo_url = "https://raw.githubusercontent.com/lefebvreb/wasmadeus/main/logo.svg")]
-#![cfg_attr(doc_cfg, feature(doc_cfg))]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 #![no_std]
 
 extern crate alloc;
@@ -7,11 +7,11 @@ extern crate alloc;
 pub mod attribute;
 pub mod component;
 #[cfg(feature = "fetch")]
-#[cfg_attr(doc_cfg, doc(cfg(feature = "fetch")))]
+#[cfg_attr(docsrs, doc(cfg(feature = "fetch")))]
 pub mod fetch;
 pub mod html;
 #[cfg(feature = "logger")]
-#[cfg_attr(doc_cfg, doc(cfg(feature = "logger")))]
+#[cfg_attr(docsrs, doc(cfg(feature = "logger")))]
 pub mod logger;
 pub mod signal;
 pub mod utils;

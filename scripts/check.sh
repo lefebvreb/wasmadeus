@@ -12,14 +12,12 @@ echo cargo fmt
 cargo fmt
 
 echo cargo clippy
-suppress cargo clippy --color=always
-suppress cargo +nightly clippy --features nightly --color=always
+suppress cargo clippy --color always
 
 echo cargo miri test
-suppress cargo +nightly miri test --color=always
-suppress cargo +nightly miri test --features nightly --color=always
+suppress cargo +nightly miri test --color always
 
 echo cargo rustdoc
-suppress cargo +nightly rustdoc --all-features -- --cfg doc_cfg
+suppress cargo +nightly rustdoc --all-features  --color always -- -Z unstable-options --cfg docsrs --generate-link-to-definition
 
 echo all done!

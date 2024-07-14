@@ -7,7 +7,6 @@ use core::future::Future;
 use core::ops::Deref;
 
 use alloc::rc::Rc;
-#[cfg(feature = "stream")]
 use futures::stream::{Stream, StreamExt};
 
 use crate::utils;
@@ -41,8 +40,6 @@ impl<T> Signal<T> {
         this
     }
 
-    #[cfg(feature = "stream")]
-    #[cfg_attr(doc_cfg, doc(cfg(feature = "stream")))]
     #[inline]
     pub fn from_stream<I, S>(init: I, stream: S) -> Self
     where
