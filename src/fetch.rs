@@ -398,7 +398,7 @@ impl Fetch {
             .unwrap()
             .fetch_with_str_and_init(&self.input, &self.init);
 
-        let res = JsFuture::from(promise).await.unwrap().dyn_into::<Response>().unwrap();
+        let _res = JsFuture::from(promise).await.unwrap().dyn_into::<Response>().unwrap();
 
         todo!()
     }

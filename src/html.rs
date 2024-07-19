@@ -3,7 +3,7 @@
 //! HTML elements and attributes definitions.
 //!
 //! In the Wasmadeus framework, [HTML elements](https://developer.mozilla.org/en-US/docs/Web/HTML/Element) are replaced
-//! with simple rust functions taking one or more [`Attributes`](crate::attribute::Attribute)
+//! with simple rust functions taking zero or more [`Attributes`](crate::attribute::Attribute)
 //! for input and returning a [`Component`](crate::component::Component).
 //!
 //! [HTML attributes](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes) are simply rust structs that implement
