@@ -1,12 +1,23 @@
+use alloc::borrow::Cow;
 use alloc::string::String;
-use web_sys::{Element, Text};
+use web_sys::Text;
 
 use crate::component::Component;
 use crate::signal::{Unsubscribe, Value};
-use crate::utils::for_all_tuples;
+
+// fn placeholder() -> Element {
+//     let div = web_sys::window()
+//         .unwrap()
+//         .document()
+//         .unwrap()
+//         .create_element("div")
+//         .unwrap();
+//     div.set_attribute("display", "none").unwrap();
+//     div
+// }
 
 pub trait View {
-    type State: Default;
+    type State: Default + 'static;
 
     fn update(&self, parent: &Component, state: &mut Self::State);
 }
@@ -56,19 +67,21 @@ impl View for String {
     }
 }
 
+impl View for Cow<'_, str> {
+    type State = Option<Text>;
+
+    #[inline]
+    fn update(&self, parent: &Component, state: &mut Self::State) {
+        self.as_ref().update(parent, state);
+    }
+}
+
 impl View for Option<&str> {
     type State = Option<Text>;
 
     #[inline]
     fn update(&self, parent: &Component, state: &mut Option<Text>) {
-        match state {
-            Some(node) => node.set_text_content(*self),
-            None => {
-                let node = web_sys::window().unwrap().document().unwrap().create_text_node(self);
-                parent.as_element().append_child(&node).unwrap();
-                *state = Some(node);
-            }
-        }
+        self.unwrap_or_default().update(parent, state);
     }
 }
 
@@ -81,11 +94,45 @@ impl View for Option<String> {
     }
 }
 
-impl View for Component {
-    type State = Option<Element>;
+impl View for Option<Cow<'_, str>> {
+    type State = Option<Text>;
 
     #[inline]
-    fn update(&self, parent: &Component, state: &mut Option<Element>) {
+    fn update(&self, parent: &Component, state: &mut Self::State) {
+        self.as_deref().update(parent, state);
+    }
+}
+
+impl View for Component {
+    type State = Option<Component>;
+
+    #[inline]
+    fn update(&self, parent: &Component, state: &mut Option<Component>) {
+        match state {
+            Some(other) => {
+                let prev = other.as_element();
+                parent
+                    .as_element()
+                    .insert_before(self.as_element(), Some(&prev))
+                    .unwrap();
+                prev.remove();
+            }
+            None => _ = parent.as_element().append_child(&self.as_element()).unwrap(),
+        }
+        *state = Some(self.clone());
+    }
+}
+
+pub struct If<C, F>(pub C, pub F);
+
+impl<C, F> View for If<C, F>
+where
+    C: Value<Item = bool>,
+    F: FnOnce() -> Component,
+{
+    type State = ();
+
+    fn update(&self, parent: &Component, _: &mut Self::State) {
         todo!()
     }
 }
@@ -105,4 +152,4 @@ macro_rules! impl_view {
     };
 }
 
-for_all_tuples!(impl_view);
+// for_all_tuples!(impl_view);

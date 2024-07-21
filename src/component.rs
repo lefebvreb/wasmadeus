@@ -198,7 +198,9 @@ impl Component {
 
     #[inline]
     pub fn with<V: View>(&self, view: V) -> &Self {
-        view.update(self, &mut V::State::default());
+        let mut state = V::State::default();
+        view.update(self, &mut state);
+        self.push_dependency(state);
         self
     }
 
@@ -249,5 +251,5 @@ pub(crate) use elements;
 
 #[test]
 fn test() {
-    Component::new("div", ()).child("My div is cool");
+    Component::new("div", ()).with("My div is cool");
 }
