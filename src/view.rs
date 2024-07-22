@@ -1,9 +1,9 @@
 use alloc::borrow::Cow;
 use alloc::string::String;
-use web_sys::Text;
 
 use crate::component::Component;
-use crate::signal::{Unsubscribe, Value};
+use crate::signal::{DropUnsubscriber, Unsubscribe, Value};
+use crate::utils::for_all_tuples;
 
 // fn placeholder() -> Element {
 //     let div = web_sys::window()
@@ -17,109 +17,94 @@ use crate::signal::{Unsubscribe, Value};
 // }
 
 pub trait View {
-    type State: Default + 'static;
+    type State: 'static;
 
-    fn update(&self, parent: &Component, state: &mut Self::State);
+    fn init(&self, parent: &Component) -> Self::State;
 }
 
-impl<T> View for T
-where
-    T: Value + 'static,
-    T::Item: View,
-{
+// Below: nonesense!
+// impl<T> View for T
+// where
+//     T: Value + 'static,
+//     T::Item: View,
+// {
+//     type State = Option<DropUnsubscriber<T::Unsubscriber>>;
+
+//     #[inline]
+//     fn update(&self, parent: &Component) -> Self::State {
+//         let weak = parent.downgrade();
+//         let mut child_state = <T::Item as View>::State::default();
+//         let unsub = self.for_each(move |value| {
+//             if let Some(parent) = weak.upgrade() {
+//                 value.update(&parent, &mut child_state);
+//             }
+//         });
+//         *state = Some(unsub.droppable());
+//     }
+// }
+
+impl View for &str {
     type State = ();
 
     #[inline]
-    fn update(&self, parent: &Component, _: &mut ()) {
-        let weak = parent.downgrade();
-        let mut state = <T::Item as View>::State::default();
-        let unsub = self.for_each(move |value| {
-            if let Some(parent) = weak.upgrade() {
-                value.update(&parent, &mut state);
-            }
-        });
-        parent.push_dependency(unsub.droppable());
-    }
-}
-
-impl View for &str {
-    type State = Option<Text>;
-
-    #[inline]
-    fn update(&self, parent: &Component, state: &mut Option<Text>) {
-        match state {
-            Some(node) => node.set_text_content(Some(self)),
-            None => {
-                let node = web_sys::window().unwrap().document().unwrap().create_text_node(self);
-                parent.as_element().append_child(&node).unwrap();
-                *state = Some(node);
-            }
-        }
+    fn init(&self, parent: &Component) -> Self::State {
+        let node = web_sys::window().unwrap().document().unwrap().create_text_node(self);
+        parent.as_element().append_child(&node).unwrap();
     }
 }
 
 impl View for String {
-    type State = Option<Text>;
+    type State = ();
 
     #[inline]
-    fn update(&self, parent: &Component, state: &mut Option<Text>) {
-        self.as_str().update(parent, state);
+    fn init(&self, parent: &Component) -> Self::State {
+        self.as_str().init(parent);
     }
 }
 
 impl View for Cow<'_, str> {
-    type State = Option<Text>;
+    type State = ();
 
     #[inline]
-    fn update(&self, parent: &Component, state: &mut Self::State) {
-        self.as_ref().update(parent, state);
+    fn init(&self, parent: &Component) -> Self::State {
+        self.as_ref().init(parent);
     }
 }
 
 impl View for Option<&str> {
-    type State = Option<Text>;
+    type State = ();
 
     #[inline]
-    fn update(&self, parent: &Component, state: &mut Option<Text>) {
-        self.unwrap_or_default().update(parent, state);
+    fn init(&self, parent: &Component) -> Self::State {
+        self.unwrap_or_default().init(parent);
     }
 }
 
 impl View for Option<String> {
-    type State = Option<Text>;
+    type State = ();
 
     #[inline]
-    fn update(&self, parent: &Component, state: &mut Option<Text>) {
-        self.as_deref().update(parent, state);
+    fn init(&self, parent: &Component) -> Self::State {
+        self.as_deref().init(parent);
     }
 }
 
 impl View for Option<Cow<'_, str>> {
-    type State = Option<Text>;
+    type State = ();
 
     #[inline]
-    fn update(&self, parent: &Component, state: &mut Self::State) {
-        self.as_deref().update(parent, state);
+    fn init(&self, parent: &Component) -> Self::State {
+        self.as_deref().init(parent);
     }
 }
 
 impl View for Component {
-    type State = Option<Component>;
+    type State = Component;
 
     #[inline]
-    fn update(&self, parent: &Component, state: &mut Option<Component>) {
-        match state {
-            Some(other) => {
-                let prev = other.as_element();
-                parent
-                    .as_element()
-                    .insert_before(self.as_element(), Some(&prev))
-                    .unwrap();
-                prev.remove();
-            }
-            None => _ = parent.as_element().append_child(&self.as_element()).unwrap(),
-        }
-        *state = Some(self.clone());
+    fn init(&self, parent: &Component) -> Self::State {
+        parent.as_element().append_child(&self.as_element()).unwrap();
+        self.clone()
     }
 }
 
@@ -130,26 +115,27 @@ where
     C: Value<Item = bool>,
     F: FnOnce() -> Component,
 {
-    type State = ();
+    type State = DropUnsubscriber<C::Unsubscriber>;
 
-    fn update(&self, parent: &Component, _: &mut Self::State) {
-        todo!()
+    fn init(&self, parent: &Component) -> Self::State {
+        let unsub = self.0.for_each(|cond| {});
+        unsub.droppable()
     }
 }
 
 macro_rules! impl_view {
     ($($name: ident)*) => {
         impl<$($name: View,)*> View for ($($name,)*) {
-            type State = ();
+            type State = ($($name::State,)*);
 
             #[inline]
             #[allow(non_snake_case, unused_variables)]
-            fn update(&self, component: &Component, _: &mut ()) {
+            fn init(&self, parent: &Component) -> Self::State {
                 let ($($name,)*) = self;
-                $($name.update(component, &mut $name::State::default());)*
+                ($($name.init(parent),)*)
             }
         }
     };
 }
 
-// for_all_tuples!(impl_view);
+for_all_tuples!(impl_view);

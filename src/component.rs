@@ -198,8 +198,7 @@ impl Component {
 
     #[inline]
     pub fn with<V: View>(&self, view: V) -> &Self {
-        let mut state = V::State::default();
-        view.update(self, &mut state);
+        let state = view.init(self);
         self.push_dependency(state);
         self
     }
@@ -248,8 +247,3 @@ macro_rules! elements {
 }
 
 pub(crate) use elements;
-
-#[test]
-fn test() {
-    Component::new("div", ()).with("My div is cool");
-}
